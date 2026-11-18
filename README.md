@@ -56,10 +56,10 @@ y abre `http://localhost:8124`.
 
 ## Animación ("vida") de los personajes
 
-Los modelos GLB son mallas únicas sin esqueleto, así que se animan por **deformación procedural en la GPU** (`makeLiving` + `onBeforeCompile`): un atributo `aPart` clasifica cada vértice como pierna izquierda/derecha, brazo izquierdo/derecho o torso, y un shader balancea las piernas y los brazos con desfase, aplica respiración al pecho y sacude al recibir un impacto.
+Los modelos GLB son mallas únicas sin esqueleto, así que se animan por **deformación procedural continua en la GPU** (`makeLiving` + `onBeforeCompile`): mediante transiciones suaves (`smoothstep` y pesos laterales continuos en el vertex shader), las piernas se balancean al caminar, el torso respira, se inclina al apuntar y se estremece al recibir impactos sin cortes ni rotura de triángulos.
 
-- Enemigos: caminata con balanceo y desfase aleatorio por soldado, giro suave hacia el jugador (sin saltos), postura de apuntado cuando disparan, retroceso al disparar, **estremecimiento al ser heridos** y caída gradual al morir.
-- Defensores chinos: respiración continua, cambio de peso y giro de cabeza; el caído permanece tumbado.
+- Enemigos: orientación corregida hacia el frente, caminata con balanceo, pausa breve de disparo con fogonazo en la boca del fusil (`d < 72 m`), postura de apuntado, estremecimiento al ser heridos y caída gradual al morir.
+- Defensores chinos: respiración continua, giro suave hacia el enemigo más cercano y fuego de cobertura; el caído permanece tumbado.
 
 ## Modelos 3D
 
@@ -79,5 +79,6 @@ Los GLB se optimizaron con **glTF Transform** (`optimize --compress meshopt --si
 
 - Modelos activos: **15,3 MB** (antes 130,6 MB → **-88 %**).
 - Los originales sin optimizar se conservan en `models/_originales/` (169 MB) por si se quiere revertir.
+- **Rendimiento en tiempo real:** los 30 leones de piedra del puente utilizan **`THREE.LOD`** (modelo GLB de alta resolución solo a menos de 15 m y malla ligera a distancia), los soldados proyectan sombras mediante cilindros ligeros de respaldo (`SHADOW_PROXY_GEO`), el agua del río Yongding se anima íntegramente en GPU (`waterMat.onBeforeCompile`) y los materiales estáticos se reutilizan mediante caché.
 
 La estructura del puente, arcos, muros, río y sacos de arena sigue siendo geometría procedural de Three.js. El juego funciona sin conexión una vez descargados `three.module.js`, `loaders/GLTFLoader.js`, `utils/BufferGeometryUtils.js` y la carpeta `models/`. Si algún GLB falla, se mantiene el modelo procedural de respaldo.
