@@ -637,6 +637,7 @@ function buildBridge(){
   const jacket = new THREE.Mesh(new THREE.CylinderGeometry(0.055,0.055,0.72,8), mat(0x3a3e40,0.45,0.75));
   jacket.rotation.x = Math.PI/2; jacket.position.set(0, 0.02, -0.52); mgHead.add(jacket);
   const shield = box(0.66, 0.48, 0.04, 0x3b4034, 0, 0.06, -0.22, mgHead, {rough:0.8, metal:0.4});
+  shield.userData.isMgShield = true;
   worldColliders.push(shield);
   mgFlash = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.36, 6), new THREE.MeshBasicMaterial({color:0xffd36b, transparent:true, opacity:0.9, depthWrite:false}));
   mgFlash.rotation.x = -Math.PI/2; mgFlash.position.set(0, 0.02, -0.98); mgFlash.visible = false;
@@ -709,6 +710,7 @@ function buildTerrain(){
   };
   rmat.customProgramCacheKey = () => 'rain-v1';
   rainPoints = new THREE.Points(rgeo, rmat);
+  rainPoints.frustumCulled = false;
   rainPoints.visible = false;
   scene.add(rainPoints);
 
@@ -780,7 +782,7 @@ let running = false, alive = false, paused = false, aiming = false;
 let crouching = false, eyeHeight = 1.7, mouseSens = 1.0, muted = false, supplyCooldown = 0;
 let cameraShake = 0, artilleryTimer = 8;
 let cinematic = null;
-let grenades = 3, mgMounted = false, mgHeat = 0, mgOverheated = false, mgTimer = 0, mouseDownLeft = false;
+let grenades = 3, mgMounted = false, mgHeat = 0, mgOverheated = false, mgTimer = 0, mouseDownLeft = false, gpFiring = false;
 let rainActive = false, flareTimer = 10, lightningTimer = 11;
 let fpsFrames = 0, fpsClock = 0;
 const stats = { shots: 0, hits: 0, headshots: 0, kills: 0, score: 0, startTime: 0 };
@@ -907,19 +909,19 @@ addEventListener('resize', () => {
 });
 
 function pollGamepad(dt){
-  if(!navigator.getGamepads) return;
+  if(!navigator.getGamepads){ gpFiring = false; return; }
   const pads = navigator.getGamepads();
   const gp = pads && pads[0];
-  if(!gp) return;
+  if(!gp){ gpFiring = false; return; }
   const edge = (idx) => {
     const down = !!(gp.buttons[idx] && gp.buttons[idx].pressed);
     const hit = down && !gpPrev[idx];
     gpPrev[idx] = down;
     return hit;
   };
-  if(cinematic){ if(edge(0)||edge(9)) endCinematic(); return; }
-  if(edge(9)){ if(paused) resumeGame(); else if(alive) pauseGame(); return; }
-  if(!alive || paused) return;
+  if(cinematic){ gpFiring = false; if(edge(0)||edge(9)) endCinematic(); return; }
+  if(edge(9)){ gpFiring = false; if(paused) resumeGame(); else if(alive) pauseGame(); return; }
+  if(!alive || paused){ gpFiring = false; return; }
 
   const dz = v => Math.abs(v) < 0.16 ? 0 : v;
   const lx = dz(gp.axes[0]||0), ly = dz(gp.axes[1]||0);
@@ -945,12 +947,17 @@ function pollGamepad(dt){
       resolvePlayerCollision(player.pos.x + _tmpMove.x, player.pos.z + _tmpMove.z);
     }
   }
-  const r2 = gp.buttons[7] && gp.buttons[7].pressed;
-  const l2 = gp.buttons[6] && gp.buttons[6].pressed;
-  if(mgMounted){ if(r2) fireMG(); }
-  else {
+  const r2 = Boolean(gp.buttons[7] && gp.buttons[7].pressed);
+  const l2 = Boolean(gp.buttons[6] && gp.buttons[6].pressed);
+  gpFiring = r2;
+  if(!mgMounted){
     if(r2) shoot();
-    aiming = !!(l2 && !WEAPONS[current].melee && reloadTimer<=0);
+    if(l2 !== Boolean(gpPrev.l2)){
+      gpPrev.l2 = l2;
+      aiming = Boolean(l2 && !WEAPONS[current].melee && reloadTimer<=0);
+    }
+  } else {
+    gpPrev.l2 = l2;
   }
   if(edge(2)){ // X: reload or supply/MG
     if(Math.hypot(player.pos.x - 32, player.pos.z - 3.2) < 3.4) tryUseSupply();
@@ -1145,7 +1152,7 @@ function detonateGrenade(p){
       e.userData.hp -= dmg;
       e.userData.hitT = 0.35;
       flashHitmarker(true);
-      if(e.userData.hp <= 0){ killEnemy(e); addScore(40); }
+      if(e.userData.hp <= 0){ killEnemy(e, true); addScore(40); }
     }
   }
   if(tankette && !tankette.userData.dead){
@@ -1166,12 +1173,12 @@ function toggleMountMG(){
     showMsg('AMETRALLADORA SOLTADA', 1.0);
     return;
   }
-  if(Math.hypot(player.pos.x - 24.5, player.pos.z + 2.0) < 2.7){
+  if(Math.hypot(player.pos.x - 24.5, player.pos.z + 2.0) < 3.2){
     mgMounted = true; aiming = false; crouching = false; reloadTimer = 0;
     $('crouchTag').textContent = '';
     vmRes.vm.visible = false;
     $('mgHeatWrap').classList.remove('hidden');
-    player.pos.set(25.45, DECK_TOP + 1.48, -1.75);
+    player.pos.set(25.35, DECK_TOP + 1.48, -2.0);
     camera.position.copy(player.pos);
     yaw = Math.max(Math.PI/2 - 0.85, Math.min(Math.PI/2 + 0.85, yaw));
     pitch = Math.max(-0.35, Math.min(0.35, pitch));
@@ -1187,7 +1194,7 @@ function fireMG(){
   if(mgHeat >= 1.0){ mgOverheated = true; showMsg('¡CAÑÓN SOBRECALENTADO!', 1.4); }
   recoil = 0.55;
   noiseBurst(0.08, 0.34, 1950);
-  if(mgFlash){ mgFlash.visible = true; flashTimer = 0.05; }
+  if(mgFlash){ mgFlash.visible = true; flashTimer = 0.05; mgFlash.updateWorldMatrix(true, false); }
   spawnCasing();
   stats.shots++;
   raycaster.setFromCamera(new THREE.Vector2((Math.random()-0.5)*0.028, (Math.random()-0.5)*0.028), camera);
@@ -1315,8 +1322,9 @@ function damageTankette(dmg, critical){
     u.dead = true;
     let i = enemyHitboxes.indexOf(u.hull); if(i>=0) enemyHitboxes.splice(i,1);
     i = enemyHitboxes.indexOf(u.visor); if(i>=0) enemyHitboxes.splice(i,1);
-    spawnArtilleryBlast(tankette.position.x, DECK_TOP, tankette.position.z);
-    setTimeout(()=>{ if(tankette) spawnArtilleryBlast(tankette.position.x+1, DECK_TOP+0.5, tankette.position.z-0.5); }, 220);
+    const tx = tankette.position.x, tz = tankette.position.z;
+    spawnArtilleryBlast(tx, DECK_TOP, tz);
+    setTimeout(()=>spawnArtilleryBlast(tx+1, DECK_TOP+0.5, tz-0.5), 220);
     scene.remove(tankette);
     tankette = null;
     $('bossBarWrap').classList.add('hidden');
@@ -1418,7 +1426,8 @@ function muzzlePos(){
 
 function resolveBulletHit(baseDmg, startPos, isMelee=false){
   const hits = raycaster.intersectObjects(enemyHitboxes, false);
-  const obsHits = raycaster.intersectObjects(worldColliders, false);
+  const rawObs = raycaster.intersectObjects(worldColliders, false);
+  const obsHits = mgMounted ? rawObs.filter(h => !h.object.userData.isMgShield) : rawObs;
   const lanHits = isMelee ? [] : raycaster.intersectObjects(shootableLanterns, false);
   const obsDist = obsHits.length ? obsHits[0].distance : Infinity;
   const lanDist = (lanHits.length && lanHits[0].object.visible) ? lanHits[0].distance : Infinity;
@@ -1822,7 +1831,7 @@ function recordProgress(isVictory, bannerId){
 function beginGame(skipCine=false){
   // reset state
   cinematic = null; $('cinema').style.display = 'none';
-  mgMounted = false; mgHeat = 0; mgOverheated = false; mgTimer = 0; mouseDownLeft = false;
+  mgMounted = false; mgHeat = 0; mgOverheated = false; mgTimer = 0; mouseDownLeft = false; gpFiring = false;
   $('mgHeatWrap').classList.add('hidden');
   vmRes.vm.visible = true;
   rainActive = false; if(rainPoints) rainPoints.visible = false;
@@ -1879,7 +1888,7 @@ function beginGame(skipCine=false){
 
 function pauseGame(){
   if(!alive||paused||cinematic) return;
-  paused=true; aiming=false; mouseDownLeft=false; $('pause').classList.remove('hidden');
+  paused=true; aiming=false; mouseDownLeft=false; gpFiring=false; $('pause').classList.remove('hidden');
   if(document.pointerLockElement) document.exitPointerLock();
 }
 function resumeGame(){
@@ -1889,7 +1898,7 @@ function resumeGame(){
 }
 function die(){
   if(!alive) return;
-  alive=false; aiming=false; mouseDownLeft=false; mgMounted=false;
+  alive=false; aiming=false; mouseDownLeft=false; gpFiring=false; mgMounted=false;
   vmRes.vm.visible=true; $('mgHeatWrap').classList.add('hidden');
   rainActive=false; if(rainPoints) rainPoints.visible=false;
   renderStats('gameoverStats');
@@ -1904,7 +1913,7 @@ function showOutroCard(){
   if(document.pointerLockElement) document.exitPointerLock();
 }
 function victory(){
-  alive=false; aiming=false; mouseDownLeft=false; mgMounted=false;
+  alive=false; aiming=false; mouseDownLeft=false; gpFiring=false; mgMounted=false;
   vmRes.vm.visible=true; $('mgHeatWrap').classList.add('hidden');
   rainActive=false; if(rainPoints) rainPoints.visible=false;
   if(flareObj) flareObj.visible=false; if(flareLight) flareLight.intensity=0;
@@ -2066,7 +2075,7 @@ function animate(){
       if(mgTimer>0) mgTimer = Math.max(0, mgTimer - dt);
 
       if(mgMounted){
-        player.pos.set(25.3, DECK_TOP + 1.52, -2.0);
+        player.pos.set(25.35, DECK_TOP + 1.48, -2.0);
         camera.position.copy(player.pos);
         if(mgHead){
           if(mgFlash && Math.abs(mgFlash.position.x) > Math.abs(mgFlash.position.z)){
@@ -2081,7 +2090,7 @@ function animate(){
             mgHead.rotation.z = 0;
           }
         }
-        if(mouseDownLeft && !mgOverheated){
+        if((mouseDownLeft || gpFiring) && !mgOverheated){
           if(mgTimer <= 0) fireMG();
         } else {
           mgHeat = Math.max(0, mgHeat - dt * 0.28);
@@ -2547,6 +2556,7 @@ function applyModels(){
     t.position.set(77, DECK_TOP, 0);
     scene.add(t);
   }
+  applyGraphics(gfxLevel);
 }
 
 function boot(){
@@ -2635,6 +2645,7 @@ $('musicRange').addEventListener('input', e => {
 $('sfxRange').addEventListener('input', e => {
   sfxVol = parseFloat(e.target.value);
   $('sfxVal').textContent = Math.round(sfxVol*100) + '%';
+  if(ambientGain && !muted) ambientGain.gain.value = 0.025 * sfxVol;
 });
 
 </script>
