@@ -35,9 +35,15 @@ y abre `http://localhost:8124`.
 
 ## Características principales
 
-- **Cinemáticas 3D en tiempo real:** secuencia de apertura sobre el río Yongding y Wanping, transiciones cinematográficas con bombardeo entre oleadas (noche a madrugada) y epílogo histórico interactivo (saltables con `Espacio`).
-- **Combate táctico:** apuntado de precisión (ADS) con zoom y reducción de dispersión, cobertura agachado tras los sacos de arena, radar táctico del puente en el HUD, mensajes históricos por radio y caja de suministros reabastecible.
-- **Aliados y arquetipos enemigos:** dos defensores chinos del 29.º Ejército cubren el puente abriendo fuego contra los atacantes; las fuerzas japonesas incluyen fusileros, asaltantes a la bayoneta y oficiales.
+- **Campaña completa en 4 capítulos (7–28 de julio de 1937) + Epílogo 1937–1945:**
+  1. *Capítulo 1 (7 jul, 23:40):* el pretexto del soldado Shimura y los primeros disparos frente a Wanping.
+  2. *Capítulo 2 (8 jul, 04:50):* bombardeo de artillería al alba y resistencia del mayor Jin Zhenzhong.
+  3. *Capítulo 3 (9 jul, 01:15):* contraataque nocturno del Escuadrón de Dadao (大刀队) en el puente.
+  4. *Capítulo 4 (28 jul, 06:10):* ruptura de la tregua, sacrificio de los generales Tong Linge y Zhao Dengyu en Nanyuan y defensa final.
+  - **Crónica Histórica (1937–1945):** dossier cronológico accesible desde el menú inicial y el epílogo hasta la rendición japonesa en Beiping el 10 de octubre de 1945.
+- **Cinemáticas 3D en tiempo real:** secuencia de apertura sobre el río Yongding y Wanping, transiciones cinematográficas con bombardeo entre capítulos y epílogo histórico de tres actos (saltables con `Espacio`).
+- **Combate táctico:** apuntado de precisión (ADS) con zoom y reducción de dispersión, cobertura agachado tras los sacos de arena, radar táctico del puente en el HUD, despachos históricos por radio a mitad de cada capítulo y caja de suministros reabastecible.
+- **Aliados y arquetipos enemigos:** dos defensores chinos del 29.º Ejército cubren el puente abriendo fuego contra los atacantes (uno avanza en el contraataque del Capítulo 3); las fuerzas japonesas incluyen fusileros, asaltantes a la bayoneta y oficiales.
 - **Atmósfera y audio:** bombardeo de artillería con destellos y temblor de cámara, sonido ambiente nocturno continuo y efectos de disparo, recarga, impactos y cornetas sintetizados vía Web Audio API.
 
 ## Fidelidad histórica

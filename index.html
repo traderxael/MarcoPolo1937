@@ -92,6 +92,12 @@
     pointer-events:none; opacity:0; transition:opacity .4s; }
   #waveBanner .wbZh { font-size:34px; color:#e8c87a; letter-spacing:6px; font-weight:700; }
   #waveBanner .wbEs { font-size:13px; color:#d8d2c4; letter-spacing:4px; margin-top:4px; }
+  .card.wide { width:min(860px,92vw); max-height:88vh; overflow-y:auto; }
+  .timeline { margin:16px 0; border-left:2px solid #b4442e; padding-left:16px; }
+  .timeline .step { margin-bottom:14px; }
+  .timeline .step b { color:#e8c87a; font-size:13px; letter-spacing:1px; display:block; margin-bottom:2px; }
+  .timeline .step p { font-size:13px; line-height:1.65; color:#cfc9bb; margin:0; }
+  #chapterTitle { font-size:12px; color:#e8c87a; letter-spacing:1px; margin-top:3px; }
   .hidden { display:none !important; }
 </style>
 </head>
@@ -108,7 +114,7 @@
   <div id="topleft" class="panel">
     <div class="zh">卢沟桥 · 七七事变</div>
     <div class="sub">PUENTE DE MARCO POLO — 7 JULIO 1937</div>
-    <div class="obj">OBJETIVO: contener el asalto japonés<br>Oleada <span id="wave">1</span> / 3</div>
+    <div class="obj">OBJETIVO: contener el asalto japonés<br>Capítulo <span id="wave">1</span> / 4 <div id="chapterTitle">7 JUL 23:40 · El pretexto del soldado perdido</div></div>
     <div id="radioBox"><b id="radioSender">MANDO DEL 29.º EJÉRCITO</b><span id="radioTxt"></span></div>
   </div>
   <div id="topright" class="panel">
@@ -151,11 +157,12 @@
     <p>La noche del 7 de julio de 1937, tropas japonesas de la Guarnición de China en el norte realizaron maniobras junto al puente de Lugouqiao —conocido en Occidente como Puente de Marco Polo— y exigieron registrar la ciudad amurallada de Wanping. Ante la negativa china, comenzó el combate.</p>
     <p>Eres un soldado del <b>219.º Regimiento, 37.ª División, 29.º Ejército</b>, al mando del coronel <b>Ji Xingwen (吉星文)</b>. Defiendes el puente con tu fusil Chiang Kai-shek, tu pistola Mauser C96 y, si el combate llega al cuerpo a cuerpo, tu dadao (大刀).</p>
     <div class="facts">
-      Fidelidad histórica: armamento, uniformes, escenario y desenlace se ajustan a los hechos documentados. El resultado de la batalla no se puede cambiar: el puente cayó en manos japonesas, Beiping el 29 de julio y Tianjin el 30 de julio de 1937.
+      Fidelidad histórica: armamento, uniformes, escenario y desenlace se ajustan a los hechos documentados a lo largo de cuatro capítulos (del 7 al 28 de julio de 1937). El resultado de la batalla no se puede cambiar: el puente cayó en manos japonesas, Beiping el 29 de julio y Tianjin el 30 de julio de 1937.
     </div>
     <div>
       <button class="btn" id="startBtn">COMIENZA LA DEFENSA</button>
       <button class="btn secondary" id="skipIntroStartBtn">IR DIRECTO AL COMBATE</button>
+      <button class="btn secondary" id="openCodexIntroBtn">CRÓNICA HISTÓRICA (1937–1945)</button>
     </div>
     <div class="keys">
       <b>WASD</b> mover · <b>Ratón</b> mirar · <b>Clic izq.</b> disparar · <b>Clic der./Q</b> apuntar · <b>R</b> recargar · <b>C</b> agacharse · <b>E</b> suministros<br>
@@ -194,13 +201,47 @@
 
 <div id="outro" class="overlay hidden">
   <div class="card">
-    <div class="kicker">DESENLACE HISTÓRICO</div>
-    <h1>El puente cayó</h1>
-    <p class="zhline">1937年7月 · 北平沦陷 · 天津沦陷</p>
-    <p>Has contenido el asalto todo lo que permitía la historia. El 219.º Regimiento resistió, pero la superioridad japonesa se impuso: el puente de Marco Polo fue tomado, Wanping cayó, Beiping (Pekín) se rindió el 29 de julio y Tianjin el 30 de julio de 1937.</p>
-    <p>Lo que empezó aquella noche fue la <b>Guerra de Resistencia del Pueblo Chino contra la Agresión Japonesa (抗日战争)</b>, ocho años de guerra que culminaron en 1945. Los hechos, aquí, no se han alterado.</p>
+    <div class="kicker">DESENLACE HISTÓRICO · 1937–1945</div>
+    <h1>El puente cayó, la resistencia no</h1>
+    <p class="zhline">1937年7月 · 北平沦陷 · 1945年抗战胜利</p>
+    <p>Sostuviste la línea del 219.º Regimiento durante los combates del 7 al 9 de julio, el contraataque nocturno del Escuadrón de Dadao y la ofensiva final del 28 de julio. Tras el sacrificio de los generales Tong Linge y Zhao Dengyu en Nanyuan, Beiping se rindió el 29 de julio y Tianjin el 30 de julio de 1937.</p>
+    <p>Lo que empezó aquella noche fue la <b>Guerra de Resistencia del Pueblo Chino contra la Agresión Japonesa (抗日战争)</b>. Tras ocho años de conflicto total —con más de veinte millones de bajas chinas—, Japón capituló y firmó su rendición oficial en Beiping el <b>10 de octubre de 1945</b>. Los hechos, aquí, no se han alterado.</p>
     <div class="statsBox" id="outroStats"></div>
-    <button class="btn" id="againBtn">VOLVER A DEFENDER</button>
+    <div>
+      <button class="btn" id="againBtn">VOLVER A DEFENDER</button>
+      <button class="btn secondary" id="openCodexOutroBtn">CRÓNICA HISTÓRICA COMPLETA</button>
+    </div>
+  </div>
+</div>
+
+<div id="codex" class="overlay hidden" style="z-index:35">
+  <div class="card wide">
+    <div class="kicker">ARCHIVO HISTÓRICO DOCUMENTADO · 卢沟桥事变</div>
+    <h1>Crónica 1937–1945</h1>
+    <div class="date">DEL INCIDENTE DEL PUENTE DE MARCO POLO A LA VICTORIA DE 1945</div>
+    <div class="timeline">
+      <div class="step">
+        <b>7 de julio de 1937 (22:40) — El pretexto de Shimura Kikujiro y el ultimátum a Wanping</b>
+        <p>Durante maniobras nocturnas cerca del puente de Lugouqiao, la compañía japonesa del mayor Ichiki Kiyonao denunció la supuesta desaparición del soldado Shimura Kikujiro y exigió registrar la ciudad fortificada de Wanping. Aunque Shimura regresó ileso a sus filas poco después, el mando japonés mantuvo la exigencia y el coronel Ji Xingwen (219.º Regimiento, 29.º Ejército) rechazó la entrada.</p>
+      </div>
+      <div class="step">
+        <b>8 de julio de 1937 (04:50) — El bombardeo al amanecer y la herida del mayor Jin Zhenzhong</b>
+        <p>Tras los primeros tiroteos nocturnos, el coronel Renya Mutaguchi autorizó el fuego de artillería y el asalto sobre Wanping y el puente ferroviario. El mayor Jin Zhenzhong resultó herido encabezando a los defensores del puente pero permaneció en su puesto manteniendo la línea frente a las cargas japonesas.</p>
+      </div>
+      <div class="step">
+        <b>8–9 de julio de 1937 (Medianoche) — El contraataque nocturno del Escuadrón de Dadao (大刀队)</b>
+        <p>Armados con fusiles Chiang Kai-shek, pistolas Mauser C96 y sus características espadas dadao, destacamentos del 29.º Ejército lanzaron un contraataque cuerpo a cuerpo bajo la lluvia nocturna y recuperaron temporalmente posiciones clave en el puente.</p>
+      </div>
+      <div class="step">
+        <b>11–29 de julio de 1937 — La falsa tregua, el sacrificio en Nanyuan y la caída de Beiping</b>
+        <p>Japón aprovechó las negociaciones locales para trasladar divisiones de refuerzo desde Manchuria y Corea. El 28 de julio desencadenó la ofensiva general sobre Beiping: en la defensa del cuartel de Nanyuan cayeron los generales <b>Tong Linge (佟麟阁)</b> y <b>Zhao Dengyu (赵登郁)</b>. El 29 de julio cayó Beiping y el 30 de julio Tianjin.</p>
+      </div>
+      <div class="step">
+        <b>1937–1945 — De las cicatrices de Wanping a la rendición en la Ciudad Prohibida</b>
+        <p>El incidente marcó el inicio de la guerra total sino-japonesa. Tras ocho años de resistencia nacional —de Shanghái, Nankín y Tai'erzhuang hasta Wuhan, Changsha y Chongqing—, Japón capituló en 1945 y el <b>10 de octubre de 1945</b> firmó el acta de rendición del norte de China en el Palacio Imperial de Beiping. Los leones de piedra del puente y los impactos de obús en Wanping permanecen hoy como monumento histórico.</p>
+      </div>
+    </div>
+    <button class="btn" id="closeCodexBtn">VOLVER</button>
   </div>
 </div>
 
@@ -798,8 +839,11 @@ function spawnEnemy(){
     if(toSpawn === WAVES[1]) role = 'officer';
     else if(Math.random() < 0.35) role = 'charger';
   } else if(wave===2){
-    if(toSpawn >= WAVES[2]-1) role = 'officer';
-    else if(Math.random() < 0.45) role = 'charger';
+    if(toSpawn === WAVES[2]) role = 'officer';
+    else if(Math.random() < 0.6) role = 'charger';
+  } else if(wave===3){
+    if(toSpawn >= WAVES[3]-1) role = 'officer';
+    else if(toSpawn >= 4) role = 'charger';
   }
   const e = makeEnemy(role);
   e.position.set(-52 - Math.random()*7, DECK_TOP, (Math.random()-0.5)*6.4);
@@ -977,13 +1021,13 @@ const CINE_SCRIPTS = {
       { t0:0, t1:4.4, fromPos:[-38,12.5,-16], toPos:[-4,9.8,-7.5], fromLook:[10,7.8,0], toLook:[18,7.8,0],
         tag:'7 DE JULIO DE 1937 · 22:40 · RÍO YONGDING',
         zh:'1937年7月7日 · 卢沟桥畔',
-        sub:'Noche de verano sobre el puente de Marco Polo. Las tropas japonesas rodean las maniobras exigiendo entrar en la ciudad amurallada de Wanping.' },
+        sub:'Noche de verano sobre el puente de Marco Polo. Tropas japonesas alegan que falta el soldado Shimura y exigen registrar la ciudad amurallada de Wanping.' },
       { t0:4.4, t1:8.8, fromPos:[64,12.2,4.5], toPos:[42,8.8,2.2], fromLook:[32,7.6,-1.5], toLook:[28,7.4,-1],
         tag:'219.º REGIMIENTO · 37.ª DIVISIÓN · 29.º EJÉRCITO',
         zh:'吉星文团长命令：寸土不让！',
         sub:'El coronel Ji Xingwen rechaza el ultimátum. Los defensores chinos aseguran los sacos de arena frente a la puerta de Wanping.' },
       { t0:8.8, t1:13.2, fromPos:[14,9.5,-1.8], toPos:[34,DECK_TOP+1.7,0], fromLook:[-35,DECK_TOP+1.2,0], toLook:[-35,DECK_TOP+1.4,0],
-        tag:'PRIMEROS DISPAROS · COMIENZA LA BATALLA',
+        tag:'23:40 · PRIMEROS DISPAROS · COMIENZA LA BATALLA',
         zh:'抗日战争全面爆发',
         sub:'Suenan los primeros morteros en el extremo oeste del puente. ¡Toma posiciones y contén el asalto!',
         events:[{ at:9.0, fn:()=>spawnArtilleryBlast(-46, DECK_TOP, 1.2) }] }
@@ -993,35 +1037,53 @@ const CINE_SCRIPTS = {
     dur: 5.2,
     shots: [
       { t0:0, t1:5.2, fromPos:[6,13.5,-8], toPos:[24,10.2,-3.5], fromLook:[52,10,0], toLook:[48,9.2,0],
-        tag:'8 DE JULIO · MADRUGADA · BOMBARDEO DE ARTILLERÍA',
-        zh:'日军增援抵达 · 刺刀冲锋',
-        sub:'La artillería japonesa castiga el puente. Oficiales imperiales dirigen cargas a la bayoneta entre el humo.',
-        events:[{ at:0.4, fn:()=>spawnArtilleryBlast(14, DECK_TOP, 2.4) }, { at:2.0, fn:()=>spawnArtilleryBlast(56, DECK_TOP+2, -3.5) }] }
+        tag:'8 DE JULIO DE 1937 · 04:50 · BOMBARDEO DE WANPING',
+        zh:'炮击宛平城 · 金振中营长坚守阵地',
+        sub:'El coronel Mutaguchi ordena cañonear Wanping al alba. El mayor Jin Zhenzhong resiste en el puente frente a cargas a la bayoneta.',
+        events:[{ at:0.4, fn:()=>{ scene.background.setHex(0x16192b); scene.fog.color.setHex(0x16192b); spawnArtilleryBlast(14, DECK_TOP, 2.4); } }, { at:2.0, fn:()=>spawnArtilleryBlast(56, DECK_TOP+2, -3.5) }] }
     ]
   },
   wave3: {
-    dur: 5.2,
+    dur: 5.4,
     shots: [
-      { t0:0, t1:5.2, fromPos:[42,8.2,-3.0], toPos:[35,8.3,0.4], fromLook:[-25,7.5,0], toLook:[-30,7.4,0],
-        tag:'AMANECER SOBRE LUGOUQIAO · ASALTO FINAL',
-        zh:'最后一战 · 誓死守卫卢沟桥',
-        sub:'Clarea el cielo sobre el río Yongding. La compañía de vanguardia lanza el asalto decisivo sobre nuestra trinchera.',
-        events:[{ at:0.2, fn:()=>{ scene.background.setHex(0x16192b); scene.fog.color.setHex(0x16192b); spawnArtilleryBlast(-22, DECK_TOP, -2.5); } }] }
+      { t0:0, t1:5.4, fromPos:[42,8.2,-3.0], toPos:[20,8.5,1.2], fromLook:[-25,7.5,0], toLook:[-35,7.4,0],
+        tag:'9 DE JULIO DE 1937 · 01:15 · CONTRAATAQUE DEL ESCUADRÓN DADAO',
+        zh:'大刀队夜袭 · 夺回铁桥',
+        sub:'Bajo la noche cerrada, el Escuadrón de Dadao del 29.º Ejército avanza por el puente para expulsar al enemigo cuerpo a cuerpo.',
+        events:[{ at:0.2, fn:()=>{ scene.background.setHex(0x080f1c); scene.fog.color.setHex(0x080f1c); spawnArtilleryBlast(-22, DECK_TOP, -2.5); } }] }
+    ]
+  },
+  wave4: {
+    dur: 5.6,
+    shots: [
+      { t0:0, t1:5.6, fromPos:[-8,14.5,-9], toPos:[22,10.5,-4], fromLook:[45,9,0], toLook:[48,9,0],
+        tag:'28 DE JULIO DE 1937 · 06:10 · LA RUPTURA DE LA TREGUA Y OFENSIVA GENERAL',
+        zh:'佟麟阁、赵登郁将军殉国 · 最终防线',
+        sub:'Tras usar las negociaciones para traer divisiones desde Manchuria, Japón lanza el asalto total. Los generales Tong Linge y Zhao Dengyu caen en Nanyuan. ¡Cubre la retirada del 29.º Ejército!',
+        events:[
+          { at:0.2, fn:()=>{ scene.background.setHex(0x26171d); scene.fog.color.setHex(0x26171d); moonLight.color.setHex(0xffc2a8); spawnArtilleryBlast(-10, DECK_TOP, 2.2); } },
+          { at:2.2, fn:()=>spawnArtilleryBlast(22, DECK_TOP, -2.8) }
+        ] }
     ]
   },
   outro: {
-    dur: 8.0,
+    dur: 12.6,
     shots: [
-      { t0:0, t1:4.0, fromPos:[30,8.5,0], toPos:[18,12.5,-7], fromLook:[48,9.5,0], toLook:[58,10.5,0],
-        tag:'DESENLACE HISTÓRICO · LUGOUQIAO',
-        zh:'1937年7月 · 卢沟桥陷落',
-        sub:'El 219.º Regimiento resistió hasta el límite de sus fuerzas bajo fuego constante de artillería.',
+      { t0:0, t1:4.2, fromPos:[30,8.5,0], toPos:[18,12.5,-7], fromLook:[48,9.5,0], toLook:[58,10.5,0],
+        tag:'29–30 DE JULIO DE 1937 · EL REPLIEGUE DEL 29.º EJÉRCITO',
+        zh:'卢沟桥与宛平陷落 · 北平、天津沦陷',
+        sub:'Tras semanas de combate desigual, el 29.º Ejército se repliega hacia el sur. El puente de Marco Polo y Wanping caen; Beiping el 29 de julio y Tianjin el 30 de julio.',
         events:[{ at:0.5, fn:()=>spawnArtilleryBlast(8, DECK_TOP, 3.0) }] },
-      { t0:4.0, t1:8.0, fromPos:[18,12.5,-7], toPos:[6,19.5,-13], fromLook:[58,10.5,0], toLook:[68,11,0],
-        tag:'BEIPING Y TIANJIN · JULIO DE 1937',
-        zh:'八年抗战 · 由此开始',
-        sub:'El puente y Wanping cayeron; Beiping se rindió el 29 de julio. Comenzaban ocho años de guerra hasta 1945.',
-        events:[{ at:4.6, fn:()=>spawnArtilleryBlast(44, DECK_TOP+1, -2.5) }] }
+      { t0:4.2, t1:8.4, fromPos:[18,12.5,-7], toPos:[4,18,-12], fromLook:[58,10.5,0], toLook:[66,11,0],
+        tag:'1937 – 1945 · OCHO AÑOS DE GUERRA TOTAL',
+        zh:'全民族抗战 · 百折不挠',
+        sub:'Los disparos de Lugouqiao encendieron la Guerra de Resistencia. Durante ocho años —de Shanghái y Tai\'erzhuang a Wuhan y Chongqing— millones de soldados y civiles sostuvieron la lucha.',
+        events:[{ at:4.6, fn:()=>spawnArtilleryBlast(44, DECK_TOP+1, -2.5) }] },
+      { t0:8.4, t1:12.6, fromPos:[4,18,-12], toPos:[-14,22,-16], fromLook:[30,9,0], toLook:[20,8,0],
+        tag:'10 DE OCTUBRE DE 1945 · RENDICIÓN EN BEIPING Y MEMORIA ETERNA',
+        zh:'抗战胜利 · 卢沟石狮永存',
+        sub:'En 1945 Japón capituló y firmó su rendición en Beiping. Hoy, los leones de piedra de Lugouqiao y las cicatrices de obús en las murallas de Wanping siguen en pie como testigos de aquella noche.',
+        events:[{ at:8.5, fn:()=>{ scene.background.setHex(0x2b2430); scene.fog.color.setHex(0x2b2430); moonLight.color.setHex(0xffe0b2); } }] }
     ]
   }
 };
@@ -1082,25 +1144,57 @@ function updateCinematic(dt){
 }
 
 // ---------- waves / game flow ----------
-const WAVES = [5,7,9];
+const WAVES = [5,7,8,10];
+const CHAPTER_TITLES = [
+  '7 JUL 23:40 · El pretexto del soldado perdido',
+  '8 JUL 04:50 · El bombardeo de Wanping',
+  '9 JUL 01:15 · Contraataque del Escuadrón Dadao',
+  '28 JUL 06:10 · Ofensiva final y sacrificio de Nanyuan'
+];
 const WAVE_RADIOS = [
-  ['CORONEL JI XINGWEN (吉星文)', '¡Mantened la línea! Los japoneses cruzan desde el extremo oeste.'],
-  ['MAYOR JIN ZHENZHONG (金振中)', '¡Cuidado con los asaltantes a la bayoneta! Usad los sacos de arena [C] para cubrirse.'],
-  ['OBSERVADOR 29.º EJÉRCITO', '¡Asalto masivo con oficiales al frente! Reabastecerse en la caja [E] si hace falta.']
+  ['CORONEL JI XINGWEN (吉星文)', 'Los japoneses alegan que falta el soldado Shimura y exigen entrar en Wanping. ¡No cedan el puente!'],
+  ['MAYOR JIN ZHENZHONG (金振中)', '¡El coronel Mutaguchi bombardea Wanping! ¡Cúbranse tras los sacos [C] y detengan a los asaltantes a la bayoneta!'],
+  ['CAPITÁN DEL ESCUADRÓN DADAO (大刀队)', '¡Noche del 9 de julio! Lanzamos el contraataque cuerpo a cuerpo para recuperar el puente. ¡Desenvainen el dadao [3]!'],
+  ['GENERAL QIN DECHUN (秦德纯)', '¡28 de julio! Japón rompió la tregua con divisiones de Manchuria. ¡Sostengan el puente para cubrir el repliegue de Beiping!']
+];
+const MID_WAVE_RADIOS = [
+  ['INTELIGENCIA · 29.º EJÉRCITO', '¡Informe confirmado! El soldado Shimura ya apareció sano y salvo en su unidad, ¡pero el mando japonés ataca igualmente!'],
+  ['PUESTO DE MANDO · WANPING', '¡El mayor Jin Zhenzhong ha sido herido en el parapeto norte, pero sigue dirigiendo el fuego! ¡Resistan!'],
+  ['ESCUADRÓN DADAO · VANGUARDIA', '¡Hemos retomado el puente ferroviario con nuestras espadas dadao! ¡Acaben con los infiltrados en Lugouqiao!'],
+  ['RADIO DE CAMPAÑA · NANYUAN', '¡Los generales Tong Linge (佟麟阁) y Zhao Dengyu (赵登郁) han caído heroicamente en Nanyuan! ¡Último esfuerzo por sus compañeros!']
 ];
 const WAVE_BANNERS = [
-  ['第一波 · 夜袭卢沟桥', 'OLEADA 1 · ASALTO NOCTURNO'],
-  ['第二波 · 刺刀冲锋',   'OLEADA 2 · CARGA A LA BAYONETA'],
-  ['第三波 · 决战黎明',   'OLEADA 3 · OFENSIVA FINAL']
+  ['第一幕 · 借口失踪',   'CAPÍTULO 1 · 7 DE JULIO (23:40) · EL PRETEXTO'],
+  ['第二幕 · 炮击宛平',   'CAPÍTULO 2 · 8 DE JULIO (04:50) · FUEGO SOBRE WANPING'],
+  ['第三幕 · 大刀队夜袭', 'CAPÍTULO 3 · 9 DE JULIO (01:15) · ESCUADRÓN DE DADAO'],
+  ['第四幕 · 南苑血战',   'CAPÍTULO 4 · 28 DE JULIO (06:10) · LA ÚLTIMA LÍNEA']
 ];
-let wave = 0, toSpawn = 0, spawnTimer = 0;
+let wave = 0, toSpawn = 0, spawnTimer = 0, midWaveRadioSent = false;
+
+function setDefenderPos(d, x, z){
+  if(!d) return;
+  d.s.position.set(x, DECK_TOP, z);
+  if(d.col){ d.col.minX = x-0.7; d.col.maxX = x+0.7; d.col.minZ = z-0.7; d.col.maxZ = z+0.7; }
+}
 
 function startWave(n){
-  wave = n; toSpawn = WAVES[n]; spawnTimer = 0.6;
+  wave = n; toSpawn = WAVES[n]; spawnTimer = 0.6; midWaveRadioSent = false;
   $('wave').textContent = (n+1);
+  $('chapterTitle').textContent = CHAPTER_TITLES[n];
+  if(n===0){
+    scene.background.setHex(0x0d1424); scene.fog.color.setHex(0x0d1424); moonLight.color.setHex(0xc8d6ff);
+  } else if(n===1){
+    scene.background.setHex(0x16192b); scene.fog.color.setHex(0x16192b); moonLight.color.setHex(0xc8d6ff);
+  } else if(n===2){
+    scene.background.setHex(0x080f1c); scene.fog.color.setHex(0x080f1c); moonLight.color.setHex(0xc8d6ff);
+    setDefenderPos(defenders[1], 14, -1.2);
+    player.hp = Math.min(100, player.hp + 20);
+  } else if(n===3){
+    scene.background.setHex(0x26171d); scene.fog.color.setHex(0x26171d); moonLight.color.setHex(0xffc2a8);
+  }
   playWaveHorn();
   showWaveBanner(WAVE_BANNERS[n][0], WAVE_BANNERS[n][1]);
-  showRadio(WAVE_RADIOS[n][0], WAVE_RADIOS[n][1], 5.5);
+  showRadio(WAVE_RADIOS[n][0], WAVE_RADIOS[n][1], 6.0);
   updateHUD();
 }
 
@@ -1118,7 +1212,8 @@ function renderStats(containerId){
 function beginGame(skipCine=false){
   // reset state
   cinematic = null; $('cinema').style.display = 'none'; vmRes.vm.visible = true;
-  scene.background.setHex(0x0d1424); scene.fog.color.setHex(0x0d1424);
+  scene.background.setHex(0x0d1424); scene.fog.color.setHex(0x0d1424); moonLight.color.setHex(0xc8d6ff);
+  setDefenderPos(defenders[1], 29, -2.1);
   enemies.forEach(e=>{ if(e.userData.living) e.userData.living.dispose(); scene.remove(e); });
   enemies.length=0; enemyHitboxes.length=0;
   effects.forEach(f=>{ scene.remove(f.obj); if(f.obj.geometry) f.obj.geometry.dispose(); if(f.obj.material) f.obj.material.dispose(); });
@@ -1131,7 +1226,7 @@ function beginGame(skipCine=false){
   current='rifle'; fireTimer=0; reloadTimer=0; meleeSwing=0;
   for(const k in vmRes.groups) vmRes.groups[k].visible=(k==='rifle');
   $('intro').classList.add('hidden'); $('gameover').classList.add('hidden');
-  $('outro').classList.add('hidden'); $('pause').classList.add('hidden');
+  $('outro').classList.add('hidden'); $('pause').classList.add('hidden'); $('codex').classList.add('hidden');
   if(actx && actx.state==='suspended') actx.resume();
   const launchCombat = () => {
     alive=true; paused=false;
@@ -1439,13 +1534,19 @@ function animate(){
     }
     for(let i=enemies.length-1;i>=0;i--) if(enemies[i].userData.deathT<=0) enemies.splice(i,1);
 
-    // spawning / waves
+    // spawning / chapters / mid-chapter radio dispatches
+    const rem = toSpawn + enemies.filter(e=>!e.userData.dead).length;
+    if(!midWaveRadioSent && rem > 0 && rem <= Math.ceil(WAVES[wave]/2)){
+      midWaveRadioSent = true;
+      showRadio(MID_WAVE_RADIOS[wave][0], MID_WAVE_RADIOS[wave][1], 6.0);
+    }
     if(toSpawn>0){
       spawnTimer-=dt;
       if(spawnTimer<=0){ spawnEnemy(); toSpawn--; spawnTimer=1.1; updateHUD(); }
     } else if(enemies.length===0 && !cinematic){
       if(wave===0) startCinematic('wave2', () => startWave(1));
       else if(wave===1) startCinematic('wave3', () => startWave(2));
+      else if(wave===2) startCinematic('wave4', () => startWave(3));
       else victory();
     }
   }
@@ -1482,7 +1583,7 @@ window.__capture = () => {
   x.font = '12px sans-serif'; x.fillStyle = '#b9b4a6';
   x.fillText('PUENTE DE MARCO POLO — 7 JULIO 1937', 26, 56);
   x.font = '13px sans-serif'; x.fillStyle = '#d8d2c4';
-  x.fillText('OBJETIVO: contener el asalto japonés · Oleada ' + $('wave').textContent + '/3', 26, 82);
+  x.fillText('OBJETIVO: contener el asalto japonés · Capítulo ' + $('wave').textContent + '/4', 26, 82);
   x.strokeStyle = 'rgba(242,234,214,0.9)'; x.lineWidth = 2;
   x.beginPath();
   x.moveTo(w/2-12,h/2); x.lineTo(w/2-5,h/2); x.moveTo(w/2+5,h/2); x.lineTo(w/2+12,h/2);
@@ -1544,13 +1645,10 @@ function applyModels(){
       if(fallen){ wrap.rotation.z = Math.PI/2; wrap.position.y = DECK_TOP + 0.35; }
       const living = makeLiving(s);
       scene.add(wrap);
-      defenders.push({ s: wrap, living, fallen, baseYaw: wrap.rotation.y, phase:i*2.1, fireT:1.2+Math.random()*1.5, fireAnim:0 });
+      const col = { minX: x-0.7, maxX: x+0.7, minZ: z-0.7, maxZ: z+0.7 };
+      playerBoxes.push(col);
+      defenders.push({ s: wrap, living, fallen, baseYaw: wrap.rotation.y, phase:i*2.1, fireT:1.2+Math.random()*1.5, fireAnim:0, col });
     });
-    playerBoxes.push(
-      { minX: 40.3, maxX: 41.7, minZ: 2.8, maxZ: 4.2 },
-      { minX: 28.3, maxX: 29.7, minZ: -2.8, maxZ: -1.4 },
-      { minX: 36.1, maxX: 37.9, minZ: -4.3, maxZ: -3.0 }
-    );
   }
   // Wanping gate tower
   if(ASSETS.gate){
@@ -1593,6 +1691,9 @@ function initAudio(){
 $('startBtn').addEventListener('click', () => { initAudio(); beginGame(false); });
 $('skipIntroStartBtn').addEventListener('click', () => { initAudio(); beginGame(true); });
 $('cineSkip').addEventListener('click', () => { initAudio(); endCinematic(); });
+$('openCodexIntroBtn').addEventListener('click', () => $('codex').classList.remove('hidden'));
+$('openCodexOutroBtn').addEventListener('click', () => $('codex').classList.remove('hidden'));
+$('closeCodexBtn').addEventListener('click', () => $('codex').classList.add('hidden'));
 $('resumeBtn').addEventListener('click', resumeGame);
 $('retryBtn').addEventListener('click', () => { initAudio(); beginGame(true); });
 $('againBtn').addEventListener('click', () => { initAudio(); beginGame(false); });
