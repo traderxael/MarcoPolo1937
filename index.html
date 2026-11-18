@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>卢沟桥 1937 — La Defensa del Puente</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:100%; height:100%; overflow:hidden; background:#05070c; color:#e8e4d8;
+    font-family:"Microsoft YaHei","SimHei","Segoe UI",sans-serif; user-select:none; }
+  canvas { display:block; }
+  #hud { position:fixed; inset:0; pointer-events:none; display:none; z-index:10; }
+  .panel { position:absolute; text-shadow:0 1px 4px #000, 0 0 12px #000; }
+  #topleft { top:22px; left:26px; }
+  #topleft .zh { font-size:30px; letter-spacing:5px; color:#e8c87a; font-weight:700; }
+  #topleft .sub { font-size:12px; letter-spacing:3px; color:#b9b4a6; margin-top:2px; }
+  #topleft .obj { font-size:14px; color:#d8d2c4; margin-top:14px; border-left:3px solid #b4442e; padding-left:10px; }
+  #topright { top:26px; right:28px; text-align:right; font-size:13px; letter-spacing:2px; color:#c9c2b2; }
+  #topright span { color:#e8c87a; font-size:20px; font-weight:700; }
+  #crosshair { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    font-family:monospace; font-size:24px; color:#f2ead6; opacity:.85; text-shadow:0 0 6px #000; }
+  #bottomleft { bottom:30px; left:28px; }
+  #bottomleft .lbl { font-size:11px; letter-spacing:3px; color:#b9b4a6; margin-bottom:6px; }
+  .bar { width:220px; height:10px; border:1px solid #6d6350; background:#1a1a18; }
+  #hpbar { height:100%; width:100%; background:linear-gradient(90deg,#9d3524,#d5a23c); transition:width .15s; }
+  #bottomright { bottom:28px; right:30px; text-align:right; }
+  #wname { font-size:15px; color:#e8c87a; letter-spacing:1px; }
+  #ammo { font-family:monospace; font-size:34px; font-weight:700; color:#f2ead6; margin-top:2px; }
+  #bottomright .hint { font-size:11px; color:#9e988a; margin-top:8px; letter-spacing:1px; }
+  #msg { position:absolute; left:50%; top:64%; transform:translateX(-50%); text-align:center;
+    font-size:16px; color:#e8c87a; opacity:0; transition:opacity .25s; letter-spacing:2px; }
+  #interactPrompt { position:absolute; left:50%; top:58%; transform:translateX(-50%); text-align:center;
+    font-size:13px; color:#f2ead6; background:rgba(12,14,18,.78); border:1px solid #6d6350;
+    padding:6px 14px; letter-spacing:1px; opacity:0; transition:opacity .15s; }
+  #damageFlash { position:fixed; inset:0; pointer-events:none; z-index:9; opacity:0; transition:opacity .12s;
+    background:radial-gradient(ellipse at center, transparent 48%, rgba(165,24,18,.68) 100%); }
+  #hitmarker { position:absolute; left:50%; top:50%; width:22px; height:22px; transform:translate(-50%,-50%);
+    opacity:0; pointer-events:none; transition:opacity .08s; }
+  #hitmarker::before, #hitmarker::after { content:""; position:absolute; left:50%; top:50%; width:2px; height:18px;
+    background:currentColor; transform-origin:center; }
+  #hitmarker::before { transform:translate(-50%,-50%) rotate(45deg); }
+  #hitmarker::after { transform:translate(-50%,-50%) rotate(-45deg); }
+  .statsBox { margin:16px 0; padding:12px 16px; border:1px solid #4c4536; background:rgba(10,12,16,.55);
+    display:grid; grid-template-columns:repeat(4,1fr); gap:10px; text-align:center; font-size:12px; color:#a9a292; }
+  .statsBox b { display:block; font-size:20px; color:#e8c87a; margin-top:4px; font-family:monospace; }
+  .settingsRow { margin:18px auto 6px; max-width:340px; text-align:left; font-size:13px; color:#cfc9bb; }
+  .settingsRow label { display:flex; justify-content:space-between; margin-bottom:6px; }
+  .settingsRow input[type=range] { width:100%; accent-color:#b4442e; cursor:pointer; }
+  .btn.secondary { background:#2a2c30; border-color:#6d6350; margin-left:10px; }
+  .btn.secondary:hover { background:#3b3e45; }
+  .overlay { position:fixed; inset:0; z-index:30; display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(ellipse at center, rgba(18,20,26,.86), rgba(3,4,8,.97)); }
+  .card { width:min(760px,90vw); padding:38px 46px; border:1px solid #5a5140;
+    background:linear-gradient(160deg, rgba(38,36,30,.96), rgba(16,18,22,.97));
+    box-shadow:0 20px 70px rgba(0,0,0,.8); }
+  .card .kicker { font-size:12px; letter-spacing:6px; color:#b4442e; font-weight:700; }
+  .card h1 { font-size:40px; letter-spacing:4px; color:#e8c87a; margin:8px 0 4px; }
+  .card .date { font-size:13px; color:#a9a292; letter-spacing:3px; margin-bottom:24px; }
+  .card p { font-size:14px; line-height:1.85; color:#cfc9bb; margin-bottom:12px; }
+  .card .zhline { color:#e8c87a; font-size:15px; letter-spacing:2px; }
+  .card .facts { border-left:3px solid #b4442e; padding-left:14px; margin:18px 0; font-size:13px;
+    line-height:1.8; color:#bdb6a6; }
+  .btn { pointer-events:auto; cursor:pointer; margin-top:24px; display:inline-block;
+    padding:13px 34px; border:1px solid #b4442e; background:#7d2f20; color:#fff2dc;
+    font-size:15px; letter-spacing:3px; transition:.15s; font-family:inherit; }
+  .btn:hover { background:#a13e29; }
+  .keys { margin-top:22px; font-size:12px; color:#8d8779; line-height:1.9; letter-spacing:1px; }
+  .keys b { color:#d8cfb8; }
+  #loading { position:fixed; inset:0; z-index:40; display:flex; flex-direction:column; gap:14px; align-items:center; justify-content:center;
+    background:#05070c; color:#e8c87a; font-size:14px; letter-spacing:4px; }
+  #loadBarWrap { width:min(320px,70vw); height:6px; border:1px solid #5a5140; background:#14161c; }
+  #loadBar { width:0%; height:100%; background:linear-gradient(90deg,#9d3524,#e8c87a); transition:width .15s; }
+  .hidden { display:none !important; }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div id="loadText">CARGANDO EL CAMPO DE BATALLA…</div>
+  <div id="loadBarWrap"><div id="loadBar"></div></div>
+</div>
+
+<div id="damageFlash"></div>
+
+<div id="hud">
+  <div id="topleft" class="panel">
+    <div class="zh">卢沟桥 · 七七事变</div>
+    <div class="sub">PUENTE DE MARCO POLO — 7 JULIO 1937</div>
+    <div class="obj">OBJETIVO: contener el asalto japonés<br>Oleada <span id="wave">1</span> / 3</div>
+  </div>
+  <div id="topright" class="panel">ENEMIGOS <span id="enemyCount">0</span></div>
+  <div id="crosshair">+</div>
+  <div id="hitmarker"></div>
+  <div id="bottomleft" class="panel">
+    <div class="lbl">SALUD <span id="crouchTag" style="color:#e8c87a;margin-left:8px;"></span></div>
+    <div class="bar"><div id="hpbar"></div></div>
+  </div>
+  <div id="bottomright" class="panel">
+    <div id="wname">中正式步枪 · Chiang Kai-shek</div>
+    <div id="ammo">5 / 60</div>
+    <div class="hint">1 / 2 / 3 armas · R recargar · C agacharse · MAYÚS correr · M audio</div>
+  </div>
+  <div id="interactPrompt"></div>
+  <div id="msg"></div>
+</div>
+
+<div id="intro" class="overlay hidden">
+  <div class="card">
+    <div class="kicker">EJÉRCITO NACIONAL REVOLUCIONARIO · 29.º EJÉRCITO</div>
+    <h1>卢沟桥 1937</h1>
+    <div class="date">LA DEFENSA DEL PUENTE · INCIDENTE DEL 7 DE JULIO</div>
+    <p class="zhline">1937年7月7日 — 卢沟桥事变 — 抗日战争全面爆发</p>
+    <p>La noche del 7 de julio de 1937, tropas japonesas de la Guarnición de China en el norte realizaron maniobras junto al puente de Lugouqiao —conocido en Occidente como Puente de Marco Polo— y exigieron registrar la ciudad amurallada de Wanping. Ante la negativa china, comenzó el combate.</p>
+    <p>Eres un soldado del <b>219.º Regimiento, 37.ª División, 29.º Ejército</b>, al mando del coronel <b>Ji Xingwen (吉星文)</b>. Defiendes el puente con tu fusil Chiang Kai-shek, tu pistola Mauser C96 y, si el combate llega al cuerpo a cuerpo, tu dadao (大刀).</p>
+    <div class="facts">
+      Fidelidad histórica: armamento, uniformes, escenario y desenlace se ajustan a los hechos documentados. El resultado de la batalla no se puede cambiar: el puente cayó en manos japonesas, Beiping el 29 de julio y Tianjin el 30 de julio de 1937.
+    </div>
+    <button class="btn" id="startBtn">COMIENZA LA DEFENSA</button>
+    <div class="keys">
+      <b>WASD</b> mover · <b>Ratón</b> mirar · <b>Clic</b> disparar · <b>R</b> recargar · <b>C</b> agacharse · <b>E</b> suministros<br>
+      <b>1</b> fusil · <b>2</b> pistola · <b>3</b> dadao · <b>MAYÚS</b> correr · <b>M</b> silenciar · <b>ESC</b> pausa
+    </div>
+  </div>
+</div>
+
+<div id="pause" class="overlay hidden">
+  <div class="card" style="text-align:center">
+    <div class="kicker">PAUSA</div>
+    <h1>卢沟桥 1937</h1>
+    <p>La batalla está en suspenso.</p>
+    <div class="settingsRow">
+      <label for="sensRange"><span>Sensibilidad del ratón</span><span id="sensVal">1.0×</span></label>
+      <input type="range" id="sensRange" min="0.3" max="2.5" step="0.1" value="1.0">
+    </div>
+    <div>
+      <button class="btn" id="resumeBtn">CONTINUAR</button>
+      <button class="btn secondary" id="muteBtn">AUDIO: SÍ</button>
+      <button class="btn secondary" id="pauseRestartBtn">REINICIAR</button>
+    </div>
+  </div>
+</div>
+
+<div id="gameover" class="overlay hidden">
+  <div class="card">
+    <div class="kicker">CAÍDO EN COMBATE</div>
+    <h1>寸土不让</h1>
+    <p class="zhline">“Ni un palmo de tierra será cedido.”</p>
+    <p>Tu nombre se suma al de los defensores del puente de Lugouqiao. Aunque la posición se perdió, la guerra de resistencia (抗日战争) no terminó aquel día: duró ocho años y concluyó en 1945.</p>
+    <div class="statsBox" id="gameoverStats"></div>
+    <button class="btn" id="retryBtn">REINTENTAR</button>
+  </div>
+</div>
+
+<div id="outro" class="overlay hidden">
+  <div class="card">
+    <div class="kicker">DESENLACE HISTÓRICO</div>
+    <h1>El puente cayó</h1>
+    <p class="zhline">1937年7月 · 北平沦陷 · 天津沦陷</p>
+    <p>Has contenido el asalto todo lo que permitía la historia. El 219.º Regimiento resistió, pero la superioridad japonesa se impuso: el puente de Marco Polo fue tomado, Wanping cayó, Beiping (Pekín) se rindió el 29 de julio y Tianjin el 30 de julio de 1937.</p>
+    <p>Lo que empezó aquella noche fue la <b>Guerra de Resistencia del Pueblo Chino contra la Agresión Japonesa (抗日战争)</b>, ocho años de guerra que culminaron en 1945. Los hechos, aquí, no se han alterado.</p>
+    <div class="statsBox" id="outroStats"></div>
+    <button class="btn" id="againBtn">VOLVER A DEFENDER</button>
+  </div>
+</div>
+
+<script type="importmap">
+{ "imports": { "three": "./three.module.js" } }
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from './loaders/GLTFLoader.js';
+import { MeshoptDecoder } from './libs/meshopt_decoder.module.js';
+
+/* ============================================================
+   卢沟桥 1937 — historically grounded FPS built with Three.js
+   ============================================================ */
+
+const DECK_TOP = 6.6;
+const $ = (id) => document.getElementById(id);
+
+// ---------- renderer / scene / camera ----------
+const renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0d1424);
+scene.fog = new THREE.FogExp2(0x0d1424, 0.0048);
+
+const camera = new THREE.PerspectiveCamera(74, window.innerWidth/window.innerHeight, 0.1, 700);
+camera.rotation.order = 'YXZ';
+scene.add(camera);
+
+// ---------- lighting ----------
+scene.add(new THREE.AmbientLight(0x5a6488, 2.0));
+scene.add(new THREE.HemisphereLight(0x8fa6d8, 0x2b2a22, 1.1));
+const moonLight = new THREE.DirectionalLight(0xc8d6ff, 2.1);
+moonLight.position.set(-80, 110, -60);
+moonLight.castShadow = true;
+moonLight.shadow.mapSize.set(1024,1024);
+moonLight.shadow.camera.left = -90; moonLight.shadow.camera.right = 90;
+moonLight.shadow.camera.top = 36; moonLight.shadow.camera.bottom = -36;
+moonLight.shadow.camera.near = 10; moonLight.shadow.camera.far = 260;
+moonLight.shadow.bias = -0.0005;
+scene.add(moonLight);
+
+const moon = new THREE.Mesh(new THREE.SphereGeometry(11,24,16), new THREE.MeshBasicMaterial({color:0xdfe6ff}));
+moon.position.set(-150, 130, -260);
+scene.add(moon);
+
+// stars
+(() => {
+  const n = 700, pos = new Float32Array(n*3);
+  for(let i=0;i<n;i++){
+    pos[i*3] = (Math.random()-0.5)*700;
+    pos[i*3+1] = 60 + Math.random()*260;
+    pos[i*3+2] = (Math.random()-0.5)*700;
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  scene.add(new THREE.Points(g, new THREE.PointsMaterial({color:0xaebbd8, size:1.1, sizeAttenuation:false, transparent:true, opacity:0.75})));
+})();
+
+// ---------- small helpers ----------
+const mat = (color, rough=0.95, metal=0.02) => new THREE.MeshStandardMaterial({color, roughness:rough, metalness:metal});
+function box(w,h,d,color,x,y,z,parent=scene,opts={}){
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat(color, opts.rough, opts.metal));
+  m.position.set(x,y,z);
+  if(opts.cast) m.castShadow = true;
+  if(opts.receive) m.receiveShadow = true;
+  parent.add(m);
+  return m;
+}
+
+// ---------- GLB assets ----------
+const ASSETS = {};
+const MODEL_URLS = {
+  enemy:   './models/soldado_japones.glb',
+  lion:    './models/leon_piedra.glb',
+  rifle:   './models/fusil_chiang.glb',
+  pistol:  './models/mauser_c96_ref.glb',
+  sword:   './models/dadao_ref.glb',
+  chinese: './models/soldado_chino.glb',
+  gate:    './models/torre_wanping.glb'
+};
+const lionGroups = [];
+const defenders = [];
+const worldColliders = []; // meshes that block bullets / LoS
+const playerBoxes = [];    // { minX, maxX, minZ, maxZ } for player XZ collision
+
+function fitModel(src, targetLongest, opt={}){
+  const m = src.clone(true);
+  const bb0 = new THREE.Box3().setFromObject(m);
+  const size = bb0.getSize(new THREE.Vector3());
+  const longest = Math.max(size.x, size.y, size.z) || 1;
+  m.scale.setScalar(targetLongest / longest);
+  m.rotation.set(opt.rotX||0, opt.rotY||0, opt.rotZ||0);
+  m.updateMatrixWorld(true);
+  const bb = new THREE.Box3().setFromObject(m);
+  const c = bb.getCenter(new THREE.Vector3());
+  m.position.set(-c.x + (opt.dx||0), (opt.bottom ? -bb.min.y : -c.y) + (opt.dy||0), -c.z + (opt.dz||0));
+  m.traverse(o => { if(o.isMesh){ o.castShadow = !opt.noCastShadow; o.receiveShadow = true;
+    if(opt.tint && o.material){ o.material = o.material.clone(); o.material.color.set(opt.tint); o.material.roughness = 0.9; }
+    if(opt.tintLight && o.material){ o.material = o.material.clone(); const c=o.material.color; if(c.r+c.g+c.b>0.9) o.material.color.set(opt.tintLight); }
+  } });
+  m.userData.baseY = m.position.y;
+  return m;
+}
+
+function ghost(mesh){
+  mesh.material = mesh.material.clone();
+  mesh.material.transparent = true;
+  mesh.material.opacity = 0;
+  mesh.material.depthWrite = false;
+}
+
+// Precompute body-part masks once per shared geometry so spawning enemies never mutates shared attributes.
+function prepareLivingGeometry(geo){
+  if(geo.userData.livingBounds) return geo.userData.livingBounds;
+  const pos = geo.attributes.position;
+  geo.computeBoundingBox();
+  const bb = geo.boundingBox;
+  const size = bb.getSize(new THREE.Vector3());
+  const hipY = bb.min.y + size.y*0.42;
+  const shoulderY = bb.min.y + size.y*0.72;
+  const cx = (bb.min.x + bb.max.x)/2;
+  const halfW = Math.max(size.x*0.26, 0.03);
+  const part = new Float32Array(pos.count);
+  for(let i=0;i<pos.count;i++){
+    const x = pos.getX(i), y = pos.getY(i);
+    part[i] = (y < hipY) ? (x < cx ? 1 : 2)
+            : ((y > shoulderY && Math.abs(x-cx) > halfW) ? (x < cx ? 3 : 4) : 0);
+  }
+  geo.setAttribute('aPart', new THREE.BufferAttribute(part,1));
+  geo.userData.livingBounds = { hipY, shoulderY };
+  return geo.userData.livingBounds;
+}
+
+// Procedural "life": GPU vertex animation driven by body-part masks.
+// 0 = torso/head, 1 = left leg, 2 = right leg, 3 = left arm, 4 = right arm.
+function makeLiving(model){
+  const uniforms = [];
+  const materials = [];
+  model.traverse(o => {
+    if(!o.isMesh || !o.geometry.attributes.position) return;
+    const { hipY, shoulderY } = prepareLivingGeometry(o.geometry);
+    o.material = o.material.clone();
+    materials.push(o.material);
+    const u = {
+      uTime:{value:0}, uWalk:{value:0}, uAim:{value:0}, uHit:{value:0}, uDeath:{value:0},
+      uHip:{value:hipY}, uShoulder:{value:shoulderY}
+    };
+    o.material.onBeforeCompile = (sh) => {
+      Object.assign(sh.uniforms, u);
+      sh.vertexShader = sh.vertexShader
+        .replace('#include <common>', `#include <common>
+          attribute float aPart;
+          uniform float uTime, uWalk, uAim, uHit, uDeath, uHip, uShoulder;
+          vec2 rot2(vec2 v, float a){ float s=sin(a), c=cos(a); return vec2(c*v.x - s*v.y, s*v.x + c*v.y); }
+        `)
+        .replace('#include <begin_vertex>', `#include <begin_vertex>
+          float sw = sin(uTime*8.5) * uWalk;
+          float breath = sin(uTime*2.3) * 0.022;
+          if(aPart > 0.5 && aPart < 2.5){
+            float side = aPart < 1.5 ? -1.0 : 1.0;
+            vec2 d = rot2(vec2(position.y-uHip, position.z), sw*0.62*side);
+            transformed.y = uHip + d.x;
+            transformed.z = d.y;
+          } else if(aPart > 2.5){
+            float side = aPart < 3.5 ? -1.0 : 1.0;
+            vec2 d = rot2(vec2(position.y-uShoulder, position.z), -sw*0.48*side + uAim*0.55*side);
+            transformed.y = uShoulder + d.x;
+            transformed.z = d.y;
+          } else {
+            transformed.y += breath;
+          }
+          transformed.x += sin(uTime*61.0) * uHit * 0.09;
+          transformed.y -= uDeath * 0.72;
+        `);
+    };
+    o.material.customProgramCacheKey = () => 'living-v1';
+    uniforms.push(u);
+  });
+  return {
+    time: (t) => { for(const u of uniforms) u.uTime.value = t; },
+    set: (walk, aim, hit, death) => { for(const u of uniforms){
+      u.uWalk.value = walk; u.uAim.value = aim; u.uHit.value = hit; u.uDeath.value = death;
+    } },
+    dispose: () => { for(const m of materials) m.dispose(); }
+  };
+}
+
+// ---------- world ----------
+const waters = [];
+
+function makeStoneLion(){
+  const g = new THREE.Group();
+  const stone = mat(0x9b9587,1), dark = mat(0x6d685e,1);
+  const M = (geo,m,x,y,z,rx=0,ry=0,rz=0) => { const o=new THREE.Mesh(geo,m); o.position.set(x,y,z); o.rotation.set(rx,ry,rz); g.add(o); return o; };
+  M(new THREE.BoxGeometry(0.9,0.28,0.9), dark, 0,0.14,0);
+  const body=M(new THREE.SphereGeometry(0.34,10,8),stone,0,0.62,0); body.scale.set(1.35,0.95,0.95);
+  M(new THREE.SphereGeometry(0.26,10,8),stone,0,0.8,0.22);
+  M(new THREE.SphereGeometry(0.25,10,8),stone,0,1.03,0.3);
+  M(new THREE.TorusGeometry(0.24,0.085,6,10),dark,0,1.03,0.27);
+  for(const s of [-1,1]){
+    M(new THREE.ConeGeometry(0.075,0.17,5),stone,s*0.15,1.27,0.3);
+    M(new THREE.SphereGeometry(0.035,6,6),dark,s*0.1,1.06,0.52);
+  }
+  M(new THREE.SphereGeometry(0.06,6,6),dark,0,0.98,0.55);
+  const tail=M(new THREE.CylinderGeometry(0.05,0.07,0.42,6),stone,0,0.72,-0.45,0.9);
+  for(const [x,z] of [[-0.22,0.24],[0.22,0.24],[-0.22,-0.2],[0.22,-0.2]])
+    M(new THREE.CylinderGeometry(0.075,0.09,0.36,6),stone,x,0.38,z);
+  return g;
+}
+
+let supplyCrate = null;
+function buildBridge(){
+  // main deck
+  box(124,1.2,10,0x6e685d,0,6,0,scene,{cast:true,receive:true});
+  // stone parapets
+  worldColliders.push(
+    box(124,1.1,0.75,0x847d70,0,7.15,-4.72,scene,{cast:true,receive:true}),
+    box(124,1.1,0.75,0x847d70,0,7.15,4.72,scene,{cast:true,receive:true})
+  );
+  // piers + cutwaters
+  for(let x=-55;x<=55;x+=11){
+    box(2.7,8,9.4,0x605a51,x,2,0,scene,{cast:true,receive:true});
+    for(const z of [-5.3,5.3]){
+      const c = new THREE.Mesh(new THREE.ConeGeometry(1.6,4.2,4), mat(0x605a51,1));
+      c.rotation.x = z<0 ? Math.PI/2 : -Math.PI/2;
+      c.position.set(x,1.2,z); scene.add(c);
+    }
+  }
+  // arches under the spans
+  for(let x=-49.5;x<=49.5;x+=11){
+    const a = new THREE.Mesh(new THREE.TorusGeometry(4.95,0.6,6,20,Math.PI), mat(0x6b655a,1));
+    a.rotation.z = Math.PI; a.position.set(x,5.5,0); a.scale.z = 0.92; scene.add(a);
+  }
+  // the famous stone lions
+  for(let x=-56;x<=56;x+=8){
+    for(const z of [-4.72,4.72]){
+      const l = makeStoneLion();
+      l.position.set(x,7.7,z); l.rotation.y = z<0 ? 0 : Math.PI; l.scale.setScalar(1.02);
+      scene.add(l); lionGroups.push(l);
+    }
+  }
+  // hanging lanterns
+  let lightCount=0;
+  for(let x=-48;x<=48;x+=12){
+    for(const z of [-4.72,4.72]){
+      const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.26,10,8), new THREE.MeshBasicMaterial({color:0xffb056}));
+      lamp.position.set(x,8.4,z); scene.add(lamp);
+      if(lightCount<6 && (x===-48||x===0||x===48)){
+        const pl = new THREE.PointLight(0xffa95c, 18, 24, 2);
+        pl.position.set(x,8.2,z); scene.add(pl); lightCount++;
+      }
+    }
+  }
+  // paving slab joints on the deck
+  for(let x=-60;x<=60;x+=2.6) box(0.07,0.035,9.6,0x555047,x,DECK_TOP+0.02,0,scene);
+  // warm light from the Chinese firing position
+  const fill = new THREE.PointLight(0xffc98a, 45, 60, 2);
+  fill.position.set(32, 13, 0); scene.add(fill);
+  // sandbags near the Chinese position
+  const sand = mat(0x8c7f61,1);
+  for(let x=18;x<40;x+=2.1){
+    for(let row=0;row<2;row++){
+      const s = new THREE.Mesh(new THREE.SphereGeometry(0.72,8,6), sand);
+      s.scale.set(1.35,0.55,0.85);
+      s.position.set(x, DECK_TOP+0.15+row*0.6, -3.25 + (row%2)*0.25);
+      s.castShadow = true; s.receiveShadow = true; scene.add(s);
+      worldColliders.push(s);
+    }
+  }
+  playerBoxes.push({ minX: 17.2, maxX: 39.8, minZ: -3.9, maxZ: -2.35 });
+  supplyCrate = box(1.3,0.85,0.85,0x4b4130,32,DECK_TOP+0.42,3.2,scene,{cast:true,receive:true});
+  worldColliders.push(supplyCrate);
+  playerBoxes.push({ minX: 31.1, maxX: 32.9, minZ: 2.5, maxZ: 3.9 });
+}
+
+function buildWanping(){
+  const W = 74;
+  box(5.5,11,26,0x7a7060,W,5.5,-18,scene,{cast:true,receive:true});
+  box(5.5,11,26,0x7a7060,W,5.5,18,scene,{cast:true,receive:true});
+  for(let z=-30;z<=30;z+=2.2){
+    if(Math.abs(z)<7) continue;
+    box(5.5,1.25,1.25,0x6b6152,W,11.6,z,scene);
+  }
+  // gate
+  box(5.5,7,3,0x5b5245,W,3.5,-6.4,scene,{cast:true});
+  box(5.5,7,3,0x5b5245,W,3.5,6.4,scene,{cast:true});
+  box(5.5,4,12,0x5b5245,W,9,0,scene,{cast:true});
+  // Chinese style roofs
+  const roof = (r,h,y,color) => {
+    const o = new THREE.Mesh(new THREE.ConeGeometry(r,h,4), mat(color,0.9));
+    o.rotation.y = Math.PI/4; o.position.set(W,y,0); o.scale.z=0.77; scene.add(o);
+  };
+  // the GLB gate tower replaces the procedural roof above this base
+  for(const z of [-30,30]){
+    box(6.5,9,6.5,0x7a7060,W,4.5,z,scene,{cast:true});
+    const r = new THREE.Mesh(new THREE.ConeGeometry(5.2,3.2,4), mat(0x2d3940,0.9));
+    r.rotation.y=Math.PI/4; r.position.set(W,10,z); scene.add(r);
+  }
+  // town silhouettes
+  for(let i=0;i<12;i++){
+    const w=5+Math.random()*5, h=4+Math.random()*5;
+    box(w,h,w,0x474135,88+Math.random()*34,h/2,-28+Math.random()*56,scene);
+  }
+  // red lanterns by the gate
+  for(const z of [-4.5,4.5]){
+    const l = new THREE.Mesh(new THREE.SphereGeometry(0.5,10,8), new THREE.MeshBasicMaterial({color:0xff3322}));
+    l.position.set(W-3.2,8,z); scene.add(l);
+  }
+}
+
+function buildTerrain(){
+  // river along Z, bridge crosses along X
+  const geo = new THREE.PlaneGeometry(122,250,26,40);
+  const water = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({color:0x17262e, roughness:0.32, metalness:0.55}));
+  water.rotation.x = -Math.PI/2; water.position.y = 0; water.receiveShadow = true;
+  scene.add(water);
+  waters.push({mesh:water, base:Float32Array.from(geo.attributes.position.array)});
+
+  // banks
+  box(150,4,250,0x3b4230,-126,0,0,scene,{receive:true});
+  box(150,4,250,0x3b4230,150,0,0,scene,{receive:true});
+  // sparse trees
+  const trunk = mat(0x3b2f22,1), leaf = mat(0x273a26,1);
+  for(let i=0;i<26;i++){
+    const side = Math.random()<0.5?-1:1;
+    const x = side*(72+Math.random()*60), z=(Math.random()-0.5)*220;
+    const h=5+Math.random()*5;
+    const t=new THREE.Mesh(new THREE.CylinderGeometry(0.25,0.4,h,6),trunk); t.position.set(x,h/2,z); scene.add(t);
+    const c=new THREE.Mesh(new THREE.ConeGeometry(2.4,h*0.8,7),leaf); c.position.set(x,h*0.95,z); scene.add(c);
+  }
+  // distant western buildings
+  for(let i=0;i<8;i++){
+    const w=6+Math.random()*6,h=5+Math.random()*6;
+    box(w,h,w,0x383b35,-85-Math.random()*40,h/2,(Math.random()-0.5)*110,scene);
+  }
+}
+
+function buildWorld(){ buildTerrain(); buildBridge(); buildWanping(); }
+buildWorld();
+
+// ---------- player state ----------
+const player = {
+  pos: new THREE.Vector3(34, DECK_TOP+1.7, 0),
+  hp: 100, yaw: Math.PI/2, pitch: -0.02,
+  vel: new THREE.Vector3()
+};
+camera.position.copy(player.pos);
+
+let yaw = player.yaw, pitch = player.pitch;
+let running = false, alive = false, paused = false;
+let crouching = false, eyeHeight = 1.7, mouseSens = 1.0, muted = false, supplyCooldown = 0;
+const stats = { shots: 0, hits: 0, headshots: 0, kills: 0, startTime: 0 };
+
+function resolvePlayerCollision(nx, nz){
+  const r = 0.38;
+  let x = Math.max(-58, Math.min(66, nx));
+  let z = Math.max(-4.0, Math.min(4.0, nz));
+  const blocked = (px, pz) => {
+    for(const b of playerBoxes){
+      if(px + r > b.minX && px - r < b.maxX && pz + r > b.minZ && pz - r < b.maxZ) return true;
+    }
+    return false;
+  };
+  if(!blocked(x, player.pos.z)) player.pos.x = x;
+  if(!blocked(player.pos.x, z)) player.pos.z = z;
+}
+
+// ---------- input ----------
+const keys = {};
+addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if(e.code==='Digit1') switchWeapon('rifle');
+  if(e.code==='Digit2') switchWeapon('pistol');
+  if(e.code==='Digit3') switchWeapon('sword');
+  if(e.code==='KeyR') startReload();
+  if(e.code==='KeyC' && alive && !paused && !e.repeat){
+    crouching = !crouching;
+    $('crouchTag').textContent = crouching ? '[AGACHADO]' : '';
+  }
+  if(e.code==='KeyM' && !e.repeat) toggleMute();
+  if(e.code==='KeyE' && alive && !paused && !e.repeat) tryUseSupply();
+});
+addEventListener('keyup', e => { keys[e.code] = false; });
+addEventListener('mousemove', e => {
+  if(document.pointerLockElement !== renderer.domElement) return;
+  yaw   -= e.movementX * 0.0022 * mouseSens;
+  pitch -= e.movementY * 0.0022 * mouseSens;
+  pitch = Math.max(-1.35, Math.min(1.35, pitch));
+});
+addEventListener('mousedown', e => {
+  if(alive && !paused && document.pointerLockElement === renderer.domElement && e.button===0) shoot();
+});
+document.addEventListener('pointerlockchange', () => {
+  if(alive && !paused && document.pointerLockElement !== renderer.domElement) pauseGame();
+});
+addEventListener('resize', () => {
+  camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// ---------- audio (synthesized gunfire & SFX) ----------
+let actx = null;
+function noiseBurst(dur, vol, freq){
+  if(!actx || muted) return;
+  const len = Math.floor(actx.sampleRate*dur);
+  const buf = actx.createBuffer(1,len,actx.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i=0;i<len;i++) d[i] = (Math.random()*2-1)*Math.pow(1-i/len, 2.6);
+  const src = actx.createBufferSource(); src.buffer = buf;
+  const f = actx.createBiquadFilter(); f.type='lowpass'; f.frequency.value=freq;
+  const g = actx.createGain(); g.gain.value=vol;
+  src.connect(f); f.connect(g); g.connect(actx.destination); src.start();
+}
+function tone(freq, dur, vol=0.15, type='sine', slideTo=null){
+  if(!actx || muted) return;
+  const now = actx.currentTime;
+  const osc = actx.createOscillator();
+  const g = actx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, now);
+  if(slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, now+dur);
+  g.gain.setValueAtTime(vol, now);
+  g.gain.exponentialRampToValueAtTime(0.001, now+dur);
+  osc.connect(g); g.connect(actx.destination);
+  osc.start(now); osc.stop(now+dur);
+}
+const playDryFire  = () => tone(1100, 0.03, 0.12, 'square');
+const playReload   = () => { tone(520, 0.04, 0.11, 'square'); setTimeout(()=>tone(760, 0.05, 0.12, 'square'), 220); };
+const playHit      = (hs) => tone(hs ? 1350 : 320, 0.07, hs ? 0.22 : 0.16, hs ? 'triangle' : 'sine');
+const playHurt     = () => noiseBurst(0.14, 0.32, 380);
+const playSupply   = () => { tone(520, 0.09, 0.18, 'triangle'); setTimeout(()=>tone(780, 0.14, 0.18, 'triangle'), 90); };
+const playWaveHorn = () => { tone(293, 0.35, 0.12, 'sawtooth'); setTimeout(()=>tone(440, 0.55, 0.14, 'sawtooth'), 320); };
+function toggleMute(){
+  muted = !muted;
+  $('muteBtn').textContent = muted ? 'AUDIO: NO' : 'AUDIO: SÍ';
+  showMsg(muted ? 'AUDIO SILENCIADO' : 'AUDIO ACTIVADO', 1.0);
+}
+
+// ---------- weapons / viewmodel ----------
+const WEAPONS = {
+  rifle: { name:'中正式步枪 · Chiang Kai-shek', clip:5, reserve:60, ammo:5, dmg:58, rate:0.85, reload:1.9, spread:0.010, melee:false },
+  pistol:{ name:'毛瑟 C96 · Mauser C96',       clip:7, reserve:28, ammo:7, dmg:40, rate:0.34, reload:1.3, spread:0.020, melee:false },
+  sword: { name:'大刀 · Dadao',                 clip:1, reserve:0,  ammo:1, dmg:120,rate:0.75, reload:0,   spread:0,     melee:true  }
+};
+let current = 'rifle', fireTimer = 0, reloadTimer = 0, flashTimer = 0, recoil = 0, meleeSwing = 0;
+
+function buildViewModels(){
+  const vm = new THREE.Group(); camera.add(vm);
+  const wood = mat(0x6b4423,0.85), steel = mat(0x2c3033,0.5,0.6), glove = mat(0x4b5338,1);
+
+  const rifle = new THREE.Group();
+  box(0.11,0.14,1.05,0x6b4423,0,-0.05,0.18,rifle);
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.026,0.026,0.98,8),steel);
+  barrel.rotation.x=Math.PI/2; barrel.position.set(0,0.02,-0.62); rifle.add(barrel);
+  box(0.085,0.19,0.13,0x2c3033,0,-0.17,-0.05,rifle);
+  const bay = new THREE.Mesh(new THREE.ConeGeometry(0.038,0.42,4),steel);
+  bay.rotation.x=-Math.PI/2; bay.position.set(0,0.02,-1.3); rifle.add(bay);
+  box(0.14,0.14,0.32,0x4b5338,-0.02,-0.17,-0.48,rifle);
+  box(0.14,0.14,0.3,0x4b5338,0,-0.2,0.3,rifle);
+  const flashR = new THREE.Mesh(new THREE.ConeGeometry(0.07,0.28,6), new THREE.MeshBasicMaterial({color:0xffd36b,transparent:true,opacity:0.8,depthWrite:false}));
+  flashR.rotation.x=-Math.PI/2; flashR.position.set(0,0.02,-0.72); flashR.visible=false; flashR.userData.isFlash=true; rifle.add(flashR);
+  rifle.position.set(0.34,-0.3,-0.5); rifle.rotation.y=-0.05; vm.add(rifle);
+
+  const pistol = new THREE.Group();
+  box(0.1,0.13,0.36,0x2c3033,0,0,0,pistol);
+  box(0.09,0.22,0.11,0x6b4423,0,-0.16,0.06,pistol);
+  const pb = new THREE.Mesh(new THREE.CylinderGeometry(0.028,0.028,0.4,8),steel);
+  pb.rotation.x=Math.PI/2; pb.position.set(0,0.04,-0.3); pistol.add(pb);
+  box(0.14,0.14,0.26,0x4b5338,0,-0.14,0.06,pistol);
+  const flashP = new THREE.Mesh(new THREE.ConeGeometry(0.1,0.32,6), new THREE.MeshBasicMaterial({color:0xffd36b,transparent:true,opacity:0.85,depthWrite:false}));
+  flashP.rotation.x=-Math.PI/2; flashP.position.set(0,0.04,-0.56); flashP.visible=false; flashP.userData.isFlash=true; pistol.add(flashP);
+  pistol.position.set(0.36,-0.32,-0.45); pistol.rotation.y=-0.05; pistol.visible=false; vm.add(pistol);
+
+  const sword = new THREE.Group();
+  const blade = new THREE.Mesh(new THREE.BoxGeometry(0.07,0.92,0.028), steel);
+  blade.position.set(0,0.58,-0.1); blade.rotation.x=-0.35; sword.add(blade);
+  const tip = new THREE.Mesh(new THREE.ConeGeometry(0.05,0.22,4), steel);
+  tip.position.set(0,1.08,-0.19); tip.rotation.x=Math.PI-0.35; sword.add(tip);
+  box(0.1,0.28,0.09,0x3c2b1e,0,0.08,0.02,sword);
+  box(0.26,0.05,0.12,0x2c3033,0,0.22,0.02,sword);
+  box(0.14,0.14,0.24,0x4b5338,0,-0.08,0.05,sword);
+  sword.position.set(0.38,-0.4,-0.45); sword.rotation.set(0.35,-0.12,-0.25); sword.visible=false; vm.add(sword);
+
+  return {vm, groups:{rifle,pistol,sword}, flashes:{rifle:flashR,pistol:flashP}};
+}
+const vmRes = buildViewModels();
+
+function switchWeapon(name){
+  if(!alive || name===current) return;
+  current = name; fireTimer = 0; reloadTimer = 0; meleeSwing = 0;
+  for(const k in vmRes.groups) vmRes.groups[k].visible = (k===name);
+  showMsg(WEAPONS[name].name, 1.1);
+  updateHUD();
+}
+
+function startReload(){
+  const w = WEAPONS[current];
+  if(!alive || w.melee || reloadTimer>0 || w.ammo>=w.clip || w.reserve<=0) return;
+  reloadTimer = w.reload;
+  playReload();
+  showMsg('RECARGANDO…', w.reload);
+}
+
+// ---------- enemies ----------
+const enemies = [];
+const enemyHitboxes = [];
+const effects = [];
+
+function makeEnemy(){
+  const g = new THREE.Group();
+  const uni = mat(0x555c40,1), gear = mat(0x3a4035,1), steel = mat(0x454b50,0.75,0.35), skin = mat(0xb89774,1);
+  const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8,1.05,0.46),uni); torso.position.y=1.36; torso.castShadow=true; g.add(torso);
+  box(0.72,0.36,0.42,0x3a4035,0,0.8,0,g);
+  const head = new THREE.Mesh(new THREE.SphereGeometry(0.25,10,8),skin); head.position.y=2.1; head.castShadow=true; g.add(head);
+  const helm = new THREE.Mesh(new THREE.SphereGeometry(0.31,10,8,0,Math.PI*2,0,Math.PI/2),steel); helm.position.y=2.17; g.add(helm);
+  const legL = new THREE.Mesh(new THREE.BoxGeometry(0.26,0.86,0.3),uni); legL.position.set(-0.2,0.4,0); g.add(legL);
+  const legR = legL.clone(); legR.position.x=0.2; g.add(legR);
+  const armL = new THREE.Mesh(new THREE.BoxGeometry(0.22,0.85,0.24),uni); armL.position.set(-0.55,1.42,0.05); g.add(armL);
+  const armR = armL.clone(); armR.position.x=0.55; g.add(armR);
+  const rifle = new THREE.Mesh(new THREE.BoxGeometry(0.1,0.1,1.45),mat(0x4a3524,0.9));
+  rifle.position.set(0.32,1.48,0.5); g.add(rifle);
+  // invisible hitboxes + real GLB soldier
+  [...g.children].forEach(ghost);
+  let model = null, living = null;
+  if(ASSETS.enemy){
+    model = fitModel(ASSETS.enemy, 2.55, {bottom:true, rotY:Math.PI, tint:0x8f9478});
+    g.add(model);
+    living = makeLiving(model);
+  }
+  g.userData = { torso, head, legL, legR, hp:100, fireT:1+Math.random()*1.5, dead:false, deathT:1,
+                 model, living, walk:0, aim:0, hitT:0, fireAnim:0, phase:Math.random()*6.28 };
+  torso.userData.enemy = g; head.userData.enemy = g;
+  return g;
+}
+
+function spawnEnemy(){
+  const e = makeEnemy();
+  e.position.set(-52 - Math.random()*7, DECK_TOP, (Math.random()-0.5)*6.4);
+  scene.add(e); enemies.push(e);
+  enemyHitboxes.push(e.userData.torso, e.userData.head);
+}
+
+// ---------- combat effects ----------
+function spawnTracer(a,b,color=0xffd27a){
+  const geo = new THREE.BufferGeometry().setFromPoints([a.clone(),b.clone()]);
+  const line = new THREE.Line(geo, new THREE.LineBasicMaterial({color, transparent:true, opacity:0.95, depthWrite:false}));
+  scene.add(line);
+  effects.push({obj:line, life:0.13, max:0.13, line:true});
+}
+function spawnImpact(p, color){
+  const s = new THREE.Mesh(new THREE.SphereGeometry(0.13,6,5), new THREE.MeshBasicMaterial({color,transparent:true,opacity:0.95,depthWrite:false}));
+  s.position.copy(p); scene.add(s);
+  effects.push({obj:s, life:0.28, max:0.28, line:false});
+}
+function showMsg(txt, time=1.5){
+  const el = $('msg'); el.textContent = txt; el.style.opacity = 1;
+  clearTimeout(showMsg._t);
+  showMsg._t = setTimeout(()=>{ el.style.opacity = 0; }, time*1000);
+}
+function flashHitmarker(headshot){
+  const hm = $('hitmarker');
+  hm.style.color = headshot ? '#e8c87a' : '#f2ead6';
+  hm.style.opacity = 1;
+  clearTimeout(flashHitmarker._t);
+  flashHitmarker._t = setTimeout(()=>{ hm.style.opacity = 0; }, 110);
+}
+function flashDamage(){
+  const df = $('damageFlash');
+  df.style.opacity = 1;
+  clearTimeout(flashDamage._t);
+  flashDamage._t = setTimeout(()=>{ df.style.opacity = 0; }, 180);
+}
+
+const raycaster = new THREE.Raycaster();
+function muzzlePos(){
+  const f = vmRes.flashes[current];
+  if(f) { f.updateWorldMatrix(true,false); return f.getWorldPosition(new THREE.Vector3()); }
+  return camera.position.clone().add(new THREE.Vector3(0.3,-0.25,-0.6).applyQuaternion(camera.quaternion));
+}
+
+function shoot(){
+  const w = WEAPONS[current];
+  if(reloadTimer>0 || fireTimer>0) return;
+  if(!w.melee && w.ammo<=0){ playDryFire(); startReload(); return; }
+  fireTimer = w.rate;
+  if(!w.melee){ w.ammo--; stats.shots++; recoil = 1; }
+  else { meleeSwing = 1.0; }
+  noiseBurst(w.melee?0.09:0.13, w.melee?0.18:0.4, w.melee?900:1800);
+  const f = vmRes.flashes[current];
+  if(f){ f.visible = true; flashTimer = 0.055; }
+  const spread = w.spread;
+  raycaster.setFromCamera(new THREE.Vector2((Math.random()-0.5)*spread,(Math.random()-0.5)*spread), camera);
+  raycaster.far = w.melee ? 3.4 : 200;
+  const hits = raycaster.intersectObjects(enemyHitboxes, false);
+  const obsHits = raycaster.intersectObjects(worldColliders, false);
+  const obsDist = obsHits.length ? obsHits[0].distance : Infinity;
+  let end;
+  if(hits.length && hits[0].distance < obsDist){
+    const h = hits[0]; end = h.point;
+    const e = h.object.userData.enemy;
+    if(e && !e.userData.dead){
+      const headshot = (h.object===e.userData.head);
+      const dmg = headshot ? w.dmg*2 : w.dmg;
+      e.userData.hp -= dmg;
+      e.userData.hitT = 0.3;
+      stats.hits++;
+      if(headshot) stats.headshots++;
+      flashHitmarker(headshot);
+      playHit(headshot);
+      spawnImpact(h.point, 0xb82b22);
+      if(e.userData.hp<=0) killEnemy(e);
+    }
+  } else if(obsDist < raycaster.far){
+    end = obsHits[0].point;
+    spawnImpact(end, 0xc8b896);
+  } else {
+    end = camera.position.clone().add(new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion).multiplyScalar(w.melee?3:140));
+  }
+  if(!w.melee) spawnTracer(muzzlePos(), end);
+  updateHUD();
+}
+
+function killEnemy(e){
+  e.userData.dead = true; e.userData.deathT = 1.0;
+  stats.kills++;
+  const t = e.userData.torso, h = e.userData.head;
+  let i = enemyHitboxes.indexOf(t); if(i>=0) enemyHitboxes.splice(i,1);
+  i = enemyHitboxes.indexOf(h); if(i>=0) enemyHitboxes.splice(i,1);
+  showMsg('敌兵击倒 · ABATIDO', 0.8);
+}
+
+function enemyFire(e, dist){
+  e.userData.fireAnim = 0.25;
+  const from = new THREE.Vector3();
+  e.userData.torso.getWorldPosition(from); from.y += 0.15;
+  const target = player.pos.clone().add(new THREE.Vector3(0, -0.15, 0));
+  const dirToPlayer = new THREE.Vector3().subVectors(target, from);
+  const losDist = dirToPlayer.length() || 1;
+  dirToPlayer.divideScalar(losDist);
+  raycaster.set(from, dirToPlayer);
+  raycaster.far = losDist;
+  const obs = raycaster.intersectObjects(worldColliders, false);
+  if(obs.length){
+    spawnImpact(obs[0].point, 0xc8b896);
+    spawnTracer(from, obs[0].point, 0xff9c5b);
+    noiseBurst(0.1, 0.12, 1400);
+    return;
+  }
+  const to = player.pos.clone();
+  to.x += (Math.random()-0.5)*3.2;
+  to.y += (Math.random()-0.5)*1.8;
+  spawnTracer(from, to, 0xff9c5b);
+  noiseBurst(0.1, 0.12, 1400);
+  const hitChance = (crouching ? 0.24 : 0.42) * Math.max(0.35, 1 - dist/38);
+  if(Math.random() < hitChance && dist < 34){
+    player.hp -= 7 + Math.random()*7;
+    flashDamage();
+    playHurt();
+    if(player.hp<=0){ player.hp=0; die(); }
+    updateHUD();
+  }
+}
+
+function tryUseSupply(){
+  const d = Math.hypot(player.pos.x - 32, player.pos.z - 3.2);
+  if(d >= 3.4 || supplyCooldown > 0) return;
+  player.hp = Math.min(100, player.hp + 35);
+  WEAPONS.rifle.reserve = Math.min(90, WEAPONS.rifle.reserve + 15);
+  WEAPONS.pistol.reserve = Math.min(56, WEAPONS.pistol.reserve + 14);
+  supplyCooldown = 15;
+  playSupply();
+  showMsg('SUMINISTROS Y VENDAJES RECOGIDOS', 1.6);
+  updateHUD();
+}
+
+// ---------- waves / game flow ----------
+const WAVES = [5,7,9];
+let wave = 0, toSpawn = 0, spawnTimer = 0;
+
+function startWave(n){
+  wave = n; toSpawn = WAVES[n]; spawnTimer = 0.6;
+  $('wave').textContent = (n+1);
+  playWaveHorn();
+  showMsg(`第${n+1}波 · OLEADA ${n+1}`, 2);
+  updateHUD();
+}
+
+function renderStats(containerId){
+  const acc = stats.shots ? Math.round(stats.hits*100/stats.shots) : 0;
+  const sec = Math.max(1, Math.round((performance.now() - stats.startTime)/1000));
+  $(containerId).innerHTML = `
+    <div>BAJAS<b>${stats.kills}</b></div>
+    <div>A LA CABEZA<b>${stats.headshots}</b></div>
+    <div>PRECISIÓN<b>${acc}%</b></div>
+    <div>TIEMPO<b>${sec}s</b></div>
+  `;
+}
+
+function beginGame(){
+  // reset state
+  enemies.forEach(e=>{ if(e.userData.living) e.userData.living.dispose(); scene.remove(e); });
+  enemies.length=0; enemyHitboxes.length=0;
+  effects.forEach(f=>{ scene.remove(f.obj); f.obj.geometry.dispose(); f.obj.material.dispose(); });
+  effects.length=0;
+  crouching=false; eyeHeight=1.7; $('crouchTag').textContent=''; supplyCooldown=0;
+  stats.shots=0; stats.hits=0; stats.headshots=0; stats.kills=0; stats.startTime=performance.now();
+  player.pos.set(34, DECK_TOP+1.7, 0); player.hp=100; yaw=Math.PI/2; pitch=-0.02;
+  for(const k in WEAPONS){ WEAPONS[k].ammo=WEAPONS[k].clip; WEAPONS[k].reserve=(k==='rifle'?60:k==='pistol'?28:0); }
+  current='rifle'; fireTimer=0; reloadTimer=0; meleeSwing=0;
+  for(const k in vmRes.groups) vmRes.groups[k].visible=(k==='rifle');
+  alive=true; paused=false;
+  $('intro').classList.add('hidden'); $('gameover').classList.add('hidden');
+  $('outro').classList.add('hidden'); $('pause').classList.add('hidden');
+  $('hud').style.display='block';
+  if(actx && actx.state==='suspended') actx.resume();
+  try { const p = renderer.domElement.requestPointerLock(); if(p && p.catch) p.catch(()=>{}); } catch(e) { /* embedded browsers may deny pointer lock */ }
+  startWave(0);
+  updateHUD();
+}
+
+function pauseGame(){
+  if(!alive||paused) return;
+  paused=true; $('pause').classList.remove('hidden');
+  if(document.pointerLockElement) document.exitPointerLock();
+}
+function resumeGame(){
+  if(!alive) return;
+  paused=false; $('pause').classList.add('hidden');
+  try { const p = renderer.domElement.requestPointerLock(); if(p && p.catch) p.catch(()=>{}); } catch(e) {}
+}
+function die(){
+  alive=false;
+  renderStats('gameoverStats');
+  $('hud').style.display='none'; $('gameover').classList.remove('hidden');
+  if(document.pointerLockElement) document.exitPointerLock();
+}
+function victory(){
+  alive=false;
+  renderStats('outroStats');
+  $('hud').style.display='none'; $('outro').classList.remove('hidden');
+  if(document.pointerLockElement) document.exitPointerLock();
+}
+
+function updateHUD(){
+  const w = WEAPONS[current];
+  $('hpbar').style.width = player.hp + '%';
+  $('wname').textContent = w.name;
+  $('ammo').textContent = w.melee ? '∞' : `${w.ammo} / ${w.reserve}`;
+  const remaining = toSpawn + enemies.filter(e=>!e.userData.dead).length;
+  $('enemyCount').textContent = remaining;
+}
+
+// ---------- main loop ----------
+const clock = new THREE.Clock();
+let frameCount = 0;
+function animate(){
+  requestAnimationFrame(animate);
+  frameCount++;
+  const dt = Math.min(clock.getDelta(), 0.05);
+  const t = clock.elapsedTime;
+
+  // water ripple
+  for(const w of waters){
+    const arr = w.mesh.geometry.attributes.position.array;
+    for(let i=0;i<arr.length;i+=3){
+      arr[i+2] = w.base[i+2] + Math.sin(t*1.1 + w.base[i]*0.12 + w.base[i+2]*0.05)*0.28;
+    }
+    w.mesh.geometry.attributes.position.needsUpdate = true;
+  }
+
+  // Chinese defenders breathe, shift weight and look around
+  for(const d of defenders){
+    if(!d.living) continue;
+    d.living.time(t+d.phase);
+    d.living.set(0,0,0,d.fallen?1:0);
+    if(!d.fallen) d.s.rotation.y = d.baseYaw + Math.sin(t*0.65+d.phase)*0.14;
+  }
+
+  // camera orientation + movement
+  camera.rotation.y = yaw; camera.rotation.x = pitch;
+  if(alive && !paused){
+    if(supplyCooldown>0) supplyCooldown = Math.max(0, supplyCooldown - dt);
+    running = !!(keys['ShiftLeft']||keys['ShiftRight']);
+    const speed = crouching ? 4.2 : (running ? 11 : 6.6);
+    const fwd = new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
+    const right = new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
+    const move = new THREE.Vector3();
+    if(keys['KeyW']) move.add(fwd);
+    if(keys['KeyS']) move.sub(fwd);
+    if(keys['KeyD']) move.add(right);
+    if(keys['KeyA']) move.sub(right);
+    if(move.lengthSq()>0){
+      move.normalize().multiplyScalar(speed*dt);
+      resolvePlayerCollision(player.pos.x + move.x, player.pos.z + move.z);
+    }
+    eyeHeight += ((crouching ? 1.02 : 1.7) - eyeHeight) * Math.min(1, dt * 10);
+    player.pos.y = DECK_TOP + eyeHeight;
+    camera.position.copy(player.pos);
+
+    const promptEl = $('interactPrompt');
+    if(Math.hypot(player.pos.x - 32, player.pos.z - 3.2) < 3.4){
+      promptEl.textContent = supplyCooldown > 0
+        ? `Suministros disponibles en ${Math.ceil(supplyCooldown)}s`
+        : '[E] Tomar munición y vendajes (+35 Salud)';
+      promptEl.style.opacity = 1;
+    } else {
+      promptEl.style.opacity = 0;
+    }
+  } else {
+    $('interactPrompt').style.opacity = 0;
+  }
+
+  // weapon timers & viewmodel animation
+  if(fireTimer>0) fireTimer-=dt;
+  if(flashTimer>0){ flashTimer-=dt; if(flashTimer<=0){ for(const f of Object.values(vmRes.flashes)) f.visible=false; } }
+  if(reloadTimer>0){
+    reloadTimer-=dt;
+    if(reloadTimer<=0){
+      const w=WEAPONS[current];
+      const need=w.clip-w.ammo, give=Math.min(need,w.reserve);
+      w.ammo+=give; w.reserve-=give; updateHUD();
+    }
+  }
+  const isMoving = alive && !paused && (keys['KeyW']||keys['KeyS']||keys['KeyA']||keys['KeyD']);
+  recoil *= Math.pow(0.001, dt);
+  if(meleeSwing>0) meleeSwing = Math.max(0, meleeSwing - dt*3.2);
+  const swingAng = Math.sin(meleeSwing * Math.PI);
+  vmRes.groups.sword.rotation.set(0.35 + swingAng*1.15, -0.12 - swingAng*0.8, -0.25 + swingAng*0.5);
+  vmRes.vm.position.z = -recoil*0.12 - swingAng*0.14;
+  vmRes.vm.position.y = -Math.abs(Math.sin(t*(running&&!crouching?11:6.6)))*0.012*(isMoving?1:0) - (reloadTimer>0 ? 0.08 : 0);
+  vmRes.vm.rotation.x = reloadTimer>0 ? -0.35 : 0;
+
+  // enemy AI
+  if(alive && !paused){
+    const tmpLook = new THREE.Object3D();
+    for(const e of enemies){
+      const u = e.userData;
+      if(u.dead){
+        u.deathT -= dt;
+        e.rotation.z = Math.min(Math.PI/2.3, e.rotation.z + dt*2.6);
+        e.position.y -= dt*0.45;
+        if(u.living){ u.living.time(t+u.phase); u.living.set(0,0,0,Math.min(1,1-u.deathT)); }
+        if(u.deathT<=0){ if(u.living) u.living.dispose(); scene.remove(e); }
+        continue;
+      }
+      const d = e.position.distanceTo(player.pos);
+      // smooth turn toward the player instead of snapping
+      tmpLook.position.copy(e.position);
+      tmpLook.lookAt(player.pos.x, e.position.y, player.pos.z);
+      e.quaternion.slerp(tmpLook.quaternion, Math.min(1, dt*5));
+      const moving = d > 13;
+      if(moving){
+        const dir = new THREE.Vector3().subVectors(player.pos,e.position); dir.y=0; dir.normalize();
+        e.position.addScaledVector(dir, dt*3.3);
+      }
+      // gentle separation so enemies don't stack into one spot
+      for(const other of enemies){
+        if(other===e || other.userData.dead) continue;
+        const dx = e.position.x - other.position.x, dz = e.position.z - other.position.z;
+        const distSq = dx*dx + dz*dz;
+        if(distSq > 0.001 && distSq < 2.56){
+          const push = (1.6 - Math.sqrt(distSq)) * dt * 2.2;
+          const inv = 1 / Math.sqrt(distSq);
+          e.position.x += dx * inv * push;
+          e.position.z += dz * inv * push;
+        }
+      }
+      e.position.y = DECK_TOP;
+      e.position.x = Math.max(-60, Math.min(62, e.position.x));
+      e.position.z = Math.max(-3.5, Math.min(3.5, e.position.z));
+
+      u.walk += ((moving?1:0)-u.walk)*Math.min(1,dt*5);
+      u.aim  += ((d<26?1:0)-u.aim)*Math.min(1,dt*4);
+      u.hitT = Math.max(0,u.hitT-dt);
+      u.fireAnim = Math.max(0,u.fireAnim-dt);
+      if(u.living){
+        u.living.time(t+u.phase);
+        u.living.set(u.walk, u.aim + u.fireAnim*1.6, u.hitT*3, 0);
+      }
+      e.rotation.z = Math.sin(t*4.25+u.phase)*0.04*u.walk;
+      u.fireT -= dt;
+      if(u.fireT<=0 && d<26){
+        u.fireT = 1.3 + Math.random()*1.6;
+        enemyFire(e,d);
+      }
+    }
+    for(let i=enemies.length-1;i>=0;i--) if(enemies[i].userData.deathT<=0) enemies.splice(i,1);
+
+    // spawning / waves
+    if(toSpawn>0){
+      spawnTimer-=dt;
+      if(spawnTimer<=0){ spawnEnemy(); toSpawn--; spawnTimer=1.1; updateHUD(); }
+    } else if(enemies.length===0){
+      if(wave<WAVES.length-1) startWave(wave+1);
+      else victory();
+    }
+  }
+
+  // effects
+  for(let i=effects.length-1;i>=0;i--){
+    const fx=effects[i]; fx.life-=dt;
+    if(fx.line) fx.obj.material.opacity = Math.max(0, fx.life/fx.max)*0.95;
+    else { fx.obj.material.opacity = Math.max(0,fx.life/fx.max); fx.obj.scale.multiplyScalar(1+dt*2); }
+    if(fx.life<=0){ scene.remove(fx.obj); fx.obj.geometry.dispose(); fx.obj.material.dispose(); effects.splice(i,1); }
+  }
+
+  renderer.render(scene, camera);
+}
+animate();
+
+// ---------- capture helper (composites the 3D view + HUD into one PNG) ----------
+window.__capture = () => {
+  renderer.render(scene, camera);
+  const w = renderer.domElement.width, h = renderer.domElement.height;
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const x = c.getContext('2d');
+  x.drawImage(renderer.domElement, 0, 0, w, h);
+  x.textBaseline = 'top';
+  x.fillStyle = 'rgba(0,0,0,0.42)'; x.fillRect(0, 0, w, 108);
+  x.font = 'bold 28px "Microsoft YaHei", sans-serif'; x.fillStyle = '#e8c87a';
+  x.fillText('卢沟桥 · 七七事变', 26, 18);
+  x.font = '12px sans-serif'; x.fillStyle = '#b9b4a6';
+  x.fillText('PUENTE DE MARCO POLO — 7 JULIO 1937', 26, 56);
+  x.font = '13px sans-serif'; x.fillStyle = '#d8d2c4';
+  x.fillText('OBJETIVO: contener el asalto japonés · Oleada ' + $('wave').textContent + '/3', 26, 82);
+  x.strokeStyle = 'rgba(242,234,214,0.9)'; x.lineWidth = 2;
+  x.beginPath();
+  x.moveTo(w/2-12,h/2); x.lineTo(w/2-5,h/2); x.moveTo(w/2+5,h/2); x.lineTo(w/2+12,h/2);
+  x.moveTo(w/2,h/2-12); x.lineTo(w/2,h/2-5); x.moveTo(w/2,h/2+5); x.lineTo(w/2,h/2+12);
+  x.stroke();
+  x.fillStyle = '#b9b4a6'; x.font = '11px sans-serif'; x.fillText('SALUD', 28, h-52);
+  x.fillStyle = '#1a1a18'; x.fillRect(28, h-34, 220, 10);
+  x.fillStyle = '#d5a23c'; x.fillRect(28, h-34, 220*player.hp/100, 10);
+  x.textAlign = 'right';
+  x.fillStyle = '#c9c2b2'; x.font = '13px sans-serif'; x.fillText('ENEMIGOS ' + $('enemyCount').textContent, w-28, 32);
+  x.fillStyle = '#e8c87a'; x.font = '15px sans-serif'; x.fillText(WEAPONS[current].name, w-30, h-70);
+  x.fillStyle = '#f2ead6'; x.font = 'bold 32px monospace';
+  x.fillText(WEAPONS[current].melee ? '∞' : (WEAPONS[current].ammo + ' / ' + WEAPONS[current].reserve), w-30, h-40);
+  x.textAlign = 'left';
+  return c.toDataURL('image/png');
+};
+window.__state = () => ({ alive, paused, hp: player.hp, wave, ammo: WEAPONS[current].ammo, enemies: enemies.filter(e=>!e.userData.dead).length, frames: frameCount, toSpawn, crouching, stats: {...stats} });
+window.__demo = {
+  positions: () => enemies.map(e => [+e.position.x.toFixed(1), +e.position.z.toFixed(1)]),
+  bring: () => enemies.forEach((e,i) => { if(!e.userData.dead) e.position.set(20 - i*4, DECK_TOP, -0.6 + i*0.6); }),
+  spawn: (n=4) => { for(let i=0;i<n;i++) spawnEnemy(); updateHUD(); },
+  enemyHP: () => enemies.map(e => Math.round(e.userData.hp)),
+  debug: () => ({ cam: camera.position.toArray(), dir: camera.getWorldDirection(new THREE.Vector3()).toArray(), rot: [camera.rotation.x, camera.rotation.y], enemies: enemies.map(e => e.position.toArray()) }),
+  rayTest: () => { raycaster.setFromCamera(new THREE.Vector2(0,0), camera); raycaster.far=200; return raycaster.intersectObjects(enemyHitboxes,false).map(h => ({d:+h.distance.toFixed(2), y:+h.point.y.toFixed(2), z:+h.point.z.toFixed(2)})); },
+  shoot: () => shoot(),
+  assets: () => Object.keys(ASSETS),
+  sceneCount: () => scene.children.length,
+  render: () => { renderer.render(scene, camera); },
+  view: (y,p) => { yaw=y; if(p!==undefined) pitch=p; camera.rotation.y=yaw; camera.rotation.x=pitch; renderer.render(scene,camera); }
+};
+
+// ---------- swap procedural meshes for the generated GLB models ----------
+function applyModels(){
+  lionGroups.forEach(l=>{
+    [...l.children].forEach(c=>l.remove(c));
+    if(ASSETS.lion) l.add(fitModel(ASSETS.lion, 1.55, {bottom:true, rotY:Math.PI, noCastShadow:true}));
+  });
+  const cfgs = {
+    rifle:  {height:0.98, rotX:-Math.PI/2, dz:-0.25, dy:-0.04},
+    pistol: {height:0.4,  rotY:Math.PI/2,  dz:-0.1},
+    sword:  {height:1.25, dy:0.5, dx:-0.1}
+  };
+  for(const k of Object.keys(cfgs)){
+    if(!ASSETS[k]) continue;
+    const cfg=cfgs[k], grp=vmRes.groups[k];
+    [...grp.children].forEach(c=>{ if(!c.userData.isFlash) c.visible=false; });
+    grp.add(fitModel(ASSETS[k], cfg.height, cfg));
+  }
+  // Chinese 29th Army defenders around the firing position
+  if(ASSETS.chinese){
+    [[41,3.5,false],[37,-3.7,true]].forEach(([x,z,fallen],i)=>{
+      const s = fitModel(ASSETS.chinese, 2.4, {bottom:true, rotY:Math.PI, tint:0x8a8d70});
+      s.position.set(x, DECK_TOP, z);
+      if(fallen){ s.rotation.z = Math.PI/2; s.position.y = DECK_TOP + 0.35; }
+      const living = makeLiving(s);
+      scene.add(s);
+      defenders.push({ s, living, fallen, baseYaw:s.rotation.y, phase:i*2.1 });
+    });
+    playerBoxes.push(
+      { minX: 40.3, maxX: 41.7, minZ: 2.8, maxZ: 4.2 },
+      { minX: 36.1, maxX: 37.9, minZ: -4.3, maxZ: -3.0 }
+    );
+  }
+  // Wanping gate tower
+  if(ASSETS.gate){
+    const t = fitModel(ASSETS.gate, 23, {bottom:true, rotY:-Math.PI/2});
+    t.position.set(77, DECK_TOP, 0);
+    scene.add(t);
+  }
+}
+
+function boot(){
+  const loader = new GLTFLoader();
+  loader.setMeshoptDecoder(MeshoptDecoder);
+  const modelKeys = Object.keys(MODEL_URLS);
+  const total = modelKeys.length;
+  let loaded = 0;
+  $('loadText').textContent = `CARGANDO MODELOS 3D (0/${total})…`;
+  Promise.all(modelKeys.map(n =>
+    loader.loadAsync(MODEL_URLS[n])
+      .then(g=>{ ASSETS[n]=g.scene; })
+      .catch(e=>console.warn('Modelo no cargado:', n, e))
+      .finally(()=>{
+        loaded++;
+        $('loadText').textContent = `CARGANDO MODELOS 3D (${loaded}/${total})…`;
+        $('loadBar').style.width = Math.round(loaded*100/total) + '%';
+      })
+  )).then(()=>{
+    applyModels();
+    $('loading').classList.add('hidden');
+    $('intro').classList.remove('hidden');
+  });
+}
+boot();
+
+// ---------- UI buttons ----------
+function initAudio(){
+  const AC = window.AudioContext||window.webkitAudioContext;
+  if(AC && !actx) actx = new AC();
+}
+$('startBtn').addEventListener('click', () => { initAudio(); beginGame(); });
+$('resumeBtn').addEventListener('click', resumeGame);
+$('retryBtn').addEventListener('click', () => { initAudio(); beginGame(); });
+$('againBtn').addEventListener('click', () => { initAudio(); beginGame(); });
+$('pauseRestartBtn').addEventListener('click', () => { initAudio(); beginGame(); });
+$('muteBtn').addEventListener('click', toggleMute);
+$('sensRange').addEventListener('input', e => {
+  mouseSens = parseFloat(e.target.value);
+  $('sensVal').textContent = mouseSens.toFixed(1) + '×';
+});
+
+</script>
+</body>
+</html>
