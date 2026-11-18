@@ -23,13 +23,22 @@ y abre `http://localhost:8124`.
 | WASD | Moverse |
 | Ratón | Mirar (requiere clic en "COMIENZA LA DEFENSA" para fijar el puntero) |
 | Clic izquierdo | Disparar / atacar con dadao |
+| Clic derecho / Q | Apuntar con precisión (ADS) |
 | R | Recargar |
 | C | Agacharse / cubrirse tras los sacos de arena |
 | E | Usar caja de suministros y vendajes (junto a la posición china) |
-| 1 / 2 / 3 | Fusil Chiang Kai-shek / Mauser C96 / dadao |
+| 1 / 2 / 3 o Rueda | Fusil Chiang Kai-shek / Mauser C96 / dadao |
 | Mayús | Correr |
 | M | Silenciar / activar audio |
+| Espacio / Enter | Saltar cinemática 3D |
 | Esc | Pausa (incluye sensibilidad del ratón y reinicio) |
+
+## Características principales
+
+- **Cinemáticas 3D en tiempo real:** secuencia de apertura sobre el río Yongding y Wanping, transiciones cinematográficas con bombardeo entre oleadas (noche a madrugada) y epílogo histórico interactivo (saltables con `Espacio`).
+- **Combate táctico:** apuntado de precisión (ADS) con zoom y reducción de dispersión, cobertura agachado tras los sacos de arena, radar táctico del puente en el HUD, mensajes históricos por radio y caja de suministros reabastecible.
+- **Aliados y arquetipos enemigos:** dos defensores chinos del 29.º Ejército cubren el puente abriendo fuego contra los atacantes; las fuerzas japonesas incluyen fusileros, asaltantes a la bayoneta y oficiales.
+- **Atmósfera y audio:** bombardeo de artillería con destellos y temblor de cámara, sonido ambiente nocturno continuo y efectos de disparo, recarga, impactos y cornetas sintetizados vía Web Audio API.
 
 ## Fidelidad histórica
 
