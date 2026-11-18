@@ -98,6 +98,31 @@
   .timeline .step b { color:#e8c87a; font-size:13px; letter-spacing:1px; display:block; margin-bottom:2px; }
   .timeline .step p { font-size:13px; line-height:1.65; color:#cfc9bb; margin:0; }
   #chapterTitle { font-size:12px; color:#e8c87a; letter-spacing:1px; margin-top:3px; }
+  #dirDmg { position:absolute; left:50%; top:50%; width:146px; height:146px; margin:-73px 0 0 -73px;
+    border-radius:50%; border:4px solid transparent; border-top-color:rgba(225,42,32,.92);
+    opacity:0; pointer-events:none; transition:opacity .12s; }
+  #bossBarWrap { position:absolute; top:20px; left:50%; transform:translateX(-50%); text-align:center; }
+  #bossName { font-size:12px; letter-spacing:3px; color:#ff9c5b; font-weight:700; margin-bottom:5px; text-shadow:0 1px 4px #000; }
+  #bossBar { height:100%; width:100%; background:linear-gradient(90deg,#a82b1d,#ff9c5b); transition:width .12s; }
+  #fpsBox { bottom:68px; left:28px; font-family:monospace; font-size:12px; color:#9bd18b; letter-spacing:1px; }
+  #scoreHud { font-size:12px; color:#b9b4a6; margin-top:3px; letter-spacing:2px; }
+  #scoreHud span { font-size:16px; color:#e8c87a; }
+  #grenadeHud { font-size:13px; color:#d8d2c4; margin-top:4px; letter-spacing:1px; }
+  #grenadeHud span { color:#e8c87a; font-weight:700; font-family:monospace; font-size:16px; }
+  #mgHeatWrap { margin-top:6px; display:flex; flex-direction:column; align-items:flex-end; }
+  #mgHeatWrap .lbl { font-size:10px; letter-spacing:2px; color:#ff9c5b; margin-bottom:3px; }
+  #mgHeatBar { height:100%; width:0%; background:linear-gradient(90deg,#e8c87a,#d93824); transition:width .08s; }
+  .menuGrid { margin:14px 0 6px; padding:12px 16px; border:1px solid #4c4536; background:rgba(10,12,16,.55);
+    display:grid; gap:10px; font-size:12px; color:#b9b4a6; }
+  .menuRow { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; }
+  .pillGroup { display:flex; flex-wrap:wrap; gap:6px; }
+  .pillBtn { cursor:pointer; pointer-events:auto; padding:5px 11px; border:1px solid #5a5140;
+    background:#1b1d22; color:#cfc9bb; font-size:12px; font-family:inherit; letter-spacing:1px; transition:.12s; }
+  .pillBtn:hover { border-color:#e8c87a; color:#fff; }
+  .pillBtn.active { background:#7d2f20; border-color:#e8c87a; color:#fff2dc; font-weight:700; }
+  #recordBanner { font-size:12px; color:#e8c87a; letter-spacing:1px; border-top:1px solid #3c372b; padding-top:8px; }
+  .statsBox { grid-template-columns:repeat(3,1fr); }
+  #bestRecordNotice { font-size:13px; color:#e8c87a; letter-spacing:1px; margin-bottom:4px; }
   .hidden { display:none !important; }
 </style>
 </head>
@@ -114,16 +139,23 @@
   <div id="topleft" class="panel">
     <div class="zh">卢沟桥 · 七七事变</div>
     <div class="sub">PUENTE DE MARCO POLO — 7 JULIO 1937</div>
-    <div class="obj">OBJETIVO: contener el asalto japonés<br>Capítulo <span id="wave">1</span> / 4 <div id="chapterTitle">7 JUL 23:40 · El pretexto del soldado perdido</div></div>
+    <div class="obj">OBJETIVO: contener el asalto japonés<br><span id="modeLabel">Capítulo</span> <span id="wave">1</span><span id="waveTotal"> / 4</span> <div id="chapterTitle">7 JUL 23:40 · El pretexto del soldado perdido</div></div>
     <div id="radioBox"><b id="radioSender">MANDO DEL 29.º EJÉRCITO</b><span id="radioTxt"></span></div>
+  </div>
+  <div id="bossBarWrap" class="hidden">
+    <div id="bossName">九四式轻装甲车 · TANQUETA TIPO 94 TE-KE</div>
+    <div class="bar" style="width:320px;margin:0 auto"><div id="bossBar"></div></div>
   </div>
   <div id="topright" class="panel">
     <div>ENEMIGOS <span id="enemyCount">0</span></div>
+    <div id="scoreHud">PUNTOS <span id="scoreVal">0</span></div>
     <div id="radarWrap"><canvas id="radar" width="164" height="54"></canvas></div>
   </div>
   <div id="waveBanner"><div class="wbZh" id="wbZh"></div><div class="wbEs" id="wbEs"></div></div>
   <div id="crosshair">+</div>
+  <div id="dirDmg"></div>
   <div id="hitmarker"></div>
+  <div id="fpsBox" class="panel hidden">FPS: --</div>
   <div id="bottomleft" class="panel">
     <div class="lbl">SALUD <span id="crouchTag" style="color:#e8c87a;margin-left:8px;"></span></div>
     <div class="bar"><div id="hpbar"></div></div>
@@ -131,7 +163,9 @@
   <div id="bottomright" class="panel">
     <div id="wname">中正式步枪 · Chiang Kai-shek</div>
     <div id="ammo">5 / 60</div>
-    <div class="hint">1/2/3 armas · Clic der./Q apuntar · R recargar · C agacharse · E suministros · M audio</div>
+    <div id="grenadeHud">木柄手榴弹 [G]: <span id="grenadeCount">3</span></div>
+    <div id="mgHeatWrap" class="hidden"><div class="lbl">CALOR AMETRALLADORA</div><div class="bar" style="width:160px"><div id="mgHeatBar"></div></div></div>
+    <div class="hint">1/2/3 armas · Clic der./Q apuntar · G granada · F ametralladora · R recargar · C agacharse · E suministros</div>
   </div>
   <div id="interactPrompt"></div>
   <div id="msg"></div>
@@ -149,15 +183,41 @@
 </div>
 
 <div id="intro" class="overlay hidden">
-  <div class="card">
+  <div class="card wide">
     <div class="kicker">EJÉRCITO NACIONAL REVOLUCIONARIO · 29.º EJÉRCITO</div>
     <h1>卢沟桥 1937</h1>
     <div class="date">LA DEFENSA DEL PUENTE · INCIDENTE DEL 7 DE JULIO</div>
     <p class="zhline">1937年7月7日 — 卢沟桥事变 — 抗日战争全面爆发</p>
-    <p>La noche del 7 de julio de 1937, tropas japonesas de la Guarnición de China en el norte realizaron maniobras junto al puente de Lugouqiao —conocido en Occidente como Puente de Marco Polo— y exigieron registrar la ciudad amurallada de Wanping. Ante la negativa china, comenzó el combate.</p>
-    <p>Eres un soldado del <b>219.º Regimiento, 37.ª División, 29.º Ejército</b>, al mando del coronel <b>Ji Xingwen (吉星文)</b>. Defiendes el puente con tu fusil Chiang Kai-shek, tu pistola Mauser C96 y, si el combate llega al cuerpo a cuerpo, tu dadao (大刀).</p>
+    <p>La noche del 7 de julio de 1937, tropas japonesas realizaron maniobras junto al puente de Lugouqiao —Puente de Marco Polo— y exigieron registrar la ciudad amurallada de Wanping. Eres un soldado del <b>219.º Regimiento, 37.ª División, 29.º Ejército</b>, al mando del coronel <b>Ji Xingwen (吉星文)</b>.</p>
+    <div class="menuGrid">
+      <div class="menuRow">
+        <span>MODO DE JUEGO:</span>
+        <div class="pillGroup" id="modePills">
+          <button class="pillBtn active" data-mode="campaign">Campaña Histórica (4 Capítulos)</button>
+          <button class="pillBtn" data-mode="survival">Supervivencia Infinita (无尽抗战)</button>
+        </div>
+      </div>
+      <div class="menuRow" id="chapterPickRow">
+        <span>CAPÍTULO INICIAL:</span>
+        <div class="pillGroup" id="chapterPills">
+          <button class="pillBtn active" data-ch="0">1 · 7 Jul</button>
+          <button class="pillBtn" data-ch="1">2 · 8 Jul</button>
+          <button class="pillBtn" data-ch="2">3 · 9 Jul (Lluvia/Dadao)</button>
+          <button class="pillBtn" data-ch="3">4 · 28 Jul (Tanqueta)</button>
+        </div>
+      </div>
+      <div class="menuRow">
+        <span>DIFICULTAD:</span>
+        <div class="pillGroup" id="diffPills">
+          <button class="pillBtn" data-diff="easy">Recluta</button>
+          <button class="pillBtn active" data-diff="normal">Soldado</button>
+          <button class="pillBtn" data-diff="hard">Veterano 1937</button>
+        </div>
+      </div>
+      <div id="recordBanner">RÉCORDS LOCALES — Campaña: 0 pts · Supervivencia: 0 pts (Oleada 0)</div>
+    </div>
     <div class="facts">
-      Fidelidad histórica: armamento, uniformes, escenario y desenlace se ajustan a los hechos documentados a lo largo de cuatro capítulos (del 7 al 28 de julio de 1937). El resultado de la batalla no se puede cambiar: el puente cayó en manos japonesas, Beiping el 29 de julio y Tianjin el 30 de julio de 1937.
+      Fidelidad histórica: fusil Chiang Kai-shek, pistola Mauser C96, espada dadao, granadas Tipo 24 y ametralladora fija en trinchera. El desenlace de julio de 1937 se mantiene fiel a la historia hasta el epílogo de 1945.
     </div>
     <div>
       <button class="btn" id="startBtn">COMIENZA LA DEFENSA</button>
@@ -165,8 +225,8 @@
       <button class="btn secondary" id="openCodexIntroBtn">CRÓNICA HISTÓRICA (1937–1945)</button>
     </div>
     <div class="keys">
-      <b>WASD</b> mover · <b>Ratón</b> mirar · <b>Clic izq.</b> disparar · <b>Clic der./Q</b> apuntar · <b>R</b> recargar · <b>C</b> agacharse · <b>E</b> suministros<br>
-      <b>1/2/3</b> o <b>Rueda</b> armas · <b>MAYÚS</b> correr · <b>M</b> silenciar · <b>ESC</b> pausa
+      <b>WASD</b> mover · <b>Ratón</b> mirar · <b>Clic izq.</b> disparar · <b>Clic der./Q</b> apuntar · <b>G</b> granada · <b>F</b> ametralladora fija<br>
+      <b>1/2/3</b> o <b>Rueda</b> armas · <b>R</b> recargar · <b>C</b> agacharse · <b>E</b> suministros · <b>M</b> audio · <b>ESC</b> pausa · <i>Compatible con mando</i>
     </div>
   </div>
 </div>
@@ -180,9 +240,26 @@
       <label for="sensRange"><span>Sensibilidad del ratón</span><span id="sensVal">1.0×</span></label>
       <input type="range" id="sensRange" min="0.3" max="2.5" step="0.1" value="1.0">
     </div>
+    <div class="settingsRow">
+      <label for="musicRange"><span>Volumen música</span><span id="musicVal">45%</span></label>
+      <input type="range" id="musicRange" min="0" max="1" step="0.05" value="0.45">
+    </div>
+    <div class="settingsRow">
+      <label for="sfxRange"><span>Volumen efectos</span><span id="sfxVal">100%</span></label>
+      <input type="range" id="sfxRange" min="0" max="1" step="0.05" value="1.0">
+    </div>
+    <div class="settingsRow">
+      <label><span>Calidad gráfica</span></label>
+      <div class="pillGroup" id="gfxPills" style="justify-content:center">
+        <button class="pillBtn" data-gfx="low">Fluido</button>
+        <button class="pillBtn active" data-gfx="med">Equilibrado</button>
+        <button class="pillBtn" data-gfx="high">Alto</button>
+      </div>
+    </div>
     <div>
       <button class="btn" id="resumeBtn">CONTINUAR</button>
       <button class="btn secondary" id="muteBtn">AUDIO: SÍ</button>
+      <button class="btn secondary" id="fpsBtn">FPS: NO</button>
       <button class="btn secondary" id="pauseRestartBtn">REINICIAR</button>
     </div>
   </div>
@@ -194,6 +271,7 @@
     <h1>寸土不让</h1>
     <p class="zhline">“Ni un palmo de tierra será cedido.”</p>
     <p>Tu nombre se suma al de los defensores del puente de Lugouqiao. Aunque la posición se perdió, la guerra de resistencia (抗日战争) no terminó aquel día: duró ocho años y concluyó en 1945.</p>
+    <div id="gameoverRecord"></div>
     <div class="statsBox" id="gameoverStats"></div>
     <button class="btn" id="retryBtn">REINTENTAR</button>
   </div>
@@ -206,6 +284,7 @@
     <p class="zhline">1937年7月 · 北平沦陷 · 1945年抗战胜利</p>
     <p>Sostuviste la línea del 219.º Regimiento durante los combates del 7 al 9 de julio, el contraataque nocturno del Escuadrón de Dadao y la ofensiva final del 28 de julio. Tras el sacrificio de los generales Tong Linge y Zhao Dengyu en Nanyuan, Beiping se rindió el 29 de julio y Tianjin el 30 de julio de 1937.</p>
     <p>Lo que empezó aquella noche fue la <b>Guerra de Resistencia del Pueblo Chino contra la Agresión Japonesa (抗日战争)</b>. Tras ocho años de conflicto total —con más de veinte millones de bajas chinas—, Japón capituló y firmó su rendición oficial en Beiping el <b>10 de octubre de 1945</b>. Los hechos, aquí, no se han alterado.</p>
+    <div id="outroRecord"></div>
     <div class="statsBox" id="outroStats"></div>
     <div>
       <button class="btn" id="againBtn">VOLVER A DEFENDER</button>
@@ -433,6 +512,11 @@ function makeLiving(model){
 
 // ---------- world ----------
 const waterTime = { value: 0 };
+const rainTime = { value: 0 };
+const lanterns = [];
+const shootableLanterns = [];
+let mgEmplacement = null, mgHead = null, mgFlash = null;
+let rainPoints = null, flareObj = null, flareLight = null, flareLife = 0;
 
 let LION_PARTS = null;
 function makeStoneLion(){
@@ -500,16 +584,21 @@ function buildBridge(){
       scene.add(l); lionGroups.push(l);
     }
   }
-  // hanging lanterns
+  // hanging lanterns (destructible!)
   let lightCount=0;
   for(let x=-48;x<=48;x+=12){
     for(const z of [-4.72,4.72]){
       const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.26,10,8), new THREE.MeshBasicMaterial({color:0xffb056}));
       lamp.position.set(x,8.4,z); scene.add(lamp);
+      let pl = null;
       if(lightCount<6 && (x===-48||x===0||x===48)){
-        const pl = new THREE.PointLight(0xffa95c, 18, 24, 2);
+        pl = new THREE.PointLight(0xffa95c, 18, 24, 2);
         pl.position.set(x,8.2,z); scene.add(pl); lightCount++;
       }
+      const item = { mesh: lamp, light: pl, baseInt: pl ? 18 : 0, intact: true };
+      lamp.userData.lantern = item;
+      lanterns.push(item);
+      shootableLanterns.push(lamp);
     }
   }
   // paving slab joints on the deck
@@ -532,6 +621,29 @@ function buildBridge(){
   supplyCrate = box(1.3,0.85,0.85,0x4b4130,32,DECK_TOP+0.42,3.2,scene,{cast:true,receive:true});
   worldColliders.push(supplyCrate);
   playerBoxes.push({ minX: 31.1, maxX: 32.9, minZ: 2.5, maxZ: 3.9 });
+
+  // Fixed Type 24 Maxim / ZB-26 trench machine gun emplacement at (24.5, -2.0)
+  mgEmplacement = new THREE.Group();
+  mgEmplacement.position.set(24.5, DECK_TOP, -2.0);
+  const legMat = mat(0x2d3033, 0.7, 0.45);
+  for(const [lx, lz, rz] of [[-0.4,0,-0.32],[0.35,-0.35,0.35],[0.35,0.35,0.35]]){
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.035,1.05,6), legMat);
+    leg.position.set(lx, 0.5, lz); leg.rotation.z = rz; mgEmplacement.add(leg);
+  }
+  mgHead = new THREE.Group();
+  mgHead.position.set(0, 1.05, 0);
+  mgHead.rotation.y = Math.PI/2; // faces -X
+  box(0.16, 0.18, 0.56, 0x26292c, 0, 0, 0.08, mgHead, {rough:0.5, metal:0.7});
+  const jacket = new THREE.Mesh(new THREE.CylinderGeometry(0.055,0.055,0.72,8), mat(0x3a3e40,0.45,0.75));
+  jacket.rotation.x = Math.PI/2; jacket.position.set(0, 0.02, -0.52); mgHead.add(jacket);
+  const shield = box(0.66, 0.48, 0.04, 0x3b4034, 0, 0.06, -0.22, mgHead, {rough:0.8, metal:0.4});
+  worldColliders.push(shield);
+  mgFlash = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.36, 6), new THREE.MeshBasicMaterial({color:0xffd36b, transparent:true, opacity:0.9, depthWrite:false}));
+  mgFlash.rotation.x = -Math.PI/2; mgFlash.position.set(0, 0.02, -0.98); mgFlash.visible = false;
+  mgHead.add(mgFlash);
+  mgEmplacement.add(mgHead);
+  scene.add(mgEmplacement);
+  playerBoxes.push({ minX: 23.7, maxX: 25.1, minZ: -2.6, maxZ: -1.4 });
 }
 
 function buildWanping(){
@@ -546,11 +658,6 @@ function buildWanping(){
   box(5.5,7,3,0x5b5245,W,3.5,-6.4,scene,{cast:true});
   box(5.5,7,3,0x5b5245,W,3.5,6.4,scene,{cast:true});
   box(5.5,4,12,0x5b5245,W,9,0,scene,{cast:true});
-  // Chinese style roofs
-  const roof = (r,h,y,color) => {
-    const o = new THREE.Mesh(new THREE.ConeGeometry(r,h,4), mat(color,0.9));
-    o.rotation.y = Math.PI/4; o.position.set(W,y,0); o.scale.z=0.77; scene.add(o);
-  };
   // the GLB gate tower replaces the procedural roof above this base
   for(const z of [-30,30]){
     box(6.5,9,6.5,0x7a7060,W,4.5,z,scene,{cast:true});
@@ -584,6 +691,34 @@ function buildTerrain(){
   water.rotation.x = -Math.PI/2; water.position.y = 0; water.receiveShadow = true;
   scene.add(water);
 
+  // GPU-animated nocturnal rain (1 single draw call)
+  const rc = 900, rpos = new Float32Array(rc*3);
+  for(let i=0;i<rc;i++){
+    rpos[i*3]   = (Math.random()-0.5)*130;
+    rpos[i*3+1] = Math.random()*26;
+    rpos[i*3+2] = (Math.random()-0.5)*28;
+  }
+  const rgeo = new THREE.BufferGeometry();
+  rgeo.setAttribute('position', new THREE.BufferAttribute(rpos,3));
+  const rmat = new THREE.PointsMaterial({color:0x9eb8dc, size:0.14, transparent:true, opacity:0.55, depthWrite:false});
+  rmat.onBeforeCompile = (sh) => {
+    sh.uniforms.uTime = rainTime;
+    sh.vertexShader = 'uniform float uTime;\n' + sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
+      transformed.y = 6.0 + mod(position.y - uTime * 22.0, 26.0);
+    `);
+  };
+  rmat.customProgramCacheKey = () => 'rain-v1';
+  rainPoints = new THREE.Points(rgeo, rmat);
+  rainPoints.visible = false;
+  scene.add(rainPoints);
+
+  // Single reusable illumination flare + light
+  flareObj = new THREE.Mesh(new THREE.SphereGeometry(0.32,8,6), new THREE.MeshBasicMaterial({color:0xfff0c2}));
+  flareObj.visible = false;
+  scene.add(flareObj);
+  flareLight = new THREE.PointLight(0xffe7b3, 0, 58, 1.8);
+  scene.add(flareLight);
+
   // banks
   box(150,4,250,0x3b4230,-126,0,0,scene,{receive:true});
   box(150,4,250,0x3b4230,150,0,0,scene,{receive:true});
@@ -606,7 +741,33 @@ function buildTerrain(){
 function buildWorld(){ buildTerrain(); buildBridge(); buildWanping(); }
 buildWorld();
 
-// ---------- player state ----------
+// ---------- player state, difficulty, records & graphics ----------
+const DIFFS = {
+  easy:   { enemyDmg:0.70, enemyHp:0.85, supplyCd:11, label:'Recluta' },
+  normal: { enemyDmg:1.00, enemyHp:1.00, supplyCd:15, label:'Soldado' },
+  hard:   { enemyDmg:1.35, enemyHp:1.20, supplyCd:19, label:'Veterano 1937' }
+};
+const REC_KEY = 'mp1937_records_v1';
+let records = { bestCampaign:0, bestSurvival:0, bestWave:0, totalKills:0 };
+function loadRecords(){
+  try {
+    const raw = localStorage.getItem(REC_KEY);
+    if(raw) records = Object.assign(records, JSON.parse(raw));
+  } catch(e){}
+  updateRecordBanner();
+}
+function saveRecords(){
+  try { localStorage.setItem(REC_KEY, JSON.stringify(records)); } catch(e){}
+  updateRecordBanner();
+}
+function updateRecordBanner(){
+  const el = $('recordBanner');
+  if(el) el.textContent = `RÉCORDS LOCALES — Campaña: ${records.bestCampaign} pts · Supervivencia: ${records.bestSurvival} pts (Oleada ${records.bestWave})`;
+}
+
+let gameMode = 'campaign', startChapter = 0, diffKey = 'normal', gfxLevel = 'med', showFps = false;
+let musicVol = 0.45, sfxVol = 1.0;
+
 const player = {
   pos: new THREE.Vector3(34, DECK_TOP+1.7, 0),
   hp: 100, yaw: Math.PI/2, pitch: -0.02,
@@ -619,7 +780,52 @@ let running = false, alive = false, paused = false, aiming = false;
 let crouching = false, eyeHeight = 1.7, mouseSens = 1.0, muted = false, supplyCooldown = 0;
 let cameraShake = 0, artilleryTimer = 8;
 let cinematic = null;
-const stats = { shots: 0, hits: 0, headshots: 0, kills: 0, startTime: 0 };
+let grenades = 3, mgMounted = false, mgHeat = 0, mgOverheated = false, mgTimer = 0, mouseDownLeft = false;
+let rainActive = false, flareTimer = 10, lightningTimer = 11;
+let fpsFrames = 0, fpsClock = 0;
+const stats = { shots: 0, hits: 0, headshots: 0, kills: 0, score: 0, startTime: 0 };
+
+function addScore(pts){
+  stats.score += pts;
+  const el = $('scoreVal');
+  if(el) el.textContent = stats.score;
+}
+
+function applyGraphics(level){
+  gfxLevel = level;
+  const setShadowSize = (sz) => {
+    if(moonLight.shadow.mapSize.width !== sz){
+      moonLight.shadow.mapSize.set(sz, sz);
+      if(moonLight.shadow.map){ moonLight.shadow.map.dispose(); moonLight.shadow.map = null; }
+    }
+  };
+  const setLionLod = (dist) => {
+    for(const l of lionGroups){
+      const lod = l.children[0];
+      if(lod && lod.isLOD && lod.levels[1]) lod.levels[1].distance = dist;
+    }
+  };
+  if(level === 'low'){
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.0));
+    renderer.shadowMap.enabled = false;
+    moonLight.castShadow = false;
+    setLionLod(10);
+  } else if(level === 'high'){
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.8));
+    renderer.shadowMap.enabled = true;
+    moonLight.castShadow = true;
+    setShadowSize(1024);
+    setLionLod(26);
+  } else {
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.35));
+    renderer.shadowMap.enabled = true;
+    moonLight.castShadow = true;
+    setShadowSize(512);
+    setLionLod(15);
+  }
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  if(rainPoints) rainPoints.visible = (rainActive && gfxLevel !== 'low');
+}
 
 function resolvePlayerCollision(nx, nz){
   const r = 0.38;
@@ -635,27 +841,30 @@ function resolvePlayerCollision(nx, nz){
   if(!blocked(player.pos.x, z)) player.pos.z = z;
 }
 
-// ---------- input ----------
+// ---------- input + Gamepad ----------
 const keys = {};
+const gpPrev = {};
 addEventListener('keydown', e => {
   keys[e.code] = true;
   if(cinematic){
     if(e.code==='Space' || e.code==='Enter'){ e.preventDefault(); endCinematic(); }
     return;
   }
-  if(e.code==='Digit1') switchWeapon('rifle');
-  if(e.code==='Digit2') switchWeapon('pistol');
-  if(e.code==='Digit3') switchWeapon('sword');
-  if(e.code==='KeyR') startReload();
-  if(e.code==='KeyQ' && alive && !paused && !e.repeat){
+  if(e.code==='Digit1' && !mgMounted) switchWeapon('rifle');
+  if(e.code==='Digit2' && !mgMounted) switchWeapon('pistol');
+  if(e.code==='Digit3' && !mgMounted) switchWeapon('sword');
+  if(e.code==='KeyR' && !mgMounted) startReload();
+  if(e.code==='KeyQ' && alive && !paused && !mgMounted && !e.repeat){
     if(!WEAPONS[current].melee && reloadTimer<=0) aiming = !aiming;
   }
-  if(e.code==='KeyC' && alive && !paused && !e.repeat){
+  if(e.code==='KeyC' && alive && !paused && !mgMounted && !e.repeat){
     crouching = !crouching;
     $('crouchTag').textContent = crouching ? '[AGACHADO]' : '';
   }
   if(e.code==='KeyM' && !e.repeat) toggleMute();
   if(e.code==='KeyE' && alive && !paused && !e.repeat) tryUseSupply();
+  if(e.code==='KeyG' && alive && !paused && !e.repeat) throwGrenade();
+  if(e.code==='KeyF' && alive && !paused && !e.repeat) toggleMountMG();
 });
 addEventListener('keyup', e => { keys[e.code] = false; });
 addEventListener('contextmenu', e => e.preventDefault());
@@ -664,25 +873,32 @@ addEventListener('mousemove', e => {
   const sensMult = aiming ? 0.62 : 1.0;
   yaw   -= e.movementX * 0.0022 * mouseSens * sensMult;
   pitch -= e.movementY * 0.0022 * mouseSens * sensMult;
-  pitch = Math.max(-1.35, Math.min(1.35, pitch));
+  if(mgMounted){
+    yaw = Math.max(Math.PI/2 - 0.85, Math.min(Math.PI/2 + 0.85, yaw));
+    pitch = Math.max(-0.35, Math.min(0.35, pitch));
+  } else {
+    pitch = Math.max(-1.35, Math.min(1.35, pitch));
+  }
 });
 addEventListener('mousedown', e => {
   if(cinematic) return;
   if(alive && !paused && document.pointerLockElement === renderer.domElement){
-    if(e.button===0) shoot();
-    if(e.button===2 && !WEAPONS[current].melee && reloadTimer<=0) aiming = true;
+    if(e.button===0){ mouseDownLeft = true; if(!mgMounted) shoot(); }
+    if(e.button===2 && !mgMounted && !WEAPONS[current].melee && reloadTimer<=0) aiming = true;
   }
 });
 addEventListener('mouseup', e => {
+  if(e.button===0) mouseDownLeft = false;
   if(e.button===2) aiming = false;
 });
 addEventListener('wheel', e => {
-  if(!alive || paused || cinematic || document.pointerLockElement !== renderer.domElement) return;
+  if(!alive || paused || cinematic || mgMounted || document.pointerLockElement !== renderer.domElement) return;
   const order = ['rifle', 'pistol', 'sword'];
   const idx = (order.indexOf(current) + (e.deltaY > 0 ? 1 : 2)) % 3;
   switchWeapon(order[idx]);
 });
 document.addEventListener('pointerlockchange', () => {
+  mouseDownLeft = false;
   if(alive && !paused && !cinematic && document.pointerLockElement !== renderer.domElement) pauseGame();
 });
 addEventListener('resize', () => {
@@ -690,8 +906,65 @@ addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// ---------- audio (synthesized gunfire, ambience & SFX) ----------
-let actx = null, ambientGain = null;
+function pollGamepad(dt){
+  if(!navigator.getGamepads) return;
+  const pads = navigator.getGamepads();
+  const gp = pads && pads[0];
+  if(!gp) return;
+  const edge = (idx) => {
+    const down = !!(gp.buttons[idx] && gp.buttons[idx].pressed);
+    const hit = down && !gpPrev[idx];
+    gpPrev[idx] = down;
+    return hit;
+  };
+  if(cinematic){ if(edge(0)||edge(9)) endCinematic(); return; }
+  if(edge(9)){ if(paused) resumeGame(); else if(alive) pauseGame(); return; }
+  if(!alive || paused) return;
+
+  const dz = v => Math.abs(v) < 0.16 ? 0 : v;
+  const lx = dz(gp.axes[0]||0), ly = dz(gp.axes[1]||0);
+  const rx = dz(gp.axes[2]||0), ry = dz(gp.axes[3]||0);
+  if(rx || ry){
+    const sm = aiming ? 0.62 : 1.0;
+    yaw   -= rx * 2.2 * mouseSens * sm * dt;
+    pitch -= ry * 1.7 * mouseSens * sm * dt;
+    if(mgMounted){
+      yaw = Math.max(Math.PI/2 - 0.85, Math.min(Math.PI/2 + 0.85, yaw));
+      pitch = Math.max(-0.35, Math.min(0.35, pitch));
+    } else {
+      pitch = Math.max(-1.35, Math.min(1.35, pitch));
+    }
+  }
+  if(!mgMounted && (lx || ly)){
+    const sp = crouching ? 4.2 : ((gp.buttons[10] && gp.buttons[10].pressed && !aiming) ? 11 : 6.6);
+    _tmpFwd.set(-Math.sin(yaw),0,-Math.cos(yaw));
+    _tmpRight.set(Math.cos(yaw),0,-Math.sin(yaw));
+    _tmpMove.set(0,0,0).addScaledVector(_tmpFwd, -ly).addScaledVector(_tmpRight, lx);
+    if(_tmpMove.lengthSq()>0){
+      _tmpMove.normalize().multiplyScalar(sp*dt);
+      resolvePlayerCollision(player.pos.x + _tmpMove.x, player.pos.z + _tmpMove.z);
+    }
+  }
+  const r2 = gp.buttons[7] && gp.buttons[7].pressed;
+  const l2 = gp.buttons[6] && gp.buttons[6].pressed;
+  if(mgMounted){ if(r2) fireMG(); }
+  else {
+    if(r2) shoot();
+    aiming = !!(l2 && !WEAPONS[current].melee && reloadTimer<=0);
+  }
+  if(edge(2)){ // X: reload or supply/MG
+    if(Math.hypot(player.pos.x - 32, player.pos.z - 3.2) < 3.4) tryUseSupply();
+    else if(!mgMounted) startReload();
+  }
+  if(edge(1) && !mgMounted){ crouching = !crouching; $('crouchTag').textContent = crouching ? '[AGACHADO]' : ''; }
+  if(edge(3) && !mgMounted){ const order=['rifle','pistol','sword']; switchWeapon(order[(order.indexOf(current)+1)%3]); }
+  if(edge(5)) throwGrenade();
+  if(edge(0)) toggleMountMG();
+}
+
+// ---------- audio (synthesized gunfire, ambience, procedural music & SFX) ----------
+let actx = null, ambientGain = null, musicTimer = 0, musicStep = 0;
+const PENTA = [293.66, 349.23, 392.0, 440.0, 523.25, 587.33];
 function startAmbience(){
   if(!actx || ambientGain) return;
   const len = actx.sampleRate * 2;
@@ -701,33 +974,48 @@ function startAmbience(){
   const src = actx.createBufferSource(); src.buffer = buf; src.loop = true;
   const lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 340;
   ambientGain = actx.createGain();
-  ambientGain.gain.value = muted ? 0 : 0.025;
+  ambientGain.gain.value = muted ? 0 : 0.025 * sfxVol;
   src.connect(lp); lp.connect(ambientGain); ambientGain.connect(actx.destination);
   src.start();
 }
 function noiseBurst(dur, vol, freq){
-  if(!actx || muted) return;
+  if(!actx || muted || sfxVol<=0.01) return;
   const len = Math.floor(actx.sampleRate*dur);
   const buf = actx.createBuffer(1,len,actx.sampleRate);
   const d = buf.getChannelData(0);
   for(let i=0;i<len;i++) d[i] = (Math.random()*2-1)*Math.pow(1-i/len, 2.6);
   const src = actx.createBufferSource(); src.buffer = buf;
   const f = actx.createBiquadFilter(); f.type='lowpass'; f.frequency.value=freq;
-  const g = actx.createGain(); g.gain.value=vol;
+  const g = actx.createGain(); g.gain.value = vol * sfxVol;
   src.connect(f); f.connect(g); g.connect(actx.destination); src.start();
 }
-function tone(freq, dur, vol=0.15, type='sine', slideTo=null){
-  if(!actx || muted) return;
+function tone(freq, dur, vol=0.15, type='sine', slideTo=null, isMusic=false){
+  const mult = isMusic ? musicVol : sfxVol;
+  if(!actx || muted || mult<=0.01) return;
   const now = actx.currentTime;
   const osc = actx.createOscillator();
   const g = actx.createGain();
   osc.type = type;
   osc.frequency.setValueAtTime(freq, now);
   if(slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, now+dur);
-  g.gain.setValueAtTime(vol, now);
+  g.gain.setValueAtTime(vol * mult, now);
   g.gain.exponentialRampToValueAtTime(0.001, now+dur);
   osc.connect(g); g.connect(actx.destination);
   osc.start(now); osc.stop(now+dur);
+}
+function updateMusic(dt){
+  if(!actx || muted || musicVol<=0.01 || (!alive && !cinematic)) return;
+  musicTimer -= dt;
+  if(musicTimer <= 0){
+    const intense = alive && (wave>=2 || !!tankette);
+    musicTimer = intense ? 0.38 : 0.56;
+    musicStep++;
+    tone(68, 0.22, intense ? 0.14 : 0.09, 'sine', 34, true);
+    if(musicStep % 2 === 0){
+      const note = PENTA[(musicStep*3 + wave) % PENTA.length];
+      tone(note, 0.45, 0.045, 'triangle', null, true);
+    }
+  }
 }
 const playDryFire   = () => tone(1100, 0.03, 0.12, 'square');
 const playReload    = () => { tone(520, 0.04, 0.11, 'square'); setTimeout(()=>tone(760, 0.05, 0.12, 'square'), 220); };
@@ -736,14 +1024,15 @@ const playHurt      = () => noiseBurst(0.14, 0.32, 380);
 const playSupply    = () => { tone(520, 0.09, 0.18, 'triangle'); setTimeout(()=>tone(780, 0.14, 0.18, 'triangle'), 90); };
 const playWaveHorn  = () => { tone(293, 0.35, 0.12, 'sawtooth'); setTimeout(()=>tone(440, 0.55, 0.14, 'sawtooth'), 320); };
 const playExplosion = (vol=0.38) => { noiseBurst(0.45, vol, 240); tone(95, 0.4, vol*0.7, 'sine', 28); };
+const playShatter   = () => tone(2400, 0.08, 0.14, 'triangle', 900);
 function toggleMute(){
   muted = !muted;
-  if(ambientGain) ambientGain.gain.value = muted ? 0 : 0.025;
+  if(ambientGain) ambientGain.gain.value = muted ? 0 : 0.025 * sfxVol;
   $('muteBtn').textContent = muted ? 'AUDIO: NO' : 'AUDIO: SÍ';
   showMsg(muted ? 'AUDIO SILENCIADO' : 'AUDIO ACTIVADO', 1.0);
 }
 
-// ---------- weapons / viewmodel ----------
+// ---------- weapons / viewmodel / grenades / mounted MG ----------
 const WEAPONS = {
   rifle: { name:'中正式步枪 · Chiang Kai-shek', clip:5, reserve:60, ammo:5, dmg:58, rate:0.85, reload:1.9, spread:0.010, melee:false, adsFov:48, baseX:0 },
   pistol:{ name:'毛瑟 C96 · Mauser C96',       clip:7, reserve:28, ammo:7, dmg:40, rate:0.34, reload:1.3, spread:0.020, melee:false, adsFov:60, baseX:0 },
@@ -753,7 +1042,7 @@ let current = 'rifle', fireTimer = 0, reloadTimer = 0, flashTimer = 0, recoil = 
 
 function buildViewModels(){
   const vm = new THREE.Group(); camera.add(vm);
-  const wood = mat(0x6b4423,0.85), steel = mat(0x2c3033,0.5,0.6), glove = mat(0x4b5338,1);
+  const steel = mat(0x2c3033,0.5,0.6);
 
   const rifle = new THREE.Group();
   box(0.11,0.14,1.05,0x6b4423,0,-0.05,0.18,rifle);
@@ -793,7 +1082,7 @@ function buildViewModels(){
 const vmRes = buildViewModels();
 
 function switchWeapon(name){
-  if(!alive || name===current) return;
+  if(!alive || name===current || mgMounted) return;
   current = name; fireTimer = 0; reloadTimer = 0; meleeSwing = 0; aiming = false;
   for(const k in vmRes.groups) vmRes.groups[k].visible = (k===name);
   showMsg(WEAPONS[name].name, 1.1);
@@ -802,39 +1091,144 @@ function switchWeapon(name){
 
 function startReload(){
   const w = WEAPONS[current];
-  if(!alive || w.melee || reloadTimer>0 || w.ammo>=w.clip || w.reserve<=0) return;
+  if(!alive || mgMounted || w.melee || reloadTimer>0 || w.ammo>=w.clip || w.reserve<=0) return;
   reloadTimer = w.reload;
   aiming = false;
   playReload();
   showMsg('RECARGANDO…', w.reload);
 }
 
-// ---------- enemies ----------
+// Type 24 Stick Grenade & Brass Casings
+const grenadesList = [], casings = [];
+const GREN_HANDLE_GEO = new THREE.CylinderGeometry(0.028, 0.032, 0.28, 6);
+const GREN_HEAD_GEO   = new THREE.CylinderGeometry(0.058, 0.058, 0.14, 8);
+const CASING_GEO      = new THREE.CylinderGeometry(0.008, 0.008, 0.045, 5);
+const CASING_MAT      = new THREE.MeshStandardMaterial({ color:0xd4a64a, roughness:0.35, metalness:0.85 });
+
+function spawnCasing(){
+  if(casings.length >= 12){
+    const old = casings.shift();
+    scene.remove(old.mesh);
+  }
+  const m = new THREE.Mesh(CASING_GEO, CASING_MAT);
+  const right = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
+  m.position.copy(camera.position).addScaledVector(right, 0.25);
+  m.position.y -= 0.15;
+  scene.add(m);
+  casings.push({ mesh:m, vel:right.multiplyScalar(2.4 + Math.random()).add(new THREE.Vector3(0, 2.0 + Math.random()*0.8, 0)), life:0.7 });
+}
+
+function throwGrenade(){
+  if(grenades <= 0){ showMsg('SIN GRANADAS · RECOGE SUMINISTROS [E]', 1.1); playDryFire(); return; }
+  grenades--;
+  const g = new THREE.Group();
+  const handle = new THREE.Mesh(GREN_HANDLE_GEO, mat(0x6b4423, 0.9));
+  const head   = new THREE.Mesh(GREN_HEAD_GEO, mat(0x2f352e, 0.7, 0.4));
+  head.position.y = 0.18;
+  g.add(handle, head);
+  const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+  g.position.copy(camera.position).addScaledVector(dir, 0.7);
+  scene.add(g);
+  const vel = dir.multiplyScalar(17).add(new THREE.Vector3(0, 4.8, 0));
+  grenadesList.push({ mesh:g, vel, life:2.1 });
+  tone(320, 0.08, 0.15, 'triangle', 560);
+  updateHUD();
+}
+
+function detonateGrenade(p){
+  spawnArtilleryBlast(p.x, DECK_TOP, p.z);
+  for(const e of enemies){
+    if(e.userData.dead) continue;
+    const d = e.position.distanceTo(p);
+    if(d < 6.8){
+      const dmg = Math.round(180 * (1 - d/7.5));
+      e.userData.hp -= dmg;
+      e.userData.hitT = 0.35;
+      flashHitmarker(true);
+      if(e.userData.hp <= 0){ killEnemy(e); addScore(40); }
+    }
+  }
+  if(tankette && !tankette.userData.dead){
+    const dt = tankette.position.distanceTo(p);
+    if(dt < 7.5) damageTankette(165, true);
+  }
+  updateHUD();
+}
+
+function toggleMountMG(){
+  if(mgMounted){
+    mgMounted = false;
+    vmRes.vm.visible = !cinematic;
+    $('mgHeatWrap').classList.add('hidden');
+    player.pos.set(25.8, DECK_TOP + eyeHeight, -1.5);
+    camera.position.copy(player.pos);
+    updateHUD();
+    showMsg('AMETRALLADORA SOLTADA', 1.0);
+    return;
+  }
+  if(Math.hypot(player.pos.x - 24.5, player.pos.z + 2.0) < 2.7){
+    mgMounted = true; aiming = false; crouching = false; reloadTimer = 0;
+    $('crouchTag').textContent = '';
+    vmRes.vm.visible = false;
+    $('mgHeatWrap').classList.remove('hidden');
+    player.pos.set(25.45, DECK_TOP + 1.48, -1.75);
+    camera.position.copy(player.pos);
+    yaw = Math.max(Math.PI/2 - 0.85, Math.min(Math.PI/2 + 0.85, yaw));
+    pitch = Math.max(-0.35, Math.min(0.35, pitch));
+    updateHUD();
+    showMsg('二四式重机枪 · AMETRALLADORA TIPO 24 LISTA', 1.4);
+  }
+}
+
+function fireMG(){
+  if(mgTimer > 0 || mgOverheated) return;
+  mgTimer = 0.11;
+  mgHeat = Math.min(1.0, mgHeat + 0.075);
+  if(mgHeat >= 1.0){ mgOverheated = true; showMsg('¡CAÑÓN SOBRECALENTADO!', 1.4); }
+  recoil = 0.55;
+  noiseBurst(0.08, 0.34, 1950);
+  if(mgFlash){ mgFlash.visible = true; flashTimer = 0.05; }
+  spawnCasing();
+  stats.shots++;
+  raycaster.setFromCamera(new THREE.Vector2((Math.random()-0.5)*0.028, (Math.random()-0.5)*0.028), camera);
+  raycaster.far = 200;
+  resolveBulletHit(36, mgFlash ? mgFlash.getWorldPosition(new THREE.Vector3()) : muzzlePos());
+  updateHUD();
+}
+
+// ---------- enemies & Type 94 Tankette boss ----------
 const enemies = [];
 const enemyHitboxes = [];
 const effects = [];
+let tankette = null;
 
 const ENEMY_ROLES = {
-  rifleman: { tint:0x8f9478, hp:100, speed:3.3, stopDistBase:15,   fireRate:1.45, scale:1.0  },
-  charger:  { tint:0x64704b, hp:85,  speed:4.9, stopDistBase:1.85, fireRate:1.0,  scale:1.0  },
-  officer:  { tint:0x7a5642, hp:145, speed:3.6, stopDistBase:18,   fireRate:0.95, scale:1.05 }
+  rifleman: { tint:0x8f9478, hp:100, speed:3.3, stopDistBase:15,   fireRate:1.45, scale:1.0,  pts:100 },
+  charger:  { tint:0x64704b, hp:85,  speed:4.9, stopDistBase:1.85, fireRate:1.0,  scale:1.0,  pts:120 },
+  officer:  { tint:0x7a5642, hp:145, speed:3.6, stopDistBase:18,   fireRate:0.95, scale:1.05, pts:180 },
+  sniper:   { tint:0x4d5648, hp:95,  speed:3.0, stopDistBase:30,   fireRate:2.6,  scale:0.96, pts:160 }
 };
 
 function makeEnemy(role='rifleman'){
   const spec = ENEMY_ROLES[role] || ENEMY_ROLES.rifleman;
+  const diff = DIFFS[diffKey] || DIFFS.normal;
   const g = new THREE.Group();
-  // Two clean invisible hitboxes covering 100% of body (legs+torso) and head/helmet
   const torso = new THREE.Mesh(ENEMY_TORSO_GEO, HITBOX_MAT); torso.position.y = 1.02; g.add(torso);
   const head  = new THREE.Mesh(ENEMY_HEAD_GEO,  HITBOX_MAT); head.position.y  = 2.26; g.add(head);
-  // Lightweight shadow proxy cylinder so high-poly GLB mesh does not render into shadow map
   const shadowProxy = new THREE.Mesh(SHADOW_PROXY_GEO, SHADOW_PROXY_MAT);
   shadowProxy.position.y = 1.1; shadowProxy.castShadow = true; g.add(shadowProxy);
-  // Muzzle flash cone positioned at the Japanese soldier's rifle barrel (+Z after rotY -0.45)
   const eflash = new THREE.Mesh(ENEMY_FLASH_GEO, ENEMY_FLASH_MAT);
   eflash.rotation.x = Math.PI/2;
   eflash.position.set(0.42, 1.15, 0.72);
   eflash.visible = false;
   g.add(eflash);
+  let glint = null;
+  if(role === 'sniper'){
+    glint = new THREE.Mesh(new THREE.SphereGeometry(0.11, 6, 5), new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.95}));
+    glint.position.set(0.38, 1.48, 0.65);
+    glint.visible = false;
+    g.add(glint);
+  }
 
   let model = null, living = null;
   if(ASSETS.enemy){
@@ -848,8 +1242,9 @@ function makeEnemy(role='rifleman'){
   }
   if(spec.scale !== 1) g.scale.setScalar(spec.scale);
   const stopDist = spec.stopDistBase + (role==='charger' ? 0 : Math.random()*11);
-  g.userData = { torso, head, eflash, shadowProxy, role, spec, stopDist, hp:spec.hp, fireT:0.6+Math.random()*1.1,
-                 pauseT:0, flashT:0, dead:false, deathT:1,
+  const maxHp = Math.round(spec.hp * diff.enemyHp);
+  g.userData = { torso, head, eflash, glint, shadowProxy, role, spec, stopDist, hp:maxHp, fireT:0.7+Math.random()*1.1,
+                 pauseT:0, flashT:0, glintT:0, dead:false, deathT:1,
                  model, living, walk:0, aim:0, hitT:0, fireAnim:0, phase:Math.random()*6.28 };
   torso.userData.enemy = g; head.userData.enemy = g;
   return g;
@@ -857,20 +1252,77 @@ function makeEnemy(role='rifleman'){
 
 function spawnEnemy(){
   let role = 'rifleman';
-  if(wave===1){
+  const r = Math.random();
+  if(gameMode === 'survival'){
+    if(wave >= 1 && r < 0.16) role = 'officer';
+    else if(wave >= 1 && r < 0.34) role = 'sniper';
+    else if(r < 0.65) role = 'charger';
+  } else if(wave===1){
     if(toSpawn === WAVES[1]) role = 'officer';
-    else if(Math.random() < 0.35) role = 'charger';
+    else if(r < 0.25) role = 'sniper';
+    else if(r < 0.55) role = 'charger';
   } else if(wave===2){
     if(toSpawn === WAVES[2]) role = 'officer';
-    else if(Math.random() < 0.6) role = 'charger';
+    else if(r < 0.22) role = 'sniper';
+    else if(r < 0.72) role = 'charger';
   } else if(wave===3){
     if(toSpawn >= WAVES[3]-1) role = 'officer';
+    else if(r < 0.25) role = 'sniper';
     else if(toSpawn >= 4) role = 'charger';
   }
   const e = makeEnemy(role);
   e.position.set(-40 - Math.random()*8, DECK_TOP, (Math.random()-0.5)*6.2);
   scene.add(e); enemies.push(e);
   enemyHitboxes.push(e.userData.torso, e.userData.head);
+}
+
+function spawnTankette(){
+  if(tankette) return;
+  const diff = DIFFS[diffKey] || DIFFS.normal;
+  const g = new THREE.Group();
+  const hull = box(3.4, 1.15, 2.2, 0x454a3e, 0, 0.75, 0, g, {cast:true, receive:true, rough:0.7, metal:0.45});
+  box(3.6, 0.45, 0.45, 0x222524, 0, 0.24, -1.05, g, {cast:true});
+  box(3.6, 0.45, 0.45, 0x222524, 0, 0.24,  1.05, g, {cast:true});
+  box(1.4, 0.65, 1.3,  0x4f5546, 0.25, 1.6, 0, g, {cast:true});
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.06,1.5,6), mat(0x282b2e,0.5,0.7));
+  barrel.rotation.z = Math.PI/2; barrel.position.set(1.55, 1.6, 0.12); g.add(barrel);
+  const tflash = new THREE.Mesh(ENEMY_FLASH_GEO, ENEMY_FLASH_MAT);
+  tflash.rotation.z = -Math.PI/2; tflash.position.set(2.35, 1.6, 0.12); tflash.visible = false; g.add(tflash);
+  const visor = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.32, 0.72), new THREE.MeshBasicMaterial({color:0xff7b38}));
+  visor.position.set(1.72, 1.12, 0); g.add(visor);
+
+  hull.userData.isTankHull = true;
+  visor.userData.isTankVisor = true;
+  const maxHp = Math.round(480 * diff.enemyHp);
+  g.position.set(-50, DECK_TOP, 0.4);
+  g.userData = { hp:maxHp, maxHp, hull, visor, tflash, dead:false, fireT:2.0, burst:0, burstT:0, flashT:0 };
+  scene.add(g);
+  tankette = g;
+  enemyHitboxes.push(hull, visor);
+  $('bossBarWrap').classList.remove('hidden');
+  $('bossBar').style.width = '100%';
+  showRadio('OBSERVADOR 29.º EJÉRCITO', '¡Tanqueta japonesa Tipo 94 avanzando! Apunta al visor naranja o usa granadas [G].', 6.5);
+}
+
+function damageTankette(dmg, critical){
+  if(!tankette || tankette.userData.dead) return;
+  const u = tankette.userData;
+  u.hp -= dmg;
+  flashHitmarker(critical);
+  playHit(critical);
+  $('bossBar').style.width = Math.max(0, (u.hp/u.maxHp)*100) + '%';
+  if(u.hp <= 0){
+    u.dead = true;
+    let i = enemyHitboxes.indexOf(u.hull); if(i>=0) enemyHitboxes.splice(i,1);
+    i = enemyHitboxes.indexOf(u.visor); if(i>=0) enemyHitboxes.splice(i,1);
+    spawnArtilleryBlast(tankette.position.x, DECK_TOP, tankette.position.z);
+    setTimeout(()=>{ if(tankette) spawnArtilleryBlast(tankette.position.x+1, DECK_TOP+0.5, tankette.position.z-0.5); }, 220);
+    scene.remove(tankette);
+    tankette = null;
+    $('bossBarWrap').classList.add('hidden');
+    addScore(500);
+    showMsg('九四式装甲车击毁 · ¡TANQUETA DESTRUIDA! (+500)', 2.2);
+  }
 }
 
 // ---------- combat effects ----------
@@ -901,6 +1353,13 @@ function spawnArtilleryBlast(x, y, z){
   const d = player.pos.distanceTo(new THREE.Vector3(x,y,z));
   cameraShake = Math.max(cameraShake, Math.max(0.12, 0.65 - d/55));
   playExplosion();
+}
+function spawnFlare(){
+  if(!flareObj || !flareLight) return;
+  flareLife = 12.0;
+  flareObj.visible = true;
+  flareObj.position.set(-22 + Math.random()*36, 26, (Math.random()-0.5)*8);
+  flareLight.position.copy(flareObj.position);
 }
 function showMsg(txt, time=1.5){
   const el = $('msg'); el.textContent = txt; el.style.opacity = 1;
@@ -935,6 +1394,20 @@ function flashDamage(){
   clearTimeout(flashDamage._t);
   flashDamage._t = setTimeout(()=>{ df.style.opacity = 0; }, 180);
 }
+function showDirDamage(fromPos){
+  if(!fromPos) return;
+  const dx = fromPos.x - player.pos.x, dz = fromPos.z - player.pos.z;
+  const fx = -Math.sin(yaw), fz = -Math.cos(yaw);
+  const rx = Math.cos(yaw),  rz = -Math.sin(yaw);
+  const dotF = dx*fx + dz*fz;
+  const dotR = dx*rx + dz*rz;
+  const deg = Math.atan2(dotR, dotF) * 180 / Math.PI;
+  const dd = $('dirDmg');
+  dd.style.transform = `rotate(${deg.toFixed(1)}deg)`;
+  dd.style.opacity = 1;
+  clearTimeout(showDirDamage._t);
+  showDirDamage._t = setTimeout(()=>{ dd.style.opacity = 0; }, 420);
+}
 
 const raycaster = new THREE.Raycaster();
 function muzzlePos(){
@@ -943,12 +1416,63 @@ function muzzlePos(){
   return camera.position.clone().add(new THREE.Vector3(0.3,-0.25,-0.6).applyQuaternion(camera.quaternion));
 }
 
+function resolveBulletHit(baseDmg, startPos, isMelee=false){
+  const hits = raycaster.intersectObjects(enemyHitboxes, false);
+  const obsHits = raycaster.intersectObjects(worldColliders, false);
+  const lanHits = isMelee ? [] : raycaster.intersectObjects(shootableLanterns, false);
+  const obsDist = obsHits.length ? obsHits[0].distance : Infinity;
+  const lanDist = (lanHits.length && lanHits[0].object.visible) ? lanHits[0].distance : Infinity;
+  let end;
+  if(lanDist < obsDist && (!hits.length || lanDist < hits[0].distance)){
+    const item = lanHits[0].object.userData.lantern;
+    end = lanHits[0].point;
+    if(item && item.intact){
+      item.intact = false; item.mesh.visible = false;
+      if(item.light) item.light.intensity = 0;
+      spawnImpact(end, 0xffd27a);
+      playShatter();
+      addScore(25);
+    }
+  } else if(hits.length && hits[0].distance < obsDist){
+    const h = hits[0]; end = h.point;
+    if(h.object.userData.isTankVisor){
+      stats.hits++;
+      damageTankette(baseDmg, true);
+      spawnImpact(end, 0xffaa44);
+    } else if(h.object.userData.isTankHull){
+      stats.hits++;
+      damageTankette(Math.max(6, Math.round(baseDmg*0.25)), false);
+      spawnImpact(end, 0x999999);
+    } else {
+      const e = h.object.userData.enemy;
+      if(e && !e.userData.dead){
+        const headshot = (h.object===e.userData.head);
+        const dmg = headshot ? baseDmg*2 : baseDmg;
+        e.userData.hp -= dmg;
+        e.userData.hitT = 0.3;
+        stats.hits++;
+        if(headshot){ stats.headshots++; addScore(50); }
+        flashHitmarker(headshot);
+        playHit(headshot);
+        spawnImpact(h.point, 0xb82b22);
+        if(e.userData.hp<=0) killEnemy(e);
+      }
+    }
+  } else if(obsDist < raycaster.far){
+    end = obsHits[0].point;
+    spawnImpact(end, 0xc8b896);
+  } else {
+    end = camera.position.clone().add(new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion).multiplyScalar(isMelee?3:140));
+  }
+  if(!isMelee) spawnTracer(startPos, end);
+}
+
 function shoot(){
   const w = WEAPONS[current];
-  if(reloadTimer>0 || fireTimer>0) return;
+  if(reloadTimer>0 || fireTimer>0 || mgMounted) return;
   if(!w.melee && w.ammo<=0){ playDryFire(); startReload(); return; }
   fireTimer = w.rate;
-  if(!w.melee){ w.ammo--; stats.shots++; recoil = 1; }
+  if(!w.melee){ w.ammo--; stats.shots++; recoil = 1; spawnCasing(); }
   else { meleeSwing = 1.0; }
   noiseBurst(w.melee?0.09:0.13, w.melee?0.18:0.4, w.melee?900:1800);
   const f = vmRes.flashes[current];
@@ -956,53 +1480,33 @@ function shoot(){
   const spread = w.spread * (aiming ? 0.35 : 1.0);
   raycaster.setFromCamera(new THREE.Vector2((Math.random()-0.5)*spread,(Math.random()-0.5)*spread), camera);
   raycaster.far = w.melee ? 3.4 : 200;
-  const hits = raycaster.intersectObjects(enemyHitboxes, false);
-  const obsHits = raycaster.intersectObjects(worldColliders, false);
-  const obsDist = obsHits.length ? obsHits[0].distance : Infinity;
-  let end;
-  if(hits.length && hits[0].distance < obsDist){
-    const h = hits[0]; end = h.point;
-    const e = h.object.userData.enemy;
-    if(e && !e.userData.dead){
-      const headshot = (h.object===e.userData.head);
-      const dmg = headshot ? w.dmg*2 : w.dmg;
-      e.userData.hp -= dmg;
-      e.userData.hitT = 0.3;
-      stats.hits++;
-      if(headshot) stats.headshots++;
-      flashHitmarker(headshot);
-      playHit(headshot);
-      spawnImpact(h.point, 0xb82b22);
-      if(e.userData.hp<=0) killEnemy(e);
-    }
-  } else if(obsDist < raycaster.far){
-    end = obsHits[0].point;
-    spawnImpact(end, 0xc8b896);
-  } else {
-    end = camera.position.clone().add(new THREE.Vector3(0,0,-1).applyQuaternion(camera.quaternion).multiplyScalar(w.melee?3:140));
-  }
-  if(!w.melee) spawnTracer(muzzlePos(), end);
+  resolveBulletHit(w.dmg, muzzlePos(), w.melee);
   updateHUD();
 }
 
-function killEnemy(e){
+function killEnemy(e, fromGrenade=false){
+  if(e.userData.dead) return;
   e.userData.dead = true; e.userData.deathT = 1.0;
   if(e.userData.eflash) e.userData.eflash.visible = false;
+  if(e.userData.glint)  e.userData.glint.visible  = false;
   if(e.userData.shadowProxy) e.userData.shadowProxy.castShadow = false;
   stats.kills++;
+  addScore((e.userData.spec ? e.userData.spec.pts : 100) + (current==='sword' && !fromGrenade ? 50 : 0));
   const t = e.userData.torso, h = e.userData.head;
   let i = enemyHitboxes.indexOf(t); if(i>=0) enemyHitboxes.splice(i,1);
   i = enemyHitboxes.indexOf(h); if(i>=0) enemyHitboxes.splice(i,1);
-  showMsg(e.userData.role==='officer' ? '敌军军官击倒 · OFICIAL ABATIDO' : '敌兵击倒 · ABATIDO', 0.8);
+  showMsg(e.userData.role==='officer' ? '敌军军官击倒 · OFICIAL ABATIDO' : (e.userData.role==='sniper' ? '狙击手击倒 · TIRADOR ABATIDO' : '敌兵击倒 · ABATIDO'), 0.8);
 }
 
 function enemyFire(e, dist){
   if(!alive) return;
   const u = e.userData;
+  const diff = DIFFS[diffKey] || DIFFS.normal;
   u.fireAnim = 0.25;
   u.pauseT = 0.58;
   u.flashT = 0.07;
   if(u.eflash) u.eflash.visible = true;
+  if(u.glint) u.glint.visible = false;
   const from = new THREE.Vector3();
   if(u.eflash){ u.eflash.updateWorldMatrix(true,false); u.eflash.getWorldPosition(from); }
   else { u.torso.getWorldPosition(from); from.y += 0.25; }
@@ -1019,7 +1523,9 @@ function enemyFire(e, dist){
     noiseBurst(0.1, 0.12, 1400);
     return;
   }
-  const hitChance = (crouching ? 0.22 : 0.40) * Math.max(0.28, 1 - dist/82);
+  const coverMult = (mgMounted ? 0.5 : (crouching ? 0.55 : 1.0));
+  const baseAcc = u.role === 'sniper' ? 0.58 : 0.40;
+  const hitChance = baseAcc * coverMult * Math.max(0.28, 1 - dist/82);
   const hit = Math.random() < hitChance && dist < 72;
   const to = target.clone();
   if(!hit){
@@ -1031,9 +1537,10 @@ function enemyFire(e, dist){
   spawnTracer(from, to, 0xff9c5b);
   noiseBurst(0.1, 0.14, 1400);
   if(hit){
-    const dmg = dist < 32 ? (7 + Math.random()*6) : (4 + Math.random()*4);
-    player.hp -= dmg;
+    const raw = u.role === 'sniper' ? (13 + Math.random()*4) : (dist < 32 ? (7 + Math.random()*6) : (4 + Math.random()*4));
+    player.hp -= raw * diff.enemyDmg;
     flashDamage();
+    showDirDamage(e.position);
     playHurt();
     if(player.hp<=0){ player.hp=0; die(); }
     updateHUD();
@@ -1043,12 +1550,14 @@ function enemyFire(e, dist){
 function tryUseSupply(){
   const d = Math.hypot(player.pos.x - 32, player.pos.z - 3.2);
   if(d >= 3.4 || supplyCooldown > 0) return;
+  const diff = DIFFS[diffKey] || DIFFS.normal;
   player.hp = Math.min(100, player.hp + 35);
   WEAPONS.rifle.reserve = Math.min(90, WEAPONS.rifle.reserve + 15);
   WEAPONS.pistol.reserve = Math.min(56, WEAPONS.pistol.reserve + 14);
-  supplyCooldown = 15;
+  grenades = Math.min(4, grenades + 2);
+  supplyCooldown = diff.supplyCd;
   playSupply();
-  showMsg('SUMINISTROS Y VENDAJES RECOGIDOS', 1.6);
+  showMsg('SUMINISTROS, VENDAJES Y GRANADAS RECOGIDOS', 1.6);
   updateHUD();
 }
 
@@ -1208,7 +1717,7 @@ const WAVE_BANNERS = [
   ['第三幕 · 大刀队夜袭', 'CAPÍTULO 3 · 9 DE JULIO (01:15) · ESCUADRÓN DE DADAO'],
   ['第四幕 · 南苑血战',   'CAPÍTULO 4 · 28 DE JULIO (06:10) · LA ÚLTIMA LÍNEA']
 ];
-let wave = 0, toSpawn = 0, spawnTimer = 0, midWaveRadioSent = false;
+let wave = 0, toSpawn = 0, spawnTimer = 0, midWaveRadioSent = false, waveInitialCount = 5, matchRecorded = false;
 
 function setDefenderPos(d, x, z){
   if(!d) return;
@@ -1217,48 +1726,132 @@ function setDefenderPos(d, x, z){
 }
 
 function startWave(n){
-  wave = n; toSpawn = WAVES[n]; spawnTimer = 0.6; midWaveRadioSent = false;
+  const diff = DIFFS[diffKey] || DIFFS.normal;
+  const ch = gameMode === 'survival' ? (n % 4) : Math.min(3, n);
+  wave = n;
+  waveInitialCount = (gameMode === 'survival') ? (5 + n * 2) : (WAVES[n] || 10);
+  toSpawn = waveInitialCount;
+  spawnTimer = 0.6;
+  midWaveRadioSent = false;
+  rainActive = (ch === 2);
+  if(rainPoints) rainPoints.visible = (rainActive && gfxLevel !== 'low');
+  $('modeLabel').textContent = (gameMode === 'survival') ? 'Oleada' : 'Capítulo';
   $('wave').textContent = (n+1);
-  $('chapterTitle').textContent = CHAPTER_TITLES[n];
-  if(n===0){
+  $('waveTotal').textContent = (gameMode === 'survival') ? '' : ' / 4';
+  if(ch===0){
     scene.background.setHex(0x0d1424); scene.fog.color.setHex(0x0d1424); moonLight.color.setHex(0xc8d6ff);
-  } else if(n===1){
+  } else if(ch===1){
     scene.background.setHex(0x16192b); scene.fog.color.setHex(0x16192b); moonLight.color.setHex(0xc8d6ff);
-  } else if(n===2){
+  } else if(ch===2){
     scene.background.setHex(0x080f1c); scene.fog.color.setHex(0x080f1c); moonLight.color.setHex(0xc8d6ff);
     setDefenderPos(defenders[1], 14, -1.2);
     player.hp = Math.min(100, player.hp + 20);
-  } else if(n===3){
+  } else if(ch===3){
     scene.background.setHex(0x26171d); scene.fog.color.setHex(0x26171d); moonLight.color.setHex(0xffc2a8);
   }
   playWaveHorn();
-  showWaveBanner(WAVE_BANNERS[n][0], WAVE_BANNERS[n][1]);
-  showRadio(WAVE_RADIOS[n][0], WAVE_RADIOS[n][1], 6.0);
+  if(gameMode === 'survival'){
+    $('chapterTitle').textContent = `SUPERVIVENCIA · Oleada ${n+1} · ${diff.label}`;
+    if(n > 0){
+      grenades = Math.min(4, grenades + 1);
+      player.hp = Math.min(100, player.hp + 15);
+    }
+    showWaveBanner(`无尽抗战 · OLEADA ${n+1}`, `RESISTENCIA SIN FIN · ${toSpawn} ATACANTES`);
+    if(n === 0 || ch === 2) showRadio(WAVE_RADIOS[ch][0], WAVE_RADIOS[ch][1], 5.5);
+    if((n + 1) % 4 === 0) spawnTankette();
+  } else {
+    $('chapterTitle').textContent = CHAPTER_TITLES[ch];
+    showWaveBanner(WAVE_BANNERS[ch][0], WAVE_BANNERS[ch][1]);
+    showRadio(WAVE_RADIOS[ch][0], WAVE_RADIOS[ch][1], 6.0);
+    if(n === 3) spawnTankette();
+  }
   updateHUD();
+}
+
+function getRank(sc){
+  if(sc >= 4500) return 'S · 抗日英雄';
+  if(sc >= 2800) return 'A · 精锐老兵';
+  if(sc >= 1600) return 'B · 顽强守军';
+  if(sc >= 700)  return 'C · 新兵战士';
+  return 'D · 阵地初阵';
 }
 
 function renderStats(containerId){
   const acc = stats.shots ? Math.round(stats.hits*100/stats.shots) : 0;
   const sec = Math.max(1, Math.round((performance.now() - stats.startTime)/1000));
+  const rank = getRank(stats.score);
   $(containerId).innerHTML = `
     <div>BAJAS<b>${stats.kills}</b></div>
     <div>A LA CABEZA<b>${stats.headshots}</b></div>
     <div>PRECISIÓN<b>${acc}%</b></div>
     <div>TIEMPO<b>${sec}s</b></div>
+    <div>PUNTOS<b>${stats.score}</b></div>
+    <div>RANGO<b>${rank}</b></div>
   `;
+}
+
+function recordProgress(isVictory, bannerId){
+  let isNew = false;
+  if(!matchRecorded){
+    matchRecorded = true;
+    if(gameMode === 'campaign'){
+      if(stats.score > (records.bestCampaign||0)){ records.bestCampaign = stats.score; isNew = true; }
+    } else {
+      if(stats.score > (records.bestSurvival||0)){ records.bestSurvival = stats.score; isNew = true; }
+      if((wave + 1) > (records.bestWave||0)){ records.bestWave = wave + 1; isNew = true; }
+    }
+    records.totalKills = (records.totalKills||0) + stats.kills;
+    saveRecords();
+    updateRecordBanner();
+  }
+  const el = $(bannerId);
+  if(el){
+    const diff = DIFFS[diffKey] || DIFFS.normal;
+    if(isNew && stats.score > 0){
+      el.textContent = `★ NUEVO RÉCORD PERSONAL (${diff.label}) · ${stats.score} PTS`;
+      el.classList.remove('hidden');
+    } else if(isVictory){
+      el.textContent = `CAMPAÑA COMPLETADA EN ${diff.label.toUpperCase()} · ${stats.score} PTS`;
+      el.classList.remove('hidden');
+    } else {
+      el.classList.add('hidden');
+    }
+  }
 }
 
 function beginGame(skipCine=false){
   // reset state
-  cinematic = null; $('cinema').style.display = 'none'; vmRes.vm.visible = true;
+  cinematic = null; $('cinema').style.display = 'none';
+  mgMounted = false; mgHeat = 0; mgOverheated = false; mgTimer = 0; mouseDownLeft = false;
+  $('mgHeatWrap').classList.add('hidden');
+  vmRes.vm.visible = true;
+  rainActive = false; if(rainPoints) rainPoints.visible = false;
+  flareLife = 0; flareTimer = 5; lightningTimer = 7;
+  if(flareObj) flareObj.visible = false;
+  if(flareLight) flareLight.intensity = 0;
+  for(const l of lanterns){
+    l.intact = true;
+    if(l.mesh) l.mesh.visible = true;
+    if(l.light) l.light.intensity = l.baseInt;
+  }
+  if(tankette){
+    let i = enemyHitboxes.indexOf(tankette.userData.hull); if(i>=0) enemyHitboxes.splice(i,1);
+    i = enemyHitboxes.indexOf(tankette.userData.visor); if(i>=0) enemyHitboxes.splice(i,1);
+    scene.remove(tankette);
+    tankette = null;
+  }
+  $('bossBarWrap').classList.add('hidden');
+  grenadesList.forEach(g=>scene.remove(g.mesh)); grenadesList.length = 0;
+  casings.forEach(c=>scene.remove(c.mesh)); casings.length = 0;
   scene.background.setHex(0x0d1424); scene.fog.color.setHex(0x0d1424); moonLight.color.setHex(0xc8d6ff);
   setDefenderPos(defenders[1], 29, -2.1);
   enemies.forEach(e=>{ if(e.userData.living) e.userData.living.dispose(); scene.remove(e); });
   enemies.length=0; enemyHitboxes.length=0;
-  effects.forEach(f=>{ scene.remove(f.obj); if(f.obj.geometry) f.obj.geometry.dispose(); if(f.obj.material) f.obj.material.dispose(); });
+  effects.forEach(f=>{ scene.remove(f.obj); if(!f.sharedGeo && f.obj.geometry) f.obj.geometry.dispose(); if(f.obj.material) f.obj.material.dispose(); });
   effects.length=0;
-  crouching=false; aiming=false; eyeHeight=1.7; $('crouchTag').textContent=''; supplyCooldown=0; cameraShake=0; artilleryTimer=8;
-  stats.shots=0; stats.hits=0; stats.headshots=0; stats.kills=0; stats.startTime=performance.now();
+  crouching=false; aiming=false; eyeHeight=1.7; $('crouchTag').textContent=''; $('dirDmg').style.opacity=0;
+  supplyCooldown=0; cameraShake=0; artilleryTimer=8; grenades=3;
+  stats.shots=0; stats.hits=0; stats.headshots=0; stats.kills=0; stats.score=0; stats.startTime=performance.now(); matchRecorded=false;
   player.pos.set(34, DECK_TOP+1.7, 0); player.hp=100; yaw=Math.PI/2; pitch=-0.02;
   camera.fov = 74; camera.updateProjectionMatrix();
   for(const k in WEAPONS){ WEAPONS[k].ammo=WEAPONS[k].clip; WEAPONS[k].reserve=(k==='rifle'?60:k==='pistol'?28:0); }
@@ -1267,15 +1860,16 @@ function beginGame(skipCine=false){
   $('intro').classList.add('hidden'); $('gameover').classList.add('hidden');
   $('outro').classList.add('hidden'); $('pause').classList.add('hidden'); $('codex').classList.add('hidden');
   if(actx && actx.state==='suspended') actx.resume();
+  const firstWave = (gameMode === 'campaign') ? startChapter : 0;
   const launchCombat = () => {
     alive=true; paused=false;
     stats.startTime=performance.now();
     $('hud').style.display='block';
     try { const p = renderer.domElement.requestPointerLock(); if(p && p.catch) p.catch(()=>{}); } catch(e) {}
-    startWave(0);
+    startWave(firstWave);
     updateHUD();
   };
-  if(skipCine){
+  if(skipCine || gameMode === 'survival' || firstWave > 0){
     launchCombat();
   } else {
     alive=false; paused=false;
@@ -1285,7 +1879,7 @@ function beginGame(skipCine=false){
 
 function pauseGame(){
   if(!alive||paused||cinematic) return;
-  paused=true; aiming=false; $('pause').classList.remove('hidden');
+  paused=true; aiming=false; mouseDownLeft=false; $('pause').classList.remove('hidden');
   if(document.pointerLockElement) document.exitPointerLock();
 }
 function resumeGame(){
@@ -1295,18 +1889,25 @@ function resumeGame(){
 }
 function die(){
   if(!alive) return;
-  alive=false; aiming=false;
+  alive=false; aiming=false; mouseDownLeft=false; mgMounted=false;
+  vmRes.vm.visible=true; $('mgHeatWrap').classList.add('hidden');
+  rainActive=false; if(rainPoints) rainPoints.visible=false;
   renderStats('gameoverStats');
+  recordProgress(false, 'gameoverRecord');
   $('hud').style.display='none'; $('gameover').classList.remove('hidden');
   if(document.pointerLockElement) document.exitPointerLock();
 }
 function showOutroCard(){
   renderStats('outroStats');
+  recordProgress(true, 'outroRecord');
   $('hud').style.display='none'; $('outro').classList.remove('hidden');
   if(document.pointerLockElement) document.exitPointerLock();
 }
 function victory(){
-  alive=false; aiming=false;
+  alive=false; aiming=false; mouseDownLeft=false; mgMounted=false;
+  vmRes.vm.visible=true; $('mgHeatWrap').classList.add('hidden');
+  rainActive=false; if(rainPoints) rainPoints.visible=false;
+  if(flareObj) flareObj.visible=false; if(flareLight) flareLight.intensity=0;
   startCinematic('outro', showOutroCard);
 }
 
@@ -1325,11 +1926,13 @@ function drawRadar(){
   ctx.fillRect(152, 2, 10, H-4);
   const toX = x => 4 + ((x + 62) / 124) * 148;
   const toY = z => 27 + (z / 5) * 21;
-  // sandbags & supply crate
+  // sandbags, supply crate & mounted MG
   ctx.fillStyle = '#8c7f61';
   ctx.fillRect(toX(18), toY(-3.5), toX(40)-toX(18), 3);
   ctx.fillStyle = '#e8c87a';
   ctx.fillRect(toX(32)-2, toY(3.2)-2, 4, 4);
+  ctx.fillStyle = mgMounted ? '#55e0ff' : '#d5a23c';
+  ctx.fillRect(toX(24.5)-2.5, toY(-2.0)-2.5, 5, 5);
   // allies
   for(const d of defenders){
     if(d.fallen) continue;
@@ -1339,8 +1942,12 @@ function drawRadar(){
   // enemies
   for(const e of enemies){
     if(e.userData.dead) continue;
-    ctx.fillStyle = e.userData.role==='officer' ? '#ffd24d' : (e.userData.role==='charger' ? '#ff8833' : '#e04538');
+    ctx.fillStyle = e.userData.role==='officer' ? '#ffd24d' : (e.userData.role==='charger' ? '#ff8833' : (e.userData.role==='sniper' ? '#cc66ff' : '#e04538'));
     ctx.beginPath(); ctx.arc(toX(e.position.x), toY(e.position.z), e.userData.role==='officer' ? 3 : 2.2, 0, Math.PI*2); ctx.fill();
+  }
+  if(tankette && !tankette.userData.dead){
+    ctx.fillStyle = '#ff3b24';
+    ctx.fillRect(toX(tankette.position.x)-5, toY(tankette.position.z)-3.5, 10, 7);
   }
   // player + facing
   const px = toX(player.pos.x), py = toY(player.pos.z);
@@ -1352,16 +1959,28 @@ function drawRadar(){
 
 function updateHUD(){
   const w = WEAPONS[current];
-  $('hpbar').style.width = player.hp + '%';
-  $('wname').textContent = w.name;
-  $('ammo').textContent = w.melee ? '∞' : `${w.ammo} / ${w.reserve}`;
-  const remaining = toSpawn + enemies.filter(e=>!e.userData.dead).length;
+  $('hpbar').style.width = Math.max(0, Math.min(100, player.hp)) + '%';
+  if(mgMounted){
+    $('wname').textContent = 'Tipo 24 · Ametralladora fija [F]';
+    $('ammo').textContent = mgOverheated ? 'SOBRECALENTADA' : `${Math.round((1-mgHeat)*100)}%`;
+    $('mgHeatWrap').classList.remove('hidden');
+    $('mgHeatBar').style.width = Math.min(100, Math.round(mgHeat*100)) + '%';
+    $('mgHeatBar').style.background = mgOverheated ? '#ff4433' : (mgHeat > 0.7 ? '#f08a24' : '#e8c87a');
+  } else {
+    $('wname').textContent = w.name;
+    $('ammo').textContent = w.melee ? '∞' : `${w.ammo} / ${w.reserve}`;
+    $('mgHeatWrap').classList.add('hidden');
+  }
+  $('grenadeCount').textContent = grenades;
+  $('scoreVal').textContent = stats.score;
+  const remaining = toSpawn + enemies.filter(e=>!e.userData.dead).length + (tankette && !tankette.userData.dead ? 1 : 0);
   $('enemyCount').textContent = remaining;
 }
 
 // ---------- main loop ----------
 const clock = new THREE.Clock();
 let frameCount = 0;
+const BASE_MOON_INT = moonLight.intensity;
 const _tmpLook = new THREE.Object3D();
 const _tmpFwd = new THREE.Vector3();
 const _tmpRight = new THREE.Vector3();
@@ -1374,8 +1993,20 @@ function animate(){
   const dt = Math.min(clock.getDelta(), 0.05);
   const t = clock.elapsedTime;
 
-  // GPU water ripple
+  // GPU water & nocturnal rain
   waterTime.value = t;
+  rainTime.value = t;
+
+  // FPS counter & procedural soundtrack
+  if(showFps){
+    fpsFrames++;
+    const now = performance.now();
+    if(now - fpsClock >= 500){
+      $('fpsBox').textContent = Math.round(fpsFrames * 1000 / (now - fpsClock)) + ' FPS';
+      fpsFrames = 0; fpsClock = now;
+    }
+  }
+  updateMusic(dt);
 
   // Chinese defenders: breathe, track nearest enemy, and provide covering fire
   for(const d of defenders){
@@ -1423,35 +2054,76 @@ function animate(){
     }
   }
 
-  // camera orientation / cinematics / movement
+  // camera orientation / cinematics / movement / mounted MG / gamepad
   if(cinematic){
     updateCinematic(dt);
   } else {
     camera.rotation.y = yaw; camera.rotation.x = pitch;
+    vmRes.vm.visible = !mgMounted;
     if(alive && !paused){
+      pollGamepad(dt);
       if(supplyCooldown>0) supplyCooldown = Math.max(0, supplyCooldown - dt);
-      running = !!(keys['ShiftLeft']||keys['ShiftRight']);
-      const speed = crouching ? 4.2 : (running && !aiming ? 11 : 6.6);
-      _tmpFwd.set(-Math.sin(yaw),0,-Math.cos(yaw));
-      _tmpRight.set(Math.cos(yaw),0,-Math.sin(yaw));
-      _tmpMove.set(0,0,0);
-      if(keys['KeyW']) _tmpMove.add(_tmpFwd);
-      if(keys['KeyS']) _tmpMove.sub(_tmpFwd);
-      if(keys['KeyD']) _tmpMove.add(_tmpRight);
-      if(keys['KeyA']) _tmpMove.sub(_tmpRight);
-      if(_tmpMove.lengthSq()>0){
-        _tmpMove.normalize().multiplyScalar(speed*dt);
-        resolvePlayerCollision(player.pos.x + _tmpMove.x, player.pos.z + _tmpMove.z);
+      if(mgTimer>0) mgTimer = Math.max(0, mgTimer - dt);
+
+      if(mgMounted){
+        player.pos.set(25.3, DECK_TOP + 1.52, -2.0);
+        camera.position.copy(player.pos);
+        if(mgHead){
+          if(mgFlash && Math.abs(mgFlash.position.x) > Math.abs(mgFlash.position.z)){
+            mgHead.rotation.order = 'YZX';
+            mgHead.rotation.x = 0;
+            mgHead.rotation.y = (mgFlash.position.x < 0) ? (yaw - Math.PI/2) : (yaw + Math.PI/2);
+            mgHead.rotation.z = (mgFlash.position.x < 0) ? -pitch : pitch;
+          } else {
+            mgHead.rotation.order = 'YXZ';
+            mgHead.rotation.y = yaw;
+            mgHead.rotation.x = pitch;
+            mgHead.rotation.z = 0;
+          }
+        }
+        if(mouseDownLeft && !mgOverheated){
+          if(mgTimer <= 0) fireMG();
+        } else {
+          mgHeat = Math.max(0, mgHeat - dt * 0.28);
+          if(mgOverheated && mgHeat <= 0.25) mgOverheated = false;
+        }
+        $('mgHeatBar').style.width = Math.min(100, Math.round(mgHeat*100)) + '%';
+        $('mgHeatBar').style.background = mgOverheated ? '#ff4433' : (mgHeat > 0.7 ? '#f08a24' : '#e8c87a');
+        $('ammo').textContent = mgOverheated ? 'SOBRECALENTADA' : `${Math.round((1-mgHeat)*100)}%`;
+      } else {
+        if(mgHeat > 0){
+          mgHeat = Math.max(0, mgHeat - dt * 0.28);
+          if(mgOverheated && mgHeat <= 0.25) mgOverheated = false;
+        }
+        running = !!(keys['ShiftLeft']||keys['ShiftRight']);
+        const speed = crouching ? 4.2 : (running && !aiming ? 11 : 6.6);
+        _tmpFwd.set(-Math.sin(yaw),0,-Math.cos(yaw));
+        _tmpRight.set(Math.cos(yaw),0,-Math.sin(yaw));
+        _tmpMove.set(0,0,0);
+        if(keys['KeyW']) _tmpMove.add(_tmpFwd);
+        if(keys['KeyS']) _tmpMove.sub(_tmpFwd);
+        if(keys['KeyD']) _tmpMove.add(_tmpRight);
+        if(keys['KeyA']) _tmpMove.sub(_tmpRight);
+        if(_tmpMove.lengthSq()>0){
+          _tmpMove.normalize().multiplyScalar(speed*dt);
+          resolvePlayerCollision(player.pos.x + _tmpMove.x, player.pos.z + _tmpMove.z);
+        }
+        eyeHeight += ((crouching ? 1.02 : 1.7) - eyeHeight) * Math.min(1, dt * 10);
+        player.pos.y = DECK_TOP + eyeHeight;
+        camera.position.copy(player.pos);
       }
-      eyeHeight += ((crouching ? 1.02 : 1.7) - eyeHeight) * Math.min(1, dt * 10);
-      player.pos.y = DECK_TOP + eyeHeight;
-      camera.position.copy(player.pos);
 
       const promptEl = $('interactPrompt');
-      if(Math.hypot(player.pos.x - 32, player.pos.z - 3.2) < 3.4){
+      if(mgMounted){
+        promptEl.textContent = '[F] Soltar ametralladora Tipo 24';
+        promptEl.style.opacity = 1;
+      } else if(Math.hypot(player.pos.x - 24.5, player.pos.z + 2.0) < 3.2){
+        promptEl.textContent = '[F] Montar ametralladora Tipo 24 (cobertura frontal)';
+        promptEl.style.opacity = 1;
+      } else if(Math.hypot(player.pos.x - 32, player.pos.z - 3.2) < 3.4){
         promptEl.textContent = supplyCooldown > 0
           ? `Suministros disponibles en ${Math.ceil(supplyCooldown)}s`
-          : '[E] Tomar munición y vendajes (+35 Salud)';
+          : '[E] Tomar munición, vendajes (+35) y granadas (+2)';
         promptEl.style.opacity = 1;
       } else {
         promptEl.style.opacity = 0;
@@ -1470,7 +2142,7 @@ function animate(){
   }
 
   // ADS FOV & viewmodel animation
-  const targetFov = (!cinematic && alive && aiming && !WEAPONS[current].melee && reloadTimer<=0) ? WEAPONS[current].adsFov : 74;
+  const targetFov = (!cinematic && alive && aiming && (!WEAPONS[current].melee || mgMounted) && reloadTimer<=0) ? (mgMounted ? 56 : WEAPONS[current].adsFov) : 74;
   if(Math.abs(camera.fov - targetFov) > 0.05){
     camera.fov += (targetFov - camera.fov) * Math.min(1, dt*12);
     camera.updateProjectionMatrix();
@@ -1478,7 +2150,7 @@ function animate(){
   $('crosshair').style.opacity = aiming ? '0.35' : '0.85';
 
   if(fireTimer>0) fireTimer-=dt;
-  if(flashTimer>0){ flashTimer-=dt; if(flashTimer<=0){ for(const f of Object.values(vmRes.flashes)) f.visible=false; } }
+  if(flashTimer>0){ flashTimer-=dt; if(flashTimer<=0){ for(const f of Object.values(vmRes.flashes)) f.visible=false; if(mgFlash) mgFlash.visible=false; } }
   if(reloadTimer>0){
     reloadTimer-=dt;
     if(reloadTimer<=0){
@@ -1487,7 +2159,7 @@ function animate(){
       w.ammo+=give; w.reserve-=give; updateHUD();
     }
   }
-  const isMoving = !cinematic && alive && !paused && (keys['KeyW']||keys['KeyS']||keys['KeyA']||keys['KeyD']);
+  const isMoving = !cinematic && alive && !paused && !mgMounted && (keys['KeyW']||keys['KeyS']||keys['KeyA']||keys['KeyD']);
   recoil *= Math.pow(0.001, dt);
   if(meleeSwing>0) meleeSwing = Math.max(0, meleeSwing - dt*3.2);
   const swingAng = Math.sin(meleeSwing * Math.PI);
@@ -1498,9 +2170,80 @@ function animate(){
   vmRes.vm.position.y = -Math.abs(Math.sin(t*(running&&!crouching&&!aiming?11:6.6)))*0.012*(isMoving?1:0)*(aiming?0.35:1) - (reloadTimer>0 ? 0.08 : 0);
   vmRes.vm.rotation.x = reloadTimer>0 ? -0.35 : 0;
 
-  // enemy AI + ambient artillery
+  // Weather (lightning), flares, grenades, casings, enemy & tankette AI
+  if(!paused){
+    for(let i = grenadesList.length - 1; i >= 0; i--){
+      const g = grenadesList[i];
+      g.life -= dt;
+      g.vel.y -= 18.0 * dt;
+      g.mesh.position.addScaledVector(g.vel, dt);
+      g.mesh.rotation.x += dt * 9;
+      g.mesh.rotation.z += dt * 7;
+      if(g.mesh.position.y <= DECK_TOP + 0.12 && g.vel.y < 0){
+        g.mesh.position.y = DECK_TOP + 0.12;
+        g.vel.y = -g.vel.y * 0.36;
+        g.vel.x *= 0.72;
+        g.vel.z *= 0.72;
+        tone(260, 0.03, 0.04, 'triangle');
+      }
+      if(g.mesh.position.z < -4.2 || g.mesh.position.z > 4.2){
+        g.vel.z = -g.vel.z * 0.6;
+        g.mesh.position.z = Math.max(-4.2, Math.min(4.2, g.mesh.position.z));
+      }
+      if(g.life <= 0){
+        const pos = g.mesh.position.clone();
+        scene.remove(g.mesh);
+        grenadesList.splice(i, 1);
+        detonateGrenade(pos);
+      }
+    }
+    for(let i = casings.length - 1; i >= 0; i--){
+      const c = casings[i];
+      c.life -= dt;
+      c.vel.y -= 14.0 * dt;
+      c.mesh.position.addScaledVector(c.vel, dt);
+      c.mesh.rotation.x += dt * 14;
+      c.mesh.rotation.y += dt * 11;
+      if(c.mesh.position.y <= DECK_TOP + 0.03 && c.vel.y < 0){
+        c.mesh.position.y = DECK_TOP + 0.03;
+        c.vel.y = -c.vel.y * 0.25;
+        c.vel.x *= 0.6; c.vel.z *= 0.6;
+      }
+      if(c.life <= 0){
+        scene.remove(c.mesh);
+        casings.splice(i, 1);
+      }
+    }
+  }
+
   if(alive && !paused && !cinematic){
-    if(wave >= 1){
+    if(rainActive){
+      lightningTimer -= dt;
+      if(lightningTimer <= 0){
+        lightningTimer = 7 + Math.random()*9;
+        moonLight.intensity = BASE_MOON_INT + 3.8;
+        setTimeout(()=>{ if(alive && !paused) noiseBurst(0.65, 0.32, 180); }, 240 + Math.random()*320);
+      } else if(moonLight.intensity > BASE_MOON_INT){
+        moonLight.intensity = Math.max(BASE_MOON_INT, moonLight.intensity - dt * 11);
+      }
+    } else if(moonLight.intensity !== BASE_MOON_INT){
+      moonLight.intensity = BASE_MOON_INT;
+    }
+
+    if(gameMode === 'survival' || wave >= 1){
+      flareTimer -= dt;
+      if(flareTimer <= 0){ flareTimer = 15 + Math.random()*10; spawnFlare(); }
+    }
+    if(flareLife > 0 && flareObj && flareLight){
+      flareLife -= dt;
+      flareObj.position.y -= dt * 1.15;
+      flareLight.position.copy(flareObj.position);
+      const fFrac = Math.min(1, flareLife / 2.2);
+      flareLight.intensity = fFrac * (48 + Math.sin(t*19)*6);
+      if(flareLife <= 0){ flareObj.visible = false; flareLight.intensity = 0; }
+    }
+
+    if(gameMode === 'survival' || wave >= 1){
       artilleryTimer -= dt;
       if(artilleryTimer <= 0){
         artilleryTimer = 8 + Math.random()*5;
@@ -1551,7 +2294,7 @@ function animate(){
       e.position.z = Math.max(-3.5, Math.min(3.5, e.position.z));
 
       u.walk += ((moving?1:0)-u.walk)*Math.min(1,dt*5);
-      const aimTarget = (u.role==='charger') ? (d<8?1:0) : ((d<72 || u.pauseT>0)?1:0);
+      const aimTarget = (u.role==='charger') ? (d<8?1:0) : ((d<(u.role==='sniper'?78:72) || u.pauseT>0)?1:0);
       u.aim += (aimTarget - u.aim)*Math.min(1,dt*4);
       u.hitT = Math.max(0,u.hitT-dt);
       u.fireAnim = Math.max(0,u.fireAnim-dt);
@@ -1562,15 +2305,33 @@ function animate(){
       e.rotation.z = Math.sin(t*4.25+u.phase)*0.03*u.walk;
       u.fireT -= dt;
       if(u.role==='charger'){
+        if(u.glint) u.glint.visible = false;
         if(u.fireT<=0 && d<2.35){
+          const diff = DIFFS[diffKey] || DIFFS.normal;
           u.fireT = u.spec.fireRate;
           u.fireAnim = 0.35;
-          player.hp -= 10 + Math.random()*6;
+          player.hp -= (10 + Math.random()*6) * diff.enemyDmg;
           noiseBurst(0.08, 0.2, 850);
           flashDamage();
+          showDirDamage(e.position);
           playHurt();
           if(player.hp<=0){ player.hp=0; die(); }
           updateHUD();
+        }
+      } else if(u.role==='sniper'){
+        if(u.fireT <= 0.65 && u.fireT > 0 && d < 78){
+          if(u.glint){
+            u.glint.visible = true;
+            u.glint.lookAt(camera.position);
+            const pulse = 0.8 + Math.sin(t*28)*0.25;
+            u.glint.scale.set(pulse, pulse, pulse);
+          }
+        } else if(u.glint){
+          u.glint.visible = false;
+        }
+        if(u.fireT <= 0 && d < 78){
+          u.fireT = u.spec.fireRate + Math.random()*1.2;
+          enemyFire(e, d);
         }
       } else if(u.fireT<=0 && d<72){
         u.fireT = u.spec.fireRate + Math.random()*1.1;
@@ -1579,20 +2340,87 @@ function animate(){
     }
     for(let i=enemies.length-1;i>=0;i--) if(enemies[i].userData.deathT<=0) enemies.splice(i,1);
 
-    // spawning / chapters / mid-chapter radio dispatches
-    const rem = toSpawn + enemies.filter(e=>!e.userData.dead).length;
-    if(!midWaveRadioSent && rem > 0 && rem <= Math.ceil(WAVES[wave]/2)){
+    // Type 94 Tankette boss AI
+    if(tankette && !tankette.userData.dead){
+      const tu = tankette.userData;
+      if(tu.flashT > 0){ tu.flashT -= dt; if(tu.flashT <= 0 && tu.tflash) tu.tflash.visible = false; }
+      if(tankette.position.x < -8){
+        tankette.position.x += dt * 2.2;
+        tankette.position.y = DECK_TOP + Math.abs(Math.sin(t*8))*0.025;
+      } else {
+        tankette.position.y = DECK_TOP;
+      }
+      if(tu.visor && tu.visor.material){
+        tu.visor.material.color.setHex(Math.sin(t*6) > 0 ? 0xff7b38 : 0xffaa55);
+      }
+      tu.fireT -= dt;
+      if(tu.fireT <= 0 && tu.burst <= 0){
+        tu.burst = 4; tu.burstT = 0;
+        tu.fireT = 3.2 + Math.random()*1.2;
+      }
+      if(tu.burst > 0){
+        tu.burstT -= dt;
+        if(tu.burstT <= 0){
+          tu.burst--; tu.burstT = 0.14;
+          tu.flashT = 0.06;
+          if(tu.tflash) tu.tflash.visible = true;
+          const from = new THREE.Vector3();
+          tu.tflash.updateWorldMatrix(true, false);
+          tu.tflash.getWorldPosition(from);
+          const tgt = player.pos.clone().add(new THREE.Vector3(0,-0.15,0));
+          const dirT = new THREE.Vector3().subVectors(tgt, from);
+          const dT = dirT.length() || 1;
+          dirT.divideScalar(dT);
+          raycaster.set(from, dirT); raycaster.far = dT;
+          const obs = raycaster.intersectObjects(worldColliders, false);
+          if(obs.length){
+            spawnImpact(obs[0].point, 0xc8b896);
+            spawnTracer(from, obs[0].point, 0xffaa44);
+            noiseBurst(0.08, 0.14, 900);
+          } else {
+            const cov = (mgMounted ? 0.45 : (crouching ? 0.5 : 1.0));
+            const hit = Math.random() < (0.34 * cov);
+            const to = tgt.clone();
+            if(!hit){ to.z += (Math.random()-0.5)*2.6; to.y += (Math.random()-0.3)*1.2; }
+            spawnTracer(from, to, 0xffaa44);
+            noiseBurst(0.08, 0.16, 900);
+            if(hit){
+              const diff = DIFFS[diffKey] || DIFFS.normal;
+              player.hp -= (6 + Math.random()*4) * diff.enemyDmg;
+              flashDamage();
+              showDirDamage(tankette.position);
+              playHurt();
+              if(player.hp <= 0){ player.hp = 0; die(); }
+              updateHUD();
+            }
+          }
+        }
+      }
+    }
+
+    // spawning / chapters / survival waves / mid-chapter radio dispatches
+    const rem = toSpawn + enemies.filter(e=>!e.userData.dead).length + (tankette && !tankette.userData.dead ? 1 : 0);
+    const chIdx = gameMode === 'survival' ? (wave % 4) : Math.min(3, wave);
+    if(!midWaveRadioSent && rem > 0 && rem <= Math.ceil(waveInitialCount / 2)){
       midWaveRadioSent = true;
-      showRadio(MID_WAVE_RADIOS[wave][0], MID_WAVE_RADIOS[wave][1], 6.0);
+      showRadio(MID_WAVE_RADIOS[chIdx][0], MID_WAVE_RADIOS[chIdx][1], 6.0);
     }
     if(toSpawn>0){
       spawnTimer-=dt;
-      if(spawnTimer<=0){ spawnEnemy(); toSpawn--; spawnTimer=1.1; updateHUD(); }
-    } else if(enemies.length===0 && !cinematic){
-      if(wave===0) startCinematic('wave2', () => startWave(1));
-      else if(wave===1) startCinematic('wave3', () => startWave(2));
-      else if(wave===2) startCinematic('wave4', () => startWave(3));
-      else victory();
+      if(spawnTimer<=0){
+        spawnEnemy(); toSpawn--;
+        spawnTimer = gameMode === 'survival' ? Math.max(0.55, 1.1 - wave*0.04) : 1.1;
+        updateHUD();
+      }
+    } else if(enemies.length===0 && (!tankette || tankette.userData.dead) && !cinematic){
+      if(gameMode === 'survival'){
+        startWave(wave + 1);
+      } else {
+        if(wave===0) startCinematic('wave2', () => startWave(1));
+        else if(wave===1) startCinematic('wave3', () => startWave(2));
+        else if(wave===2) startCinematic('wave4', () => startWave(3));
+        else victory();
+      }
     }
   }
 
@@ -1628,7 +2456,7 @@ window.__capture = () => {
   x.font = '12px sans-serif'; x.fillStyle = '#b9b4a6';
   x.fillText('PUENTE DE MARCO POLO — 7 JULIO 1937', 26, 56);
   x.font = '13px sans-serif'; x.fillStyle = '#d8d2c4';
-  x.fillText('OBJETIVO: contener el asalto japonés · Capítulo ' + $('wave').textContent + '/4', 26, 82);
+  x.fillText('OBJETIVO: contener el asalto japonés · ' + $('modeLabel').textContent + ' ' + $('wave').textContent + $('waveTotal').textContent + ' · ' + stats.score + ' pts', 26, 82);
   x.strokeStyle = 'rgba(242,234,214,0.9)'; x.lineWidth = 2;
   x.beginPath();
   x.moveTo(w/2-12,h/2); x.lineTo(w/2-5,h/2); x.moveTo(w/2+5,h/2); x.lineTo(w/2+12,h/2);
@@ -1639,13 +2467,20 @@ window.__capture = () => {
   x.fillStyle = '#d5a23c'; x.fillRect(28, h-34, 220*player.hp/100, 10);
   x.textAlign = 'right';
   x.fillStyle = '#c9c2b2'; x.font = '13px sans-serif'; x.fillText('ENEMIGOS ' + $('enemyCount').textContent, w-28, 32);
-  x.fillStyle = '#e8c87a'; x.font = '15px sans-serif'; x.fillText(WEAPONS[current].name, w-30, h-70);
+  x.fillStyle = '#e8c87a'; x.font = '15px sans-serif'; x.fillText(mgMounted ? 'Tipo 24 · Ametralladora fija' : WEAPONS[current].name, w-30, h-70);
   x.fillStyle = '#f2ead6'; x.font = 'bold 32px monospace';
-  x.fillText(WEAPONS[current].melee ? '∞' : (WEAPONS[current].ammo + ' / ' + WEAPONS[current].reserve), w-30, h-40);
+  x.fillText(mgMounted ? Math.round((1-mgHeat)*100) + '%' : (WEAPONS[current].melee ? '∞' : (WEAPONS[current].ammo + ' / ' + WEAPONS[current].reserve)), w-30, h-40);
   x.textAlign = 'left';
   return c.toDataURL('image/png');
 };
-window.__state = () => ({ alive, paused, hp: player.hp, wave, ammo: WEAPONS[current].ammo, enemies: enemies.filter(e=>!e.userData.dead).length, frames: frameCount, toSpawn, crouching, aiming, cinematic: cinematic?cinematic.type:null, stats: {...stats} });
+window.__state = () => ({
+  alive, paused, hp: player.hp, wave, gameMode, diffKey, gfxLevel,
+  ammo: WEAPONS[current].ammo, grenades, mgMounted, score: stats.score,
+  enemies: enemies.filter(e=>!e.userData.dead).length,
+  tanketteHp: tankette ? tankette.userData.hp : 0,
+  rainActive, frames: frameCount, toSpawn, crouching, aiming,
+  cinematic: cinematic?cinematic.type:null, stats: {...stats}
+});
 window.__demo = {
   positions: () => enemies.map(e => [+e.position.x.toFixed(1), +e.position.z.toFixed(1)]),
   bring: () => enemies.forEach((e,i) => { if(!e.userData.dead) e.position.set(20 - i*4, DECK_TOP, -0.6 + i*0.6); }),
@@ -1715,6 +2550,8 @@ function applyModels(){
 }
 
 function boot(){
+  loadRecords();
+  applyGraphics(gfxLevel);
   const loader = new GLTFLoader();
   loader.setMeshoptDecoder(MeshoptDecoder);
   const modelKeys = Object.keys(MODEL_URLS);
@@ -1744,6 +2581,32 @@ function initAudio(){
   if(AC && !actx) actx = new AC();
   startAmbience();
 }
+function bindPillGroup(containerId, attr, onSelect){
+  const wrap = $(containerId);
+  if(!wrap) return;
+  wrap.addEventListener('click', ev => {
+    const btn = ev.target.closest('button');
+    if(!btn || !wrap.contains(btn)) return;
+    wrap.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    onSelect(btn.dataset[attr], btn);
+  });
+}
+bindPillGroup('modePills', 'mode', val => {
+  gameMode = (val === 'survival') ? 'survival' : 'campaign';
+  $('chapterPickRow').classList.toggle('hidden', gameMode !== 'campaign');
+  updateRecordBanner();
+});
+bindPillGroup('chapterPills', 'ch', val => {
+  startChapter = Math.max(0, Math.min(3, parseInt(val, 10) || 0));
+});
+bindPillGroup('diffPills', 'diff', val => {
+  if(DIFFS[val]) diffKey = val;
+});
+bindPillGroup('gfxPills', 'gfx', val => {
+  applyGraphics(val);
+});
+
 $('startBtn').addEventListener('click', () => { initAudio(); beginGame(false); });
 $('skipIntroStartBtn').addEventListener('click', () => { initAudio(); beginGame(true); });
 $('cineSkip').addEventListener('click', () => { initAudio(); endCinematic(); });
@@ -1755,9 +2618,23 @@ $('retryBtn').addEventListener('click', () => { initAudio(); beginGame(true); })
 $('againBtn').addEventListener('click', () => { initAudio(); beginGame(false); });
 $('pauseRestartBtn').addEventListener('click', () => { initAudio(); beginGame(true); });
 $('muteBtn').addEventListener('click', toggleMute);
+$('fpsBtn').addEventListener('click', () => {
+  showFps = !showFps;
+  $('fpsBox').classList.toggle('hidden', !showFps);
+  $('fpsBtn').textContent = 'FPS: ' + (showFps ? 'ON' : 'OFF');
+  fpsFrames = 0; fpsClock = performance.now();
+});
 $('sensRange').addEventListener('input', e => {
   mouseSens = parseFloat(e.target.value);
   $('sensVal').textContent = mouseSens.toFixed(1) + '×';
+});
+$('musicRange').addEventListener('input', e => {
+  musicVol = parseFloat(e.target.value);
+  $('musicVal').textContent = Math.round(musicVol*100) + '%';
+});
+$('sfxRange').addEventListener('input', e => {
+  sfxVol = parseFloat(e.target.value);
+  $('sfxVal').textContent = Math.round(sfxVol*100) + '%';
 });
 
 </script>

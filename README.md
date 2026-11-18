@@ -18,23 +18,30 @@ y abre `http://localhost:8124`.
 
 ## Controles
 
-| Tecla | Acción |
+| Tecla / Entrada | Acción |
 |---|---|
 | WASD | Moverse |
 | Ratón | Mirar (requiere clic en "COMIENZA LA DEFENSA" para fijar el puntero) |
-| Clic izquierdo | Disparar / atacar con dadao |
+| Clic izquierdo | Disparar / atacar con dadao / ráfaga en ametralladora |
 | Clic derecho / Q | Apuntar con precisión (ADS) |
+| G | Lanzar granada de palo Tipo 24 (eficaz contra grupos y la tanqueta) |
+| F | Montar / soltar ametralladora fija Tipo 24 (con escudo frontal y barra de calor) |
 | R | Recargar |
 | C | Agacharse / cubrirse tras los sacos de arena |
-| E | Usar caja de suministros y vendajes (junto a la posición china) |
+| E | Usar caja de suministros (salud, munición y granadas) |
 | 1 / 2 / 3 o Rueda | Fusil Chiang Kai-shek / Mauser C96 / dadao |
 | Mayús | Correr |
 | M | Silenciar / activar audio |
 | Espacio / Enter | Saltar cinemática 3D |
-| Esc | Pausa (incluye sensibilidad del ratón y reinicio) |
+| Esc | Pausa (sensibilidad, calidad gráfica, volumen Música/SFX, contador FPS y reinicio) |
+| Mando (Gamepad) | Sticks mover/apuntar, RT disparar, LT apuntar, RB granada, X recargar, Y armas, B agacharse |
 
 ## Características principales
 
+- **Armamento y combate táctico ampliado:** granadas de palo chinas Tipo 24 (`[G]`), ametralladora fija Tipo 24 montada junto al parapeto (`[F]`, cobertura frontal y gestión de calor), casquillos eyectados en 3D, indicador direccional de impacto y faroles colgantes destructibles sobre el puente.
+- **Clima dinámico, bengalas y enemigos especiales:** tormenta de lluvia GPU (`THREE.Points`, 1 draw call) con relámpagos en el Capítulo 3, bengalas de iluminación descendentes con una luz reutilizable, francotiradores imperiales con destello previo de mira y jefe **Tanqueta Tipo 94 Te-Ke** en el Capítulo 4 (y cada 4 oleadas en Supervivencia), vulnerable en su visor naranja y a granadas.
+- **Modos, selector de capítulos, dificultad y récords:** **Campaña histórica (4 capítulos)** con selector de capítulo inicial o **Supervivencia infinita (无尽抗战)**, tres dificultades (*Recluta*, *Soldado*, *Veterano 1937*), puntuación en vivo, rangos (`D`–`S`) y mejores marcas guardadas localmente (`localStorage`).
+- **Audio procedural, presets de rendimiento y soporte de mando:** percusión de guerra y motivos pentatónicos Web Audio con volumen independiente de música y efectos, calidad gráfica seleccionable (*Fluido* / *Equilibrado* / *Alto*), contador FPS en pantalla y soporte nativo para mandos (`Gamepad API`).
 - **Campaña completa en 4 capítulos (7–28 de julio de 1937) + Epílogo 1937–1945:**
   1. *Capítulo 1 (7 jul, 23:40):* el pretexto del soldado Shimura y los primeros disparos frente a Wanping.
   2. *Capítulo 2 (8 jul, 04:50):* bombardeo de artillería al alba y resistencia del mayor Jin Zhenzhong.
