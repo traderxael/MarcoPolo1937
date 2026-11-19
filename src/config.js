@@ -25,6 +25,95 @@ export const WEAPONS = {
   mp18:   { name:'伯格曼 MP-18 · Subfusil',      short:'MP-18',      clip:32, reserve:128, initReserve:128, ammo:32, dmg:24,  rate:0.095, reload:1.5,  spread:0.024, melee:false, auto:true,  adsFov:56, adsThirdFov:62, baseX:0 }
 };
 
+export const INVENTORY_MAX_SLOTS = 12;
+
+export const INVENTORY_ITEMS = [
+  {
+    id: 'rifle', cat: 'weapon', zh: '中正式步枪', name: 'Fusil Chiang Kai-shek', short: 'Fusil',
+    hotkey: '1', icon: 'rifle', color: '#e8c87a', droppable: false,
+    desc: 'Fusil automático principal de 7,92 mm con bayoneta calada.',
+    lore: 'Copia china del Mauser Standardmodell de 7,92 mm, arma estándar del 219.º Regimiento en Lugouqiao.'
+  },
+  {
+    id: 'pistol', cat: 'weapon', zh: '毛瑟 C96', name: 'Pistola Mauser C96', short: 'Mauser',
+    hotkey: '2', icon: 'pistol', color: '#e8c87a', droppable: false,
+    desc: 'Arma secundaria semiautomática de alta precisión y recarga veloz.',
+    lore: 'Pistola semiautomática de 7,63 mm muy valorada por oficiales y vanguardias del 29.º Ejército.'
+  },
+  {
+    id: 'sword', cat: 'weapon', zh: '大刀', name: 'Espada Dadao', short: 'Dadao',
+    hotkey: '3', icon: 'sword', color: '#e8c87a', droppable: false,
+    desc: 'Combate cuerpo a cuerpo letal; Clic der. / [Q] ejecuta parry contra bayonetas y katanas.',
+    lore: 'Sable pesado del Escuadrón de Dadao (大刀队); clic derecho o [Q] ejecuta parry contra bayonetas y katanas.'
+  },
+  {
+    id: 'mp18', cat: 'weapon', zh: '伯格曼 MP-18', name: 'Subfusil MP-18', short: 'MP-18',
+    hotkey: '4', icon: 'mp18', color: '#e8c87a', droppable: false,
+    desc: 'Alta cadencia de disparo a corta distancia; mejorable en la Tienda de Supervivencia.',
+    lore: 'Subfusil de 9 mm fabricado en arsenales chinos; devastador a corta distancia y mejorable en Supervivencia.'
+  },
+  {
+    id: 'grenade', cat: 'tactical', zh: '二四式手榴弹', name: 'Granada Tipo 24', short: 'Granada',
+    hotkey: 'G', maxStack: 4, icon: 'grenade', color: '#ff8a4c', droppable: false,
+    desc: 'Explosivo de palo con onda expansiva eficaz contra infantería, sacos y orugas de tanqueta.',
+    lore: 'Granada de mango estándar producida en China en 1937.'
+  },
+  {
+    id: 'molotov', cat: 'tactical', zh: '燃烧瓶', name: 'Cóctel Molotov', short: 'Molotov',
+    hotkey: 'X', maxStack: 4, icon: 'molotov', color: '#ff6e2a', droppable: false,
+    desc: 'Crea una zona incendiaria de 6,5 s que daña continuamente a infantería y vehículos blindados.',
+    lore: 'Arma incendiaria improvisada contra posiciones y blindados ligeros.'
+  },
+  {
+    id: 'bandage', cat: 'tactical', zh: '急救绷带', name: 'Vendaje de Campaña', short: 'Vendaje',
+    hotkey: 'H', maxStack: 4, icon: 'bandage', color: '#7dffb3', droppable: false,
+    desc: 'Aplica primeros auxilios inmediatos (+38 salud).',
+    lore: 'Botiquín individual de gasa esterilizada de la 37.ª División.'
+  },
+  {
+    id: 'mortar', cat: 'tactical', zh: '迫击炮支援', name: 'Mortero Aliado', short: 'Mortero',
+    hotkey: 'B', maxStack: 3, icon: 'mortar', color: '#6ad8ff', droppable: false,
+    desc: 'Solicita una salva de 3 proyectiles desde las baterías de Wanping sobre el punto de mira.',
+    lore: 'Fuego de apoyo coordinado por el mando del coronel Ji Xingwen.'
+  },
+  {
+    id: 'ration', cat: 'supply', zh: '行军干粮', name: 'Ración de Campaña', short: 'Ración',
+    maxStack: 4, icon: 'ration', color: '#7dffb3', droppable: true,
+    desc: 'Restaura +25 salud y +15 blindaje al instante.',
+    lore: 'Galletas secas y arroz comprimido de las trincheras de Wanping.'
+  },
+  {
+    id: 'plate', cat: 'supply', zh: '钢盔护板', name: 'Placa de Blindaje', short: 'Blindaje',
+    maxStack: 3, icon: 'plate', color: '#56d8ff', droppable: true,
+    desc: 'Refuerza +35 puntos de blindaje táctico (máx. 50).',
+    lore: 'Acero templado de repuesto para absorber metralla y fuego de fusil.'
+  },
+  {
+    id: 'ammo_pouch', cat: 'supply', zh: '备用弹药袋', name: 'Cartuchera de Munición', short: 'Munición',
+    maxStack: 4, icon: 'ammo', color: '#ffd447', droppable: true,
+    desc: 'Repone +30 reserva de Fusil, +15 Mauser C96 y +32 MP-18.',
+    lore: 'Peines de latón de 7,92 mm y cargadores extra recogidos en el puente.'
+  },
+  {
+    id: 'flare_kit', cat: 'supply', zh: '照明信号弹', name: 'Bengala Táctica', short: 'Bengala',
+    maxStack: 3, icon: 'flare', color: '#ffe89e', droppable: true,
+    desc: 'Ilumina todo el puente nocturno durante 14 s y otorga +50 pts de reconocimiento.',
+    lore: 'Bengala de magnesio usada para delatar infiltraciones nocturnas.'
+  },
+  {
+    id: 'adrenaline', cat: 'supply', zh: '行军热茶', name: 'Tónico del 29.º Ejército', short: 'Tónico',
+    maxStack: 3, icon: 'tonic', color: '#95f5a5', droppable: true,
+    desc: 'Durante 12 s otorga +20% velocidad de movimiento y +35% velocidad de recarga.',
+    lore: 'Infusión estimulante repartida antes de los contraataques nocturnos.'
+  },
+  {
+    id: 'intel_doc', cat: 'supply', zh: '日军情报', name: 'Documento Táctico', short: 'Intelig.',
+    maxStack: 3, icon: 'intel', color: '#ff9c5b', droppable: false,
+    desc: 'Transmite órdenes interceptadas al mando de Wanping (+250 PTS y despacho por radio).',
+    lore: 'Mapas de despliegue y códigos recuperados de oficiales enemigos o vehículos.'
+  }
+];
+
 export const ENEMY_ROLES = {
   rifleman:  { tint:0x8f9478, hp:100, speed:3.3, stopDistBase:15,   fireRate:1.45, scale:1.0,  pts:100, label:'Fusilero japonés' },
   charger:   { tint:0x64704b, hp:85,  speed:4.9, stopDistBase:1.85, fireRate:1.0,  scale:1.0,  pts:120, label:'Asaltante japonés' },

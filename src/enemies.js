@@ -244,6 +244,7 @@ export function damageTankette(dmg, critical, hitWorldPos = null, weaponName = '
     addScore(500);
     S.stats.kills++;
     unlockMedal('tank_hunter');
+    if (S.hooks.dropTanketteLoot) S.hooks.dropTanketteLoot(tx, tz);
     if (S.hooks.addKillfeedEntry) {
       S.hooks.addKillfeedEntry({ killer: 'Tú', victim: 'Tanqueta Tipo 94 Te-Ke', weapon: weaponName, headshot: Boolean(critical && dmgKind !== 'blast'), pts: 500 });
     }
@@ -273,6 +274,7 @@ export function killEnemy(e, fromGrenade = false, opt = {}) {
     if (S.stats.headshots >= 5) unlockMedal('headshot5');
   }
   unlockMedal('first_blood');
+  if (S.hooks.maybeDropEnemyLoot) S.hooks.maybeDropEnemyLoot(e.position, e.userData.role);
 
   const vLabel = (e.userData.spec && e.userData.spec.label) || 'Soldado japonés';
   if (opt.isAlly) {

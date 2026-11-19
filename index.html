@@ -53,13 +53,13 @@
   <div id="hitmarker"></div>
   <div id="fpsBox" class="panel hidden">FPS: --</div>
   <div id="bottomleft" class="panel">
-    <div class="lbl">BLINDAJE / SALUD <span id="camTag" style="color:#b9b4a6;margin-left:8px;">[1.ª PERSONA · V]</span><span id="crouchTag" style="color:#e8c87a;margin-left:8px;"></span></div>
+    <div class="lbl">BLINDAJE / SALUD <span id="camTag" style="color:#b9b4a6;margin-left:8px;">[1.ª PERSONA · V]</span><span id="crouchTag" style="color:#e8c87a;margin-left:8px;"></span><span id="boostTag" style="color:#7dffb3;margin-left:8px;"></span></div>
     <div id="armorBarWrap"><div id="armorBar"></div></div>
     <div class="bar"><div id="hpbar"></div></div>
   </div>
   <div id="bottomright" class="panel">
     <div id="wname">中正式步枪 · Fusil Automático</div>
-    <div id="ammo">30 / 120</div>
+    <div class="ammoRow"><button type="button" id="invHudBtn" class="invHudBtn" aria-label="Abrir inventario de campaña">MOCHILA [I] <b id="invBadgeCount">4/12</b></button><div id="ammo">30 / 120</div></div>
     <div class="tacticalRow">
       <span>Granada [G]: <b id="grenadeCount">3</b></span>
       <span>Molotov [X]: <b id="molotovCount">1</b></span>
@@ -67,7 +67,7 @@
       <span>Mortero [B]: <b id="mortarCount">1</b></span>
     </div>
     <div id="mgHeatWrap" class="hidden"><div class="lbl">CALOR AMETRALLADORA</div><div class="bar" style="width:160px"><div id="mgHeatBar"></div></div></div>
-    <div class="hint">1–4 armas · Mantén clic izq. ráfaga · Der./Q apuntar · V cámara · Espacio saltar · C agachar · T escuadrón · G granada · X molotov · H vendaje · B mortero · F ametralladora · R recargar · E suministros</div>
+    <div class="hint">1–4 armas · I/Tab inventario · Mantén clic izq. ráfaga · Der./Q apuntar · V cámara · Espacio saltar · C agachar · T escuadrón · G granada · X molotov · H vendaje · B mortero · F ametralladora · R recargar · E suministros/botín</div>
   </div>
   <div id="lockHint">CLIC EN LA PANTALLA PARA FIJAR EL RATÓN</div>
   <div id="interactPrompt"></div>
@@ -88,8 +88,39 @@
     <button class="tBtn" id="tCamBtn">CAM [V]</button>
     <button class="tBtn" id="tSquadBtn">ORD [T]</button>
     <button class="tBtn" id="tUseBtn">USAR</button>
+    <button type="button" class="tBtn" id="tInvBtn">MOCH</button>
   </div>
 </div>
+
+<dialog id="inventoryDialog" closedby="any" aria-labelledby="invTitle">
+  <div class="invHead">
+    <div>
+      <div class="kicker">军需背包 · EQUIPO DEL 29.º EJÉRCITO</div>
+      <h1 id="invTitle">Inventario de Campaña</h1>
+    </div>
+    <form method="dialog">
+      <button type="submit" id="invCloseBtn" class="pillBtn invCloseBtn" autofocus>CERRAR [I / ESC]</button>
+    </form>
+  </div>
+  <div class="invMetaBar">
+    <span>SALUD <b id="invHpVal">100/100</b></span>
+    <span>BLINDAJE <b id="invArmorVal">50/50</b></span>
+    <span>PUNTOS <b id="invPtsVal">0 PTS</b></span>
+    <span>MOCHILA <b id="invCapVal">4/12</b></span>
+    <span id="invBoostNote" class="invBoostNote">Sin estimulantes activos</span>
+  </div>
+  <div class="pillGroup invFilters" id="invFilters" role="group" aria-label="Filtrar categorías del inventario">
+    <button type="button" class="pillBtn active" data-filter="all" aria-pressed="true">Todos</button>
+    <button type="button" class="pillBtn" data-filter="weapon" aria-pressed="false">Armas</button>
+    <button type="button" class="pillBtn" data-filter="tactical" aria-pressed="false">Táctico</button>
+    <button type="button" class="pillBtn" data-filter="supply" aria-pressed="false">Mochila</button>
+  </div>
+  <div class="invBody">
+    <div id="invGrid" class="invGrid" role="region" aria-label="Objetos en inventario"></div>
+    <section id="invDetail" class="invDetail" aria-label="Detalle del objeto seleccionado"></section>
+  </div>
+  <div id="invStatus" class="invStatus" aria-live="polite"></div>
+</dialog>
 
 <div id="squadWheel" role="dialog" aria-label="Órdenes al escuadrón">
   <div class="swPanel">
@@ -195,7 +226,7 @@
     </div>
     <div class="keys">
       <b>WASD</b> mover · <b>Espacio</b> saltar · <b>V</b> cámara 1.ª / 3.ª persona (hombro) · <b>Ratón</b> mirar · <b>Mantén clic izq.</b> disparar · <b>Clic der./Q</b> apuntar o parry dadao<br>
-      <b>1–4</b> armas (Fusil/Mauser/Dadao/MP-18) · <b>T</b> órdenes escuadrón · <b>G</b> granada · <b>X</b> molotov · <b>H</b> vendaje · <b>B</b> mortero aliado · <b>F</b> ametralladora · <b>C</b> agacharse · <b>R</b> recargar · <b>E</b> suministros · <b>M</b> audio · <b>ESC</b> pausa
+      <b>1–4</b> armas (Fusil/Mauser/Dadao/MP-18) · <b>I / Tab</b> inventario · <b>T</b> órdenes escuadrón · <b>G</b> granada · <b>X</b> molotov · <b>H</b> vendaje · <b>B</b> mortero aliado · <b>F</b> ametralladora · <b>C</b> agacharse · <b>R</b> recargar · <b>E</b> suministros/botín · <b>M</b> audio · <b>ESC</b> pausa
     </div>
   </div>
 </div>

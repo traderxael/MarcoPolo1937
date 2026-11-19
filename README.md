@@ -1,6 +1,6 @@
 # 卢沟桥 1937 — La Defensa del Puente
 
-> **▶ Jugar ahora en el navegador (GitHub Pages):** https://traderxael.github.io/MarcoPolo1937/
+> **▶ Jugar ahora en el navegador (GitHub Pages):** <https://traderxael.github.io/MarcoPolo1937/>
 
 FPS de campaña en Three.js ambientado en el **Incidente del Puente de Marco Polo** (卢沟桥事变, 7 de julio de 1937), hecho que inició la guerra total entre China y Japón.
 
@@ -19,7 +19,7 @@ y abre `http://localhost:8124`.
 ## Controles
 
 | Tecla / Entrada | Acción |
-|---|---|
+| --- | --- |
 | WASD | Moverse |
 | Espacio | Saltar (sobre sacos de arena/obstáculos) · En cinemáticas: saltar escena |
 | V | Alternar cámara **1.ª persona** / **3.ª persona sobre el hombro** (viendo a tu soldado chino) |
@@ -34,19 +34,21 @@ y abre `http://localhost:8124`.
 | F | Montar / soltar ametralladora fija Tipo 24 (con escudo frontal y barra de calor) |
 | R | Recargar |
 | C | Agacharse / cubrirse tras los sacos de arena (reduce dispersión) |
-| E | Usar caja de suministros (salud, blindaje, munición y equipo táctico) |
+| E | Usar caja de suministros o recoger botín de campaña en el puente (salud, blindaje, munición, ración y equipo) |
+| I / Tab | Abrir / cerrar Inventario de Campaña / Mochila táctica (armas, consumibles, suministros saqueados y transmisión de inteligencia) |
 | 1 / 2 / 3 / 4 o Rueda | Fusil automático Chiang Kai-shek (30/120) / Mauser C96 / Dadao / Subfusil **MP-18** (en Campaña o desbloqueado/mejorado hasta nivel 3 en la Tienda de Supervivencia) |
 | Mayús | Correr |
 | M | Silenciar / activar audio |
 | Esc | Pausa (sensibilidad fina, calidad gráfica, volumen Música/SFX, contador FPS, controles táctiles y reinicio) |
-| Controles táctiles | En móvil/tablet (o activables manualmente desde Pausa): joystick virtual de movimiento y botones de disparo, mira, salto, recarga, granada, molotov, curación, cámara `[V]` y órdenes `[T]` |
-| Mando (Gamepad) | Sticks mover/apuntar, RT disparar, LT apuntar, A saltar/MG, LB cámara 1.ª/3.ª, RB granada, X recargar, Y armas, B agacharse |
+| Controles táctiles | En móvil/tablet (o activables manualmente desde Pausa): joystick virtual de movimiento y botones de disparo, mira, salto, recarga, granada, molotov, curación, cámara `[V]`, órdenes `[T]` e inventario `MOCH` |
+| Mando (Gamepad) | Sticks mover/apuntar, RT disparar, LT apuntar, A saltar/MG, LB cámara 1.ª/3.ª, RB granada, X recargar, Y armas, B agacharse, Select/Back inventario |
 
 ## Características principales
 
 - **Post-procesado HDR offline y PBR procedural (`src/postfx.js`, `src/textures.js`):** renderizado con `ACESFilmicToneMapping`, pase de Bloom selectivo (`HalfFloatType`) con umbral, viñeta y grano sutiles sin dependencias externas, texturas PBR procedurales (`map`, `roughnessMap`, `bumpMap`) con charcos/humedad dinámica durante la lluvia y cielo shader + paletas atmosféricas progresivas por capítulo.
 - **Verticalidad y destrucción táctica del campo de batalla:** rampa transitable hasta las **almenas superiores de la puerta de Wanping**, **puente ferroviario paralelo norte** con pasarela lateral de enlace, **6 barricadas de sacos destructibles** en dos fases visuales, **4 barriles de munición explosivos** y cráteres persistentes reutilizables.
 - **Arsenal ampliado, parry con Dadao y Tienda de Supervivencia:** subfusil **MP-18 (`[4]`)** de alta cadencia, **Cóctel Molotov (`[X]`)** incendiario, **blindaje táctico** (absorbe parte del daño antes de afectar a la salud), **vendaje rápido (`[H]`)**, apoyo de **Mortero Aliado (`[B]` / `[5]`)**, parry defensivo con **Dadao (`Clic derecho` / `[Q]`)** capaz de reflejar estocadas de oficiales con katana, y **Tienda de Supervivencia** entre oleadas para mejorar el MP-18 y reponer blindaje/munición/apoyos.
+- **Inventario de Campaña (`[I]` / `[Tab]`) y botín 3D en el puente (`src/inventory.js`):** gestión unificada de armamento, equipo táctico y mochila de `12` unidades con `6` suministros de campo recolectables de enemigos, tanqueta y caja de suministros (`Ración de Campaña`, `Placa de Blindaje`, `Cartuchera de Munición`, `Bengala Táctica`, `Tónico del 29.º Ejército` y `Documento Táctico` transmisible por `+250 PTS`), opción de soltar objetos en el puente y diálogo `<dialog>` accesible compatible con teclado, ratón, mando y táctil.
 - **Escuadrón táctico (`[T]`) e IA enemiga especializada:** rueda radial `[T]` para ordenar a tus aliados del 29.º Ejército (*Cubrirse*, *Avanzar*, *Mantener posición* o *Fuego concentrado*). La IA japonesa reacciona al fuego de supresión (agachándose o flanqueando) e incluye **granaderos Tipo 97**, **morteros enemigos** con anillos de aviso en el suelo, **oficiales con katana**, **cascos voladores** en tiros a la cabeza y el jefe **Tanqueta Tipo 94 multiparte** (orugas, visor, torreta y casco dañables por separado con indicadores en el HUD).
 - **Audio posicional 3D, Mapa Táctico 1937 y Medallas de Honor:** efectos espaciales 3D con Web Audio (`PannerNode`), corneta de carga (`冲锋号`), silbato de oficiales y estática de radio; **Mapa Táctico de 1937** animado en canvas antes de cada capítulo y en la tienda; y **6 Medallas de Honor** persistentes en `localStorage` (`mp1937_records_v1`).
 - **Disparo automático, mira dinámica y números flotantes de daño:** el fusil y el subfusil MP-18 disparan ráfagas continuas al mantener pulsado el clic izquierdo con una retícula dinámica de 4 marcas que se abre al disparar, correr o saltar y se cierra al agacharse o apuntar (ADS), acompañada de números flotantes de daño en el mundo 3D (dorados en tiros a la cabeza y visor crítico).
@@ -97,7 +99,7 @@ Los GLB se optimizaron con **glTF Transform** (`optimize --compress meshopt --si
 
 - Modelos activos: **15,3 MB** (antes 130,6 MB → **-88 %**).
 - Los originales sin optimizar se conservan en `models/_originales/` (169 MB) por si se quiere revertir.
-- **Arquitectura modular ES nativos sin bundler (`src/`):** el código se organiza en módulos nativos del navegador (`src/main.js`, `src/config.js`, `src/state.js`, `src/textures.js`, `src/postfx.js`, `src/pools.js`, `src/world.js`, `src/audio.js`, `src/squad.js`, `src/weapons.js`, `src/enemies.js`, `src/hud.js` y `src/styles.css`) compatibles 100 % sin pasos de compilación con `ABRIR_JUEGO.bat` y GitHub Pages.
+- **Arquitectura modular ES nativos sin bundler (`src/`):** el código se organiza en módulos nativos del navegador (`src/main.js`, `src/config.js`, `src/state.js`, `src/textures.js`, `src/postfx.js`, `src/pools.js`, `src/world.js`, `src/audio.js`, `src/squad.js`, `src/weapons.js`, `src/enemies.js`, `src/hud.js`, `src/inventory.js` y `src/styles.css`) compatibles 100 % sin pasos de compilación con `ABRIR_JUEGO.bat` y GitHub Pages.
 - **Rendimiento en tiempo real y Dynamic Resolution Scaling (DRS):** los 30 leones de piedra del puente utilizan **`THREE.LOD`** (modelo GLB de alta resolución solo a menos de 15 m y malla ligera a distancia), los soldados proyectan sombras mediante cilindros ligeros de respaldo (`SHADOW_PROXY_GEO`), **`InstancedMesh` y pools reutilizables** (`src/pools.js`) gestionan trazadoras, casquillos, chispas, luz de fogonazo y cráteres con mínimas llamadas de dibujo, el agua y la lluvia se animan en GPU (`onBeforeCompile`), y la resolución se escala dinámicamente (**DRS**) en los presets *Fluido* (`low`) y *Equilibrado* (`med`) para sostener ~60 FPS.
 
 La estructura del puente, arcos, muros, río y sacos de arena sigue siendo geometría procedural de Three.js. El juego funciona sin conexión una vez descargados `three.module.js`, `loaders/GLTFLoader.js`, `utils/BufferGeometryUtils.js` y la carpeta `models/`. Si algún GLB falla, se mantiene el modelo procedural de respaldo.

@@ -108,10 +108,15 @@ export const S = {
   cinematic: null,
   tacticalBrief: null,
   shopOpen: false,
+  inventoryOpen: false,
+  invClosedAt: 0,
+  inventoryFilter: 'all',
+  inventorySelected: 'rifle',
   squadOrder: 'cover',
   squadWheelOpen: false,
   parryTimer: 0,
   bandageTimer: 0,
+  boostTimer: 0,
 
   // Tactical inventory & weapons
   current: 'rifle',
@@ -124,6 +129,7 @@ export const S = {
   molotovs: 1,
   bandages: 2,
   mortarStrikes: 1,
+  inventory: { ration: 1, plate: 1, ammo_pouch: 1, flare_kit: 0, adrenaline: 1, intel_doc: 0 },
   mp18Owned: false,
   mp18Tier: 1,
   mgMounted: false,
@@ -170,6 +176,7 @@ export const S = {
   enemyGrenades: [],
   enemyMortars: [],
   flyingHelmets: [],
+  lootDrops: [],
   effects: [],
 
   // Cross-module callbacks registered at boot

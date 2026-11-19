@@ -102,7 +102,13 @@ canvas { display:block; }
 
 #bottomright { bottom:26px; right:28px; text-align:right; }
 #wname { font-size:15px; color:#e8c87a; letter-spacing:1px; }
-#ammo { font-family:monospace; font-size:32px; font-weight:700; color:#f2ead6; margin-top:2px; }
+.ammoRow { display:flex; align-items:center; justify-content:flex-end; gap:10px; margin-top:2px; }
+.invHudBtn { pointer-events:auto; cursor:pointer; padding:4px 9px; border:1px solid #6d6350;
+  background:rgba(16,20,26,.86); color:#e8c87a; font-size:11px; letter-spacing:1px;
+  font-family:inherit; transition:border-color .12s, background .12s; }
+.invHudBtn:hover { border-color:#ffd447; background:#3a281d; }
+.invHudBtn b { color:#ffd447; font-family:monospace; margin-left:3px; }
+#ammo { font-family:monospace; font-size:32px; font-weight:700; color:#f2ead6; }
 .tacticalRow { display:flex; justify-content:flex-end; gap:12px; margin-top:4px; font-size:12px; color:#d8d2c4; letter-spacing:.8px; flex-wrap:wrap; }
 .tacticalRow span b { color:#e8c87a; font-family:monospace; font-size:14px; }
 #mgHeatWrap { margin-top:6px; display:flex; flex-direction:column; align-items:flex-end; }
@@ -282,12 +288,89 @@ canvas { display:block; }
   .bar, #armorBarWrap { width:116px; }
   #bottomright { bottom:10px; right:10px; max-width:58vw; }
   #wname { font-size:11px; }
+  .ammoRow { gap:6px; }
+  .invHudBtn { font-size:9px; padding:3px 6px; letter-spacing:.5px; }
   #ammo { font-size:20px; }
   .tacticalRow { font-size:10px; gap:6px; justify-content:flex-end; }
   #touchStickZone { left:12px; bottom:96px; width:104px; height:104px; }
   #touchButtons { right:12px; bottom:106px; grid-template-columns:repeat(3, 50px); gap:6px; }
   .tBtn { height:40px; font-size:10px; }
 }
+
+/* Native accessible inventory dialog (1937 Field Backpack) */
+dialog:modal { overscroll-behavior:contain; }
+dialog::backdrop {
+  background:rgba(3,5,10,.78); backdrop-filter:blur(3px);
+  overflow:hidden; overscroll-behavior:contain;
+}
+#inventoryDialog {
+  margin:auto; width:min(880px, 94vw); max-height:90dvh; padding:22px 24px;
+  border:1px solid #6d6350;
+  background:linear-gradient(160deg, rgba(36,34,28,.98), rgba(14,16,22,.98));
+  color:#e8e4d8; box-shadow:0 22px 72px rgba(0,0,0,.85); overflow-y:auto;
+}
+#inventoryDialog[open] { display:flex; flex-direction:column; gap:12px; }
+#inventoryDialog :is(button, a):focus-visible { outline:2px solid #ffd447; outline-offset:2px; }
+.invHead { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+.invHead .kicker { font-size:11px; letter-spacing:4px; color:#b4442e; font-weight:700; }
+.invHead h1 { font-size:26px; color:#e8c87a; letter-spacing:2px; margin-top:2px; }
+.invCloseBtn { min-block-size:34px; font-weight:700; }
+.invMetaBar {
+  display:flex; flex-wrap:wrap; gap:14px; align-items:center;
+  padding:8px 12px; border:1px solid #4c4536; background:rgba(10,12,16,.62);
+  font-size:12px; color:#b9b4a6;
+}
+.invMetaBar b { color:#ffd447; font-family:monospace; margin-left:4px; }
+.invBoostNote { margin-left:auto; color:#7dffb3; font-size:11px; }
+.invFilters { gap:8px; }
+.invFilters .pillBtn { min-block-size:32px; }
+.invBody { display:grid; grid-template-columns:1.25fr 1fr; gap:16px; align-items:start; }
+.invGrid { display:grid; grid-template-columns:repeat(auto-fill, minmax(112px, 1fr)); gap:8px; }
+.invSlot {
+  cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:space-between;
+  gap:4px; padding:8px 7px; min-block-size:78px; min-inline-size:44px;
+  border:1px solid #5a5140; background:rgba(18,21,28,.9); color:#eee7d5;
+  font-family:inherit; text-align:center; position:relative;
+  transition:border-color .12s, background .12s;
+}
+.invSlot:hover { border-color:#e8c87a; background:rgba(44,36,24,.88); }
+.invSlot.selected { border-color:#ffd447; background:rgba(82,42,26,.78); }
+.invSlot.equipped { box-shadow:inset 0 0 0 1px #ffd447; }
+.invSlot.empty { opacity:.55; }
+.invSlotTop { width:100%; display:flex; justify-content:space-between; align-items:center; font-size:10px; }
+.invHk { color:#9e988a; font-family:monospace; }
+.invQty { color:#ffd447; font-family:monospace; font-weight:700; }
+.invIcon { display:flex; align-items:center; justify-content:center; height:28px; }
+.invSlotName { font-size:11px; font-weight:600; color:#f2ead6; line-height:1.15; }
+.invEqTag {
+  font-size:9px; letter-spacing:1px; padding:1px 5px;
+  background:#7d2f20; color:#ffd447; border:1px solid #e8c87a;
+}
+.invDetail {
+  padding:14px 16px; border:1px solid #5a5140; background:rgba(12,15,20,.9);
+  display:flex; flex-direction:column; gap:8px; min-height:220px;
+}
+.invDetCat { font-size:10px; letter-spacing:2px; color:#b4442e; font-weight:700; }
+.invDetail h2 { font-size:20px; color:#e8c87a; letter-spacing:1px; }
+.invDetMeta { font-size:12px; font-family:monospace; color:#ffd447; }
+.invDetDesc { font-size:13px; color:#e4decb; line-height:1.5; }
+.invDetLore { font-size:12px; color:#a9a292; line-height:1.45; border-left:2px solid #5a5140; padding-left:10px; }
+.invDetActions { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+.invActBtn { margin-top:0; padding:8px 14px; font-size:12px; letter-spacing:1.4px; min-block-size:38px; }
+.invActBtn.secondary { margin-left:0; }
+.invActBtn:disabled { opacity:.42; cursor:not-allowed; }
+.invStatus { min-height:18px; font-size:12px; color:#7dffb3; letter-spacing:.5px; }
+
+@media (max-width: 760px) {
+  .invBody { grid-template-columns:1fr; }
+  #inventoryDialog[open] { padding:16px 14px; }
+  .invHead h1 { font-size:21px; }
+  .invBoostNote { margin-left:0; }
+}
+@media (pointer: coarse) {
+  #inventoryDialog .pillBtn, #inventoryDialog .invActBtn { min-block-size:44px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .kf-item, #streakBanner, #medalToast { transition:opacity .12s linear; transform:none; }
   #streakBanner { transform:translate3d(-50%,-50%,0); }

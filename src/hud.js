@@ -84,7 +84,7 @@ export function showDirDamage(fromPos) {
 export function updateLockHint() {
   const el = $('lockHint');
   if (!el) return;
-  const needLock = S.alive && !S.paused && !S.cinematic && !S.tacticalBrief && !S.shopOpen && !S.squadWheelOpen &&
+  const needLock = S.alive && !S.paused && !S.cinematic && !S.tacticalBrief && !S.shopOpen && !S.squadWheelOpen && !S.inventoryOpen &&
     !isTouchActive() && document.pointerLockElement !== S.renderer?.domElement;
   if (needLock !== _lastLockHint) {
     _lastLockHint = needLock;
@@ -321,6 +321,10 @@ export function drawRadar() {
   ctx.fillRect(toX(32) - 2, toY(3.2) - 2, 4, 4);
   ctx.fillStyle = S.mgMounted ? '#55e0ff' : '#d5a23c';
   ctx.fillRect(toX(24.5) - 2.5, toY(-2.0) - 2.5, 5, 5);
+  for (const d of S.lootDrops) {
+    ctx.fillStyle = '#7dffb3';
+    ctx.fillRect(toX(d.x) - 1.5, toY(d.z) - 1.5, 3, 3);
+  }
 
   // Enemy mortar warning rings
   for (const m of S.enemyMortars) {
@@ -507,7 +511,7 @@ export function closeTacticalBriefing() {
 }
 
 export function toggleSquadWheel(forceState = null) {
-  if (!S.alive || S.paused || S.cinematic || S.shopOpen) return;
+  if (!S.alive || S.paused || S.cinematic || S.shopOpen || S.inventoryOpen) return;
   const next = forceState !== null ? forceState : !S.squadWheelOpen;
   S.squadWheelOpen = next;
   if ($('squadWheel')) $('squadWheel').classList.toggle('open', next);
@@ -557,6 +561,7 @@ function buyShopItem(item) {
     WEAPONS.pistol.reserve = Math.min(80, WEAPONS.pistol.reserve + 30);
     S.grenades = Math.min(4, S.grenades + 2);
     S.bandages = Math.min(4, S.bandages + 2);
+    if (S.hooks.grantSupplyCrateLoot) S.hooks.grantSupplyCrateLoot();
   }
   playSupply();
   renderShopCards();
@@ -564,6 +569,7 @@ function buyShopItem(item) {
 }
 
 export function openShop(onContinue) {
+  if (S.hooks.closeInventory) S.hooks.closeInventory(false);
   S.shopOpen = true;
   S.shopContinueCb = onContinue;
   S.mouseDownLeft = false; S.gpFiring = false; S.touchFiring = false;
@@ -594,8 +600,9 @@ export function isTouchActive() {
 export function syncTouchControlsVisibility() {
   const el = $('touchControls');
   if (!el) return;
-  const show = S.alive && !S.paused && !S.cinematic && !S.shopOpen && !S.tacticalBrief && isTouchActive();
+  const show = S.alive && !S.paused && !S.cinematic && !S.shopOpen && !S.tacticalBrief && !S.inventoryOpen && isTouchActive();
   el.classList.toggle('active', show);
+  if (show && document.pointerLockElement) document.exitPointerLock();
 }
 
 export function initTouchControls() {
@@ -658,6 +665,7 @@ export function initTouchControls() {
   tap('tHealBtn',   () => { if (S.hooks.useBandage) S.hooks.useBandage(); });
   tap('tCamBtn',    () => { if (S.hooks.toggleCameraMode) S.hooks.toggleCameraMode(); });
   tap('tSquadBtn',  () => { toggleSquadWheel(); });
+  tap('tInvBtn',    () => { if (S.hooks.toggleInventory) S.hooks.toggleInventory(); });
   tap('tUseBtn',    () => {
     if (S.mgMounted || Math.hypot(S.player.pos.x - 24.5, S.player.pos.z + 2.0) < 3.2) {
       if (S.hooks.toggleMountMG) S.hooks.toggleMountMG();

@@ -596,7 +596,10 @@ export function shoot() {
 
 export function tryUseSupply() {
   const d = Math.hypot(S.player.pos.x - 32, S.player.pos.z - 3.2);
-  if (d >= 3.4 || S.supplyCooldown > 0 || S.player.feetY > 8.5) return;
+  if (d >= 3.4 || S.supplyCooldown > 0 || S.player.feetY > 8.5) {
+    if (S.hooks.tryCollectNearbyLoot) S.hooks.tryCollectNearbyLoot();
+    return;
+  }
   const diff = DIFFS[S.diffKey] || DIFFS.normal;
   S.player.hp = Math.min(100, S.player.hp + 35);
   S.player.armor = Math.min(50, S.player.armor + 25);
@@ -607,8 +610,9 @@ export function tryUseSupply() {
   S.molotovs = Math.min(3, S.molotovs + 1);
   S.bandages = Math.min(4, S.bandages + 1);
   S.supplyCooldown = diff.supplyCd;
+  if (S.hooks.grantSupplyCrateLoot) S.hooks.grantSupplyCrateLoot();
   playSupply();
-  if (S.hooks.showMsg) S.hooks.showMsg('SUMINISTROS, BLINDAJE, VENDAJE Y MOLOTOV RECOGIDOS', 1.6);
+  if (S.hooks.showMsg) S.hooks.showMsg('SUMINISTROS, BLINDAJE, VENDAJE, RACIÓN Y MUNICIÓN', 1.6);
   if (S.hooks.updateHUD) S.hooks.updateHUD();
 }
 

@@ -32,12 +32,19 @@ import {
   spawnDamageNumber, syncTouchControlsVisibility, toggleSquadWheel, updateCrosshair,
   updateDamageNumbers, updateHUD, updateKillfeedAndStreak, updateLockHint, updateRecordBanner
 } from './hud.js';
+import {
+  clearLootDrops, closeInventory, dropTanketteLoot, getInventoryUsedSlots,
+  getNearestLootDrop, grantSupplyCrateLoot, initInventoryUI, maybeDropEnemyLoot,
+  openInventory, resetInventory, spawnLootDrop, syncInventoryBadge, toggleInventory,
+  tryCollectNearbyLoot, updateLootDrops, useInventoryItem
+} from './inventory.js';
 
 // ---------- boot world & systems ----------
 initWorld();
 buildViewModels();
 buildPlayerAvatar();
 initTouchControls();
+initInventoryUI();
 
 // Register cross-module hooks (eliminates circular imports)
 Object.assign(S.hooks, {
@@ -59,6 +66,17 @@ Object.assign(S.hooks, {
   renderAllMedals,
   showMedalToast,
   toggleSquadWheel,
+  switchWeapon,
+  openInventory,
+  closeInventory,
+  toggleInventory,
+  isTouchActive,
+  syncTouchControlsVisibility,
+  updateLockHint,
+  maybeDropEnemyLoot,
+  dropTanketteLoot,
+  grantSupplyCrateLoot,
+  tryCollectNearbyLoot,
   lockPointer,
   triggerJump,
   startReload,
@@ -97,7 +115,7 @@ export function lockPointer() {
 }
 
 function toggleCameraMode() {
-  if (!S.alive || S.paused || S.cinematic || S.mgMounted || S.shopOpen || S.tacticalBrief) return;
+  if (!S.alive || S.paused || S.cinematic || S.mgMounted || S.shopOpen || S.tacticalBrief || S.inventoryOpen) return;
   S.thirdPerson = !S.thirdPerson;
   S.playerAvatar.position.set(S.player.pos.x, S.player.feetY, S.player.pos.z);
   S.playerAvatar.rotation.y = S.yaw + Math.PI;
@@ -106,7 +124,7 @@ function toggleCameraMode() {
 }
 
 function triggerJump() {
-  if (!S.alive || S.paused || S.cinematic || S.mgMounted || S.shopOpen || S.tacticalBrief) return;
+  if (!S.alive || S.paused || S.cinematic || S.mgMounted || S.shopOpen || S.tacticalBrief || S.inventoryOpen) return;
   if (S.player.onGround) {
     if (S.crouching) {
       S.crouching = false;
@@ -177,6 +195,10 @@ addEventListener('keydown', e => {
     if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); closeTacticalBriefing(); }
     return;
   }
+  if (S.inventoryOpen) {
+    if (e.code === 'KeyI' || e.code === 'Tab') { e.preventDefault(); if (!e.repeat) closeInventory(true); }
+    return;
+  }
   if (S.squadWheelOpen) {
     if (e.code === 'Digit1') { setSquadOrder('cover'); return; }
     if (e.code === 'Digit2') { setSquadOrder('advance'); return; }
@@ -184,7 +206,12 @@ addEventListener('keydown', e => {
     if (e.code === 'Digit4') { setSquadOrder('focus'); return; }
     if (e.code === 'KeyT' || e.code === 'Escape') { e.preventDefault(); if (!e.repeat) toggleSquadWheel(false); return; }
   }
-  if (e.code === 'Escape' && S.alive && !S.paused && !S.cinematic && !S.shopOpen && document.pointerLockElement !== S.renderer.domElement && !e.repeat) {
+  if ((e.code === 'KeyI' || e.code === 'Tab') && S.alive && !S.paused && !S.cinematic && !S.shopOpen && !S.tacticalBrief) {
+    e.preventDefault();
+    if (!e.repeat) openInventory();
+    return;
+  }
+  if (e.code === 'Escape' && S.alive && !S.paused && !S.cinematic && !S.shopOpen && !S.inventoryOpen && (performance.now() - (S.invClosedAt || 0)) > 120 && document.pointerLockElement !== S.renderer.domElement && !e.repeat) {
     pauseGame();
     return;
   }
@@ -225,7 +252,7 @@ addEventListener('blur', () => {
 addEventListener('contextmenu', e => e.preventDefault());
 
 addEventListener('mousemove', e => {
-  if (S.cinematic || !S.alive || S.paused || S.shopOpen || S.tacticalBrief || S.squadWheelOpen) return;
+  if (S.cinematic || !S.alive || S.paused || S.shopOpen || S.tacticalBrief || S.squadWheelOpen || S.inventoryOpen) return;
   if (document.pointerLockElement !== S.renderer.domElement) return;
   const rawX = e.movementX || 0;
   const rawY = e.movementY || 0;
@@ -246,7 +273,7 @@ addEventListener('mousemove', e => {
 });
 
 addEventListener('mousedown', e => {
-  if (S.cinematic || !S.alive || S.paused || S.shopOpen || S.tacticalBrief || S.squadWheelOpen) return;
+  if (S.cinematic || !S.alive || S.paused || S.shopOpen || S.tacticalBrief || S.squadWheelOpen || S.inventoryOpen) return;
   if (isTouchActive()) return;
   if (document.pointerLockElement !== S.renderer.domElement) {
     if (e.target === S.renderer.domElement || e.target === document.body) lockPointer();
@@ -265,7 +292,7 @@ addEventListener('mouseup', e => {
 });
 
 addEventListener('wheel', e => {
-  if (!S.alive || S.paused || S.cinematic || S.mgMounted || document.pointerLockElement !== S.renderer.domElement) return;
+  if (!S.alive || S.paused || S.cinematic || S.mgMounted || S.inventoryOpen || document.pointerLockElement !== S.renderer.domElement) return;
   const order = S.mp18Owned ? ['rifle', 'pistol', 'sword', 'mp18'] : ['rifle', 'pistol', 'sword'];
   const step = e.deltaY > 0 ? 1 : (order.length - 1);
   const idx = (order.indexOf(S.current) + step) % order.length;
@@ -279,7 +306,7 @@ document.addEventListener('pointerlockchange', () => {
     S.hadPointerLock = true;
     S.plLockTime = performance.now();
   } else {
-    if (S.hadPointerLock && S.alive && !S.paused && !S.cinematic && !S.shopOpen && !S.tacticalBrief && !S.squadWheelOpen) pauseGame();
+    if (S.hadPointerLock && S.alive && !S.paused && !S.cinematic && !S.shopOpen && !S.tacticalBrief && !S.squadWheelOpen && !S.inventoryOpen && !isTouchActive()) pauseGame();
     S.hadPointerLock = false;
   }
   updateLockHint();
@@ -309,8 +336,9 @@ function pollGamepad(dt) {
     return hit;
   };
   if (S.cinematic) { S.gpFiring = false; if (edge(0) || edge(9)) endCinematic(); return; }
-  if (edge(9)) { S.gpFiring = false; if (S.paused) resumeGame(); else if (S.alive) pauseGame(); return; }
-  if (!S.alive || S.paused || S.shopOpen || S.tacticalBrief) { S.gpFiring = false; return; }
+  if (edge(8)) { S.gpFiring = false; if (S.alive && !S.paused && !S.shopOpen && !S.tacticalBrief) toggleInventory(); return; }
+  if (edge(9)) { S.gpFiring = false; if (S.inventoryOpen) closeInventory(true); else if (S.paused) resumeGame(); else if (S.alive) pauseGame(); return; }
+  if (!S.alive || S.paused || S.shopOpen || S.tacticalBrief || S.inventoryOpen) { S.gpFiring = false; return; }
 
   const dz = v => Math.abs(v) < 0.16 ? 0 : v;
   const lx = dz(gp.axes[0] || 0), ly = dz(gp.axes[1] || 0);
@@ -529,13 +557,15 @@ function cleanupTransientCombat() {
   S.effects.forEach(f => { S.scene.remove(f.obj); if (!f.sharedGeo && f.obj.geometry) f.obj.geometry.dispose(); if (f.obj.material) f.obj.material.dispose(); });
   S.effects.length = 0;
   clearPools();
+  clearLootDrops();
+  closeInventory(false);
   clearKillfeed();
   clearDamageNumbers();
 }
 
 export function beginGame(skipCine = false) {
   if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
-  S.cinematic = null; S.tacticalBrief = null; S.shopOpen = false; S.squadWheelOpen = false;
+  S.cinematic = null; S.tacticalBrief = null; S.shopOpen = false; S.squadWheelOpen = false; S.inventoryOpen = false;
   if ($('cinema')) $('cinema').style.display = 'none';
   if ($('tacticalMapOverlay')) $('tacticalMapOverlay').classList.add('hidden');
   if ($('shopModal')) $('shopModal').classList.add('hidden');
@@ -573,6 +603,7 @@ export function beginGame(skipCine = false) {
 
   S.supplyCooldown = 0; S.cameraShake = 0; S.artilleryTimer = 8;
   S.grenades = 3; S.molotovs = 1; S.bandages = 2; S.mortarStrikes = 1;
+  resetInventory();
   S.mp18Owned = (S.gameMode === 'campaign'); S.mp18Tier = 1;
   S.stats = { shots: 0, hits: 0, headshots: 0, kills: 0, score: 0, startTime: performance.now() };
   S.matchRecorded = false;
@@ -614,7 +645,7 @@ export function beginGame(skipCine = false) {
 }
 
 export function pauseGame() {
-  if (!S.alive || S.paused || S.cinematic || S.shopOpen || S.tacticalBrief) return;
+  if (!S.alive || S.paused || S.cinematic || S.shopOpen || S.tacticalBrief || S.inventoryOpen) return;
   S.paused = true; S.aiming = false; S.mouseDownLeft = false; S.gpFiring = false; S.touchFiring = false; S.squadWheelOpen = false;
   if ($('squadWheel')) $('squadWheel').classList.remove('open');
   if ($('pause')) $('pause').classList.remove('hidden');
@@ -635,6 +666,7 @@ export function resumeGame() {
 
 export function die() {
   if (!S.alive) return;
+  closeInventory(false);
   S.alive = false; S.aiming = false; S.mouseDownLeft = false; S.gpFiring = false; S.touchFiring = false; S.mgMounted = false; S.squadWheelOpen = false;
   S.vmRes.vm.visible = true; S.playerAvatar.visible = false; S.avatarFlash.visible = false;
   if ($('mgHeatWrap')) $('mgHeatWrap').classList.add('hidden');
@@ -663,6 +695,7 @@ function showOutroCard() {
 }
 
 function victory() {
+  closeInventory(false);
   S.alive = false; S.aiming = false; S.mouseDownLeft = false; S.gpFiring = false; S.touchFiring = false; S.mgMounted = false; S.squadWheelOpen = false;
   S.vmRes.vm.visible = true; S.playerAvatar.visible = false; S.avatarFlash.visible = false;
   if ($('mgHeatWrap')) $('mgHeatWrap').classList.add('hidden');
@@ -725,7 +758,7 @@ function animate() {
     renderTacticalMap($('shopMapCanvas'), S.wave % 4, t);
   }
 
-  const activePlay = S.alive && !S.paused && !S.cinematic && !S.shopOpen && !S.tacticalBrief;
+  const activePlay = S.alive && !S.paused && !S.cinematic && !S.shopOpen && !S.tacticalBrief && !S.inventoryOpen;
 
   if (S.cinematic) {
     updateCinematic(dt);
@@ -735,7 +768,7 @@ function animate() {
     else S.yaw += (S.targetYaw - S.yaw) * lookAlpha;
     if (Math.abs(S.targetPitch - S.pitch) < 1e-5) S.pitch = S.targetPitch;
     else S.pitch += (S.targetPitch - S.pitch) * lookAlpha;
-    if (!S.paused) S.recoilPitch = Math.max(0, S.recoilPitch - dt * 0.16);
+    if (!S.paused && !S.inventoryOpen) S.recoilPitch = Math.max(0, S.recoilPitch - dt * 0.16);
     const viewPitch = S.mgMounted
       ? Math.max(-0.35, Math.min(0.35, S.pitch + S.recoilPitch * 0.35))
       : Math.max(-1.35, Math.min(1.35, S.pitch + S.recoilPitch));
@@ -749,8 +782,10 @@ function animate() {
       if (S.dryFireCd > 0) S.dryFireCd = Math.max(0, S.dryFireCd - dt);
       if (S.avatarHitT > 0) S.avatarHitT = Math.max(0, S.avatarHitT - dt);
       if (S.jumpBuffer > 0) S.jumpBuffer = Math.max(0, S.jumpBuffer - dt);
+      if (S.boostTimer > 0) { S.boostTimer = Math.max(0, S.boostTimer - dt); syncInventoryBadge(); }
       if (S.streakTimer > 0) { S.streakTimer -= dt; if (S.streakTimer <= 0) S.streakCount = 0; }
       updateKillfeedAndStreak(dt);
+      updateLootDrops(dt, t);
 
       const firingHeld = S.mouseDownLeft || S.gpFiring || S.touchFiring;
       if (S.mgMounted) {
@@ -784,7 +819,7 @@ function animate() {
           shoot();
         }
         S.running = !!(S.keys['ShiftLeft'] || S.keys['ShiftRight']);
-        const speed = S.crouching ? 4.2 : (S.running && !S.aiming ? 11 : 6.6);
+        const speed = (S.crouching ? 4.2 : (S.running && !S.aiming ? 11 : 6.6)) * (S.boostTimer > 0 ? 1.2 : 1.0);
         _tmpFwd.set(-Math.sin(S.yaw), 0, -Math.cos(S.yaw));
         _tmpRight.set(Math.cos(S.yaw), 0, -Math.sin(S.yaw));
         _tmpMove.set(0, 0, 0);
@@ -882,10 +917,16 @@ function animate() {
         } else if (Math.hypot(S.player.pos.x - 32, S.player.pos.z - 3.2) < 3.4 && S.player.feetY < 8.5) {
           promptEl.textContent = S.supplyCooldown > 0
             ? `Suministros disponibles en ${Math.ceil(S.supplyCooldown)}s`
-            : '[E] Tomar munición, blindaje (+25), vendaje y Molotov';
+            : '[E] Tomar munición, blindaje (+25), vendaje, ración y Molotov';
           promptEl.style.opacity = '1';
         } else {
-          promptEl.style.opacity = '0';
+          const nearLoot = getNearestLootDrop(3.6);
+          if (nearLoot && nearLoot.spec) {
+            promptEl.textContent = `[E] Recoger ${nearLoot.spec.name}`;
+            promptEl.style.opacity = '1';
+          } else {
+            promptEl.style.opacity = '0';
+          }
         }
       }
       drawRadar();
@@ -913,7 +954,7 @@ function animate() {
   }
 
   const isMoving = activePlay && !S.mgMounted && (S.keys['KeyW'] || S.keys['KeyS'] || S.keys['KeyA'] || S.keys['KeyD'] || Math.abs(S.touchMove.x) > 0.15 || Math.abs(S.touchMove.y) > 0.15);
-  if (!S.paused) {
+  if (!S.paused && !S.inventoryOpen) {
     const wDt = Math.min(rawDt, 0.25);
     if (S.fireTimer > 0) S.fireTimer -= wDt;
     if (S.flashTimer > 0) {
@@ -925,7 +966,7 @@ function animate() {
       }
     }
     if (S.reloadTimer > 0) {
-      S.reloadTimer -= wDt;
+      S.reloadTimer -= wDt * (S.boostTimer > 0 ? 1.35 : 1.0);
       if (S.reloadTimer <= 0) {
         const w = WEAPONS[S.current];
         const need = w.clip - w.ammo, give = Math.min(need, w.reserve);
@@ -1018,7 +1059,7 @@ function animate() {
     }
   }
 
-  if (!S.paused) {
+  if (!S.paused && !S.inventoryOpen) {
     for (let i = S.effects.length - 1; i >= 0; i--) {
       const fx = S.effects[i]; fx.life -= dt;
       if (fx.light) fx.obj.intensity = Math.max(0, fx.life / fx.max) * fx.baseInt;
@@ -1034,7 +1075,7 @@ function animate() {
   }
 
   S.camera.updateMatrixWorld();
-  updateDamageNumbers(S.paused ? 0 : dt);
+  updateDamageNumbers(S.paused || S.inventoryOpen ? 0 : dt);
   if (S.postFX) S.postFX.render(t);
   else S.renderer.render(S.scene, S.camera);
 }
@@ -1080,6 +1121,8 @@ window.__state = () => {
     tanketteHp: tu ? tu.hp : 0,
     tanketteParts: tu ? { tracksBroken: tu.tracksBroken, visorBroken: tu.visorBroken, turretBroken: tu.turretBroken } : null,
     squadOrder: S.squadOrder, squadWheelOpen: S.squadWheelOpen, shopOpen: S.shopOpen,
+    inventoryOpen: S.inventoryOpen, inventory: { ...S.inventory }, inventoryUsedSlots: getInventoryUsedSlots(),
+    lootDrops: S.lootDrops.length, boostTimer: +S.boostTimer.toFixed(2),
     tacticalBrief: !!S.tacticalBrief,
     medals: [...(S.records.medals || [])],
     sandbagsIntact: S.sandbagClusters.filter(c => !c.broken).length,
@@ -1123,6 +1166,10 @@ window.__demo = {
   beginDirect: () => beginGame(true),
   openShop: () => openShop(() => startWave(S.wave + 1)),
   closeShop: () => closeShop(),
+  openInventory: () => openInventory(),
+  closeInventory: () => closeInventory(true),
+  spawnLoot: (id = 'intel_doc', dx = 0, dz = 0) => spawnLootDrop(id, S.player.pos.x + dx, S.player.pos.z + dz, 0.05, S.player.feetY),
+  useInvItem: (id) => useInventoryItem(id),
   showBriefing: (ch = 0) => showTacticalBriefing(ch, null),
   setOrder: (ord) => setSquadOrder(ord),
   touch: (mode) => { S.touchMode = mode; syncTouchControlsVisibility(); },
