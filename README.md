@@ -25,26 +25,33 @@ y abre `http://localhost:8124`.
 | V | Alternar cámara **1.ª persona** / **3.ª persona sobre el hombro** (viendo a tu soldado chino) |
 | Ratón | Mirar (Pointer Lock clásico de FPS con filtrado de picos y suavidad; clic en pantalla si hace falta refijar) |
 | Mantener clic izquierdo | Disparo automático continuo en fusil / ataque continuo con dadao / ráfaga en ametralladora |
-| Clic derecho / Q | Apuntar con precisión (ADS, cierra la mira y acerca la cámara en 1.ª y 3.ª persona) |
+| Clic derecho / Q | Apuntar con precisión (ADS, cierra la mira y acerca la cámara en 1.ª y 3.ª persona); con **Dadao `[3]`**, parry defensivo / ataque pesado que refleja estocadas de oficiales con katana |
 | G | Lanzar granada de palo Tipo 24 (eficaz contra grupos y la tanqueta) |
+| X | Lanzar Cóctel Molotov (crea una zona incendiaria persistente con daño continuo) |
+| H | Aplicar vendaje rápido (`+40` salud) |
+| B / 5 | Solicitar ataque de Mortero Aliado sobre el punto de mira |
+| T | Rueda radial de órdenes al escuadrón (`1` Cubrirse, `2` Avanzar, `3` Mantener posición, `4` Fuego concentrado) |
 | F | Montar / soltar ametralladora fija Tipo 24 (con escudo frontal y barra de calor) |
 | R | Recargar |
 | C | Agacharse / cubrirse tras los sacos de arena (reduce dispersión) |
-| E | Usar caja de suministros (salud, munición y granadas) |
-| 1 / 2 / 3 o Rueda | Fusil automático Chiang Kai-shek (30/120) / Mauser C96 / dadao |
+| E | Usar caja de suministros (salud, blindaje, munición y equipo táctico) |
+| 1 / 2 / 3 / 4 o Rueda | Fusil automático Chiang Kai-shek (30/120) / Mauser C96 / Dadao / Subfusil **MP-18** (en Campaña o desbloqueado/mejorado hasta nivel 3 en la Tienda de Supervivencia) |
 | Mayús | Correr |
 | M | Silenciar / activar audio |
-| Esc | Pausa (sensibilidad fina, calidad gráfica, volumen Música/SFX, contador FPS y reinicio) |
+| Esc | Pausa (sensibilidad fina, calidad gráfica, volumen Música/SFX, contador FPS, controles táctiles y reinicio) |
+| Controles táctiles | En móvil/tablet (o activables manualmente desde Pausa): joystick virtual de movimiento y botones de disparo, mira, salto, recarga, granada, molotov, curación, cámara `[V]` y órdenes `[T]` |
 | Mando (Gamepad) | Sticks mover/apuntar, RT disparar, LT apuntar, A saltar/MG, LB cámara 1.ª/3.ª, RB granada, X recargar, Y armas, B agacharse |
 
 ## Características principales
 
-- **Disparo automático, mira dinámica y números flotantes de daño:** el fusil dispara ráfagas continuas al mantener pulsado el clic izquierdo (30 balas por cargador, 120 de reserva) con una retícula dinámica de 4 marcas que se abre al disparar, correr o saltar y se cierra al agacharse o apuntar (ADS), acompañada de números flotantes de daño en el mundo 3D (dorados en tiros a la cabeza y visor crítico).
-- **Control FPS clásico y cámara dual `[V]` + salto `[Espacio]`:** Pointer Lock con `unadjustedMovement` cuando está disponible, filtrado de picos bruscos al fijar el puntero, suavizado sin latencia y refijado directo al hacer clic sobre el lienzo. Pulsa `V` para alternar entre primera persona y tercera persona sobre el hombro estilo *Fortnite* (con tu soldado del 29.º Ejército animado en GPU y colisión de cámara contra los parapetos), y `Espacio` para saltar.
-- **Feed de bajas y rachas de eliminaciones:** registro de bajas en tiempo real en el HUD (incluyendo arma, tiros a la cabeza y fuego aliado) junto con rachas cronometradas (**Doble**, **Triple**, **Imparable**) con fanfarria sonora Web Audio y bonificación de puntos (`+50` / `+100` / `+150+`).
-- **Armamento y combate táctico ampliado:** granadas de palo chinas Tipo 24 (`[G]`), ametralladora fija Tipo 24 montada junto al parapeto (`[F]`, cobertura frontal y gestión de calor), casquillos eyectados en 3D, indicador direccional de impacto y faroles colgantes destructibles sobre el puente.
-- **Clima dinámico, bengalas y enemigos especiales:** tormenta de lluvia GPU (`THREE.Points`, 1 draw call) con relámpagos en el Capítulo 3, bengalas de iluminación descendentes con una luz reutilizable, francotiradores imperiales con destello previo de mira y jefe **Tanqueta Tipo 94 Te-Ke** en el Capítulo 4 (y cada 4 oleadas en Supervivencia), vulnerable en su visor naranja y a granadas.
-- **Modos, selector de capítulos, dificultad y récords:** **Campaña histórica (4 capítulos)** con selector de capítulo inicial o **Supervivencia infinita (无尽抗战)**, tres dificultades (*Recluta*, *Soldado*, *Veterano 1937*), puntuación en vivo, rangos (`D`–`S`) y mejores marcas guardadas localmente (`localStorage`).
+- **Post-procesado HDR offline y PBR procedural (`src/postfx.js`, `src/textures.js`):** renderizado con `ACESFilmicToneMapping`, pase de Bloom selectivo (`HalfFloatType`) con umbral, viñeta y grano sutiles sin dependencias externas, texturas PBR procedurales (`map`, `roughnessMap`, `bumpMap`) con charcos/humedad dinámica durante la lluvia y cielo shader + paletas atmosféricas progresivas por capítulo.
+- **Verticalidad y destrucción táctica del campo de batalla:** rampa transitable hasta las **almenas superiores de la puerta de Wanping**, **puente ferroviario paralelo norte** con pasarela lateral de enlace, **6 barricadas de sacos destructibles** en dos fases visuales, **4 barriles de munición explosivos** y cráteres persistentes reutilizables.
+- **Arsenal ampliado, parry con Dadao y Tienda de Supervivencia:** subfusil **MP-18 (`[4]`)** de alta cadencia, **Cóctel Molotov (`[X]`)** incendiario, **blindaje táctico** (absorbe parte del daño antes de afectar a la salud), **vendaje rápido (`[H]`)**, apoyo de **Mortero Aliado (`[B]` / `[5]`)**, parry defensivo con **Dadao (`Clic derecho` / `[Q]`)** capaz de reflejar estocadas de oficiales con katana, y **Tienda de Supervivencia** entre oleadas para mejorar el MP-18 y reponer blindaje/munición/apoyos.
+- **Escuadrón táctico (`[T]`) e IA enemiga especializada:** rueda radial `[T]` para ordenar a tus aliados del 29.º Ejército (*Cubrirse*, *Avanzar*, *Mantener posición* o *Fuego concentrado*). La IA japonesa reacciona al fuego de supresión (agachándose o flanqueando) e incluye **granaderos Tipo 97**, **morteros enemigos** con anillos de aviso en el suelo, **oficiales con katana**, **cascos voladores** en tiros a la cabeza y el jefe **Tanqueta Tipo 94 multiparte** (orugas, visor, torreta y casco dañables por separado con indicadores en el HUD).
+- **Audio posicional 3D, Mapa Táctico 1937 y Medallas de Honor:** efectos espaciales 3D con Web Audio (`PannerNode`), corneta de carga (`冲锋号`), silbato de oficiales y estática de radio; **Mapa Táctico de 1937** animado en canvas antes de cada capítulo y en la tienda; y **6 Medallas de Honor** persistentes en `localStorage` (`mp1937_records_v1`).
+- **Disparo automático, mira dinámica y números flotantes de daño:** el fusil y el subfusil MP-18 disparan ráfagas continuas al mantener pulsado el clic izquierdo con una retícula dinámica de 4 marcas que se abre al disparar, correr o saltar y se cierra al agacharse o apuntar (ADS), acompañada de números flotantes de daño en el mundo 3D (dorados en tiros a la cabeza y visor crítico).
+- **Control FPS clásico y cámara dual `[V]` + salto `[Espacio]` + controles táctiles:** Pointer Lock con `unadjustedMovement` cuando está disponible, filtrado de picos bruscos al fijar el puntero, suavizado sin latencia y refijado directo al hacer clic sobre el lienzo. Pulsa `V` para alternar entre primera persona y tercera persona sobre el hombro (con colisión de cámara contra parapetos) y activa controles táctiles en móviles o desde el menú de Pausa.
+- **Modos, selector de capítulos, dificultad y récords:** **Campaña histórica (4 capítulos)** con selector de capítulo inicial o **Supervivencia infinita (无尽抗战)**, tres dificultades (*Recluta*, *Soldado*, *Veterano 1937*), puntuación en vivo, rangos (`D`–`S`), Medallas de Honor y mejores marcas guardadas localmente (`localStorage`).
 - **Audio procedural, presets de rendimiento y soporte de mando:** percusión de guerra y motivos pentatónicos Web Audio con volumen independiente de música y efectos, calidad gráfica seleccionable (*Fluido* / *Equilibrado* / *Alto*), contador FPS en pantalla y soporte nativo para mandos (`Gamepad API`).
 - **Campaña completa en 4 capítulos (7–28 de julio de 1937) + Epílogo 1937–1945:**
   1. *Capítulo 1 (7 jul, 23:40):* el pretexto del soldado Shimura y los primeros disparos frente a Wanping.
@@ -90,6 +97,7 @@ Los GLB se optimizaron con **glTF Transform** (`optimize --compress meshopt --si
 
 - Modelos activos: **15,3 MB** (antes 130,6 MB → **-88 %**).
 - Los originales sin optimizar se conservan en `models/_originales/` (169 MB) por si se quiere revertir.
-- **Rendimiento en tiempo real:** los 30 leones de piedra del puente utilizan **`THREE.LOD`** (modelo GLB de alta resolución solo a menos de 15 m y malla ligera a distancia), los soldados proyectan sombras mediante cilindros ligeros de respaldo (`SHADOW_PROXY_GEO`), el agua del río Yongding se anima íntegramente en GPU (`waterMat.onBeforeCompile`) y los materiales estáticos se reutilizan mediante caché.
+- **Arquitectura modular ES nativos sin bundler (`src/`):** el código se organiza en módulos nativos del navegador (`src/main.js`, `src/config.js`, `src/state.js`, `src/textures.js`, `src/postfx.js`, `src/pools.js`, `src/world.js`, `src/audio.js`, `src/squad.js`, `src/weapons.js`, `src/enemies.js`, `src/hud.js` y `src/styles.css`) compatibles 100 % sin pasos de compilación con `ABRIR_JUEGO.bat` y GitHub Pages.
+- **Rendimiento en tiempo real y Dynamic Resolution Scaling (DRS):** los 30 leones de piedra del puente utilizan **`THREE.LOD`** (modelo GLB de alta resolución solo a menos de 15 m y malla ligera a distancia), los soldados proyectan sombras mediante cilindros ligeros de respaldo (`SHADOW_PROXY_GEO`), **`InstancedMesh` y pools reutilizables** (`src/pools.js`) gestionan trazadoras, casquillos, chispas, luz de fogonazo y cráteres con mínimas llamadas de dibujo, el agua y la lluvia se animan en GPU (`onBeforeCompile`), y la resolución se escala dinámicamente (**DRS**) en los presets *Fluido* (`low`) y *Equilibrado* (`med`) para sostener ~60 FPS.
 
 La estructura del puente, arcos, muros, río y sacos de arena sigue siendo geometría procedural de Three.js. El juego funciona sin conexión una vez descargados `three.module.js`, `loaders/GLTFLoader.js`, `utils/BufferGeometryUtils.js` y la carpeta `models/`. Si algún GLB falla, se mantiene el modelo procedural de respaldo.
