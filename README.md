@@ -21,23 +21,27 @@ y abre `http://localhost:8124`.
 | Tecla / Entrada | Acción |
 |---|---|
 | WASD | Moverse |
-| Ratón | Mirar (requiere clic en "COMIENZA LA DEFENSA" para fijar el puntero) |
-| Clic izquierdo | Disparar / atacar con dadao / ráfaga en ametralladora |
-| Clic derecho / Q | Apuntar con precisión (ADS) |
+| Espacio | Saltar (sobre sacos de arena/obstáculos) · En cinemáticas: saltar escena |
+| V | Alternar cámara **1.ª persona** / **3.ª persona sobre el hombro** (viendo a tu soldado chino) |
+| Ratón | Mirar (Pointer Lock clásico de FPS con filtrado de picos y suavidad; clic en pantalla si hace falta refijar) |
+| Mantener clic izquierdo | Disparo automático continuo en fusil / ataque continuo con dadao / ráfaga en ametralladora |
+| Clic derecho / Q | Apuntar con precisión (ADS, cierra la mira y acerca la cámara en 1.ª y 3.ª persona) |
 | G | Lanzar granada de palo Tipo 24 (eficaz contra grupos y la tanqueta) |
 | F | Montar / soltar ametralladora fija Tipo 24 (con escudo frontal y barra de calor) |
 | R | Recargar |
-| C | Agacharse / cubrirse tras los sacos de arena |
+| C | Agacharse / cubrirse tras los sacos de arena (reduce dispersión) |
 | E | Usar caja de suministros (salud, munición y granadas) |
-| 1 / 2 / 3 o Rueda | Fusil Chiang Kai-shek / Mauser C96 / dadao |
+| 1 / 2 / 3 o Rueda | Fusil automático Chiang Kai-shek (30/120) / Mauser C96 / dadao |
 | Mayús | Correr |
 | M | Silenciar / activar audio |
-| Espacio / Enter | Saltar cinemática 3D |
-| Esc | Pausa (sensibilidad, calidad gráfica, volumen Música/SFX, contador FPS y reinicio) |
-| Mando (Gamepad) | Sticks mover/apuntar, RT disparar, LT apuntar, RB granada, X recargar, Y armas, B agacharse |
+| Esc | Pausa (sensibilidad fina, calidad gráfica, volumen Música/SFX, contador FPS y reinicio) |
+| Mando (Gamepad) | Sticks mover/apuntar, RT disparar, LT apuntar, A saltar/MG, LB cámara 1.ª/3.ª, RB granada, X recargar, Y armas, B agacharse |
 
 ## Características principales
 
+- **Disparo automático, mira dinámica y números flotantes de daño:** el fusil dispara ráfagas continuas al mantener pulsado el clic izquierdo (30 balas por cargador, 120 de reserva) con una retícula dinámica de 4 marcas que se abre al disparar, correr o saltar y se cierra al agacharse o apuntar (ADS), acompañada de números flotantes de daño en el mundo 3D (dorados en tiros a la cabeza y visor crítico).
+- **Control FPS clásico y cámara dual `[V]` + salto `[Espacio]`:** Pointer Lock con `unadjustedMovement` cuando está disponible, filtrado de picos bruscos al fijar el puntero, suavizado sin latencia y refijado directo al hacer clic sobre el lienzo. Pulsa `V` para alternar entre primera persona y tercera persona sobre el hombro estilo *Fortnite* (con tu soldado del 29.º Ejército animado en GPU y colisión de cámara contra los parapetos), y `Espacio` para saltar.
+- **Feed de bajas y rachas de eliminaciones:** registro de bajas en tiempo real en el HUD (incluyendo arma, tiros a la cabeza y fuego aliado) junto con rachas cronometradas (**Doble**, **Triple**, **Imparable**) con fanfarria sonora Web Audio y bonificación de puntos (`+50` / `+100` / `+150+`).
 - **Armamento y combate táctico ampliado:** granadas de palo chinas Tipo 24 (`[G]`), ametralladora fija Tipo 24 montada junto al parapeto (`[F]`, cobertura frontal y gestión de calor), casquillos eyectados en 3D, indicador direccional de impacto y faroles colgantes destructibles sobre el puente.
 - **Clima dinámico, bengalas y enemigos especiales:** tormenta de lluvia GPU (`THREE.Points`, 1 draw call) con relámpagos en el Capítulo 3, bengalas de iluminación descendentes con una luz reutilizable, francotiradores imperiales con destello previo de mira y jefe **Tanqueta Tipo 94 Te-Ke** en el Capítulo 4 (y cada 4 oleadas en Supervivencia), vulnerable en su visor naranja y a granadas.
 - **Modos, selector de capítulos, dificultad y récords:** **Campaña histórica (4 capítulos)** con selector de capítulo inicial o **Supervivencia infinita (无尽抗战)**, tres dificultades (*Recluta*, *Soldado*, *Veterano 1937*), puntuación en vivo, rangos (`D`–`S`) y mejores marcas guardadas localmente (`localStorage`).
