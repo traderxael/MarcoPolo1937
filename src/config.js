@@ -139,45 +139,208 @@ export const SHOP_ITEMS = [
 ];
 
 export const MEDALS = [
-  { id:'first_blood', title:'守桥哨兵 · Centinela',      desc:'Abate a tu primer atacante' },
-  { id:'headshot5',   title:'神射手 · Tiro Preciso',     desc:'Logra 5 tiros a la cabeza' },
-  { id:'dadao_parry', title:'大刀壮士 · Escuadrón Dadao',desc:'Desvía o remata un asalto con Dadao' },
-  { id:'tank_hunter', title:'摧毁装甲 · Cazatanques',    desc:'Destruye la Tanqueta Tipo 94 Te-Ke' },
-  { id:'wanping_hero',title:'卢沟忠魂 · Héroe de Wanping', desc:'Completa la Campaña Histórica' },
-  { id:'survivor_w5', title:'百折不挠 · Resistencia',     desc:'Alcanza la Oleada 5 en Supervivencia' }
+  { id:'first_blood',   title:'守桥哨兵 · Centinela',      desc:'Abate a tu primer atacante' },
+  { id:'headshot5',     title:'神射手 · Tiro Preciso',     desc:'Logra 5 tiros a la cabeza' },
+  { id:'dadao_parry',   title:'大刀壮士 · Escuadrón Dadao',desc:'Desvía o remata un asalto con Dadao' },
+  { id:'tank_hunter',   title:'摧毁装甲 · Cazatanques',    desc:'Destruye la Tanqueta Tipo 94 Te-Ke' },
+  { id:'wanping_hero',  title:'卢沟忠魂 · Héroe de Wanping', desc:'Defiende Lugouqiao hasta el repliegue de julio de 1937' },
+  { id:'sihang_hero',   title:'四行壮士 · 800 Héroes',     desc:'Resiste y completa la Batalla de Shanghái (Almacén Sihang)' },
+  { id:'china_liberated',title:'抗战胜利 · Liberación 1945', desc:'Completa toda la Campaña Histórica 1937–1945 hasta la victoria' },
+  { id:'survivor_w5',   title:'百折不挠 · Resistencia',     desc:'Alcanza la Oleada 5 en Supervivencia' }
 ];
 
 export const CHAPTER_ATMOSPHERE = [
-  { skyTop:0x060b18, skyHor:0x141d34, fog:0x0d1424, moon:0xc8d6ff, fogDens:0.0046, glow:0x1b2742 },
-  { skyTop:0x121528, skyHor:0x3c2c38, fog:0x16192b, moon:0xd8dcff, fogDens:0.0052, glow:0x523224 },
-  { skyTop:0x040914, skyHor:0x0e1828, fog:0x080f1c, moon:0x9eb8ec, fogDens:0.0062, glow:0x14223a },
-  { skyTop:0x1d1118, skyHor:0x5c2b22, fog:0x26171d, moon:0xffc2a8, fogDens:0.0050, glow:0x7a321c }
+  { skyTop:0x060b18, skyHor:0x141d34, fog:0x0d1424, moon:0xc8d6ff, fogDens:0.0046, glow:0x1b2742, wet:false },
+  { skyTop:0x121528, skyHor:0x3c2c38, fog:0x16192b, moon:0xd8dcff, fogDens:0.0052, glow:0x523224, wet:false },
+  { skyTop:0x040914, skyHor:0x0e1828, fog:0x080f1c, moon:0x9eb8ec, fogDens:0.0062, glow:0x14223a, wet:true },
+  { skyTop:0x1d1118, skyHor:0x5c2b22, fog:0x26171d, moon:0xffc2a8, fogDens:0.0050, glow:0x7a321c, wet:false },
+  { skyTop:0x0c0910, skyHor:0x6b2218, fog:0x241212, moon:0xffb080, fogDens:0.0052, glow:0x9e3418, wet:false },
+  { skyTop:0x2c3b4c, skyHor:0x9c7b52, fog:0x4a3d30, moon:0xffe3b0, fogDens:0.0040, glow:0xc98c44, wet:false },
+  { skyTop:0x0b161c, skyHor:0x263b3e, fog:0x162428, moon:0xb8d4dc, fogDens:0.0064, glow:0x2a4d4c, wet:true },
+  { skyTop:0x182644, skyHor:0xd48546, fog:0x3c2c26, moon:0xffe6b8, fogDens:0.0038, glow:0xf09a44, wet:false }
 ];
 
 export const WAVES = [5, 7, 8, 10];
 export const CHAPTER_TITLES = [
-  '7 JUL 23:40 · El pretexto del soldado perdido',
-  '8 JUL 04:50 · El bombardeo de Wanping (Almenas)',
-  '9 JUL 01:15 · Contraataque en el Puente Ferroviario',
-  '28 JUL 06:10 · Ofensiva final y sacrificio de Nanyuan'
+  '7 JUL 1937 · Lugouqiao: El pretexto del soldado perdido',
+  '8 JUL 1937 · Bombardeo de Wanping (Almenas)',
+  '9 JUL 1937 · Contraataque en el Puente Ferroviario',
+  '28 JUL 1937 · Ruptura de la tregua y Nanyuan',
+  'OCT 1937 · Shanghái: Calles en ruinas y Almacén Sihang',
+  'ABR 1938 · Tai\'erzhuang: Primera Gran Victoria',
+  '1941–1942 · Changsha: La Trampa de Fuego (Tianlu)',
+  '1945 · Hunan Occidental: Contraofensiva y Victoria Final'
 ];
 
 export const TACTICAL_BRIEFINGS = [
   {
-    title: 'MAPA TÁCTICO · 7 DE JULIO DE 1937 (23:40)',
-    caption: 'Maniobras japonesas junto al extremo oeste de Lugouqiao. Puedes defender desde la calzada o subir por la rampa sureste hacia las almenas de Wanping.'
+    opCode: 'OPERACIÓN LUGOUQIAO · ACTO I',
+    date: '7 DE JULIO DE 1937 · 23:40',
+    location: 'PUENTE DE MARCO POLO, BEIPING',
+    unit: '219.º REGIMIENTO · 29.º EJÉRCITO',
+    theater: 'bridge',
+    title: 'EXPEDIENTE · 7 DE JULIO DE 1937 (LUGOUQIAO)',
+    caption: 'Maniobras japonesas junto al extremo oeste de Lugouqiao. El coronel Ji Xingwen ordena sostener el puente e impedir el registro armado de Wanping.',
+    objectives: ['Contener el primer asalto sobre la calzada', 'Aprovechar sacos de arena [C] y almenas de Wanping']
   },
   {
-    title: 'MAPA TÁCTICO · 8 DE JULIO DE 1937 (04:50)',
-    caption: 'La artillería del coronel Mutaguchi golpea Wanping. Usa las almenas de piedra para ganar ángulo elevado y vigila los anillos rojos de mortero enemigo.'
+    opCode: 'OPERACIÓN WANPING · ACTO II',
+    date: '8 DE JULIO DE 1937 · 04:50',
+    location: 'PUERTA DE WANPING, LUGOUQIAO',
+    unit: 'BATALLÓN DEL MAYOR JIN ZHENZHONG',
+    theater: 'bridge',
+    title: 'EXPEDIENTE · 8 DE JULIO DE 1937 (BOMBARDEO)',
+    caption: 'La artillería del coronel Mutaguchi golpea Wanping al alba. Sube por la rampa sureste hacia las almenas de piedra para batir las cargas y vigila los morteros.',
+    objectives: ['Resistir el bombardeo y abatan cargas niponas', 'Coordinar al escuadrón del 29.º Ejército con [T]']
   },
   {
-    title: 'MAPA TÁCTICO · 9 DE JULIO DE 1937 (01:15)',
-    caption: 'Tormenta nocturna y bengalas de iluminación. Infiltrados enemigos atacan también por el Puente Ferroviario norte: flanquea o ordena avanzar al escuadrón [T].'
+    opCode: 'OPERACIÓN DADAO · ACTO III',
+    date: '9 DE JULIO DE 1937 · 01:15',
+    location: 'PUENTE FERROVIARIO NORTE, YONGDING',
+    unit: 'ESCUADRÓN DE DADAO (大刀队)',
+    theater: 'bridge',
+    title: 'EXPEDIENTE · 9 DE JULIO DE 1937 (TIEMPO LLUVIOSO)',
+    caption: 'Tormenta nocturna y bengalas. Destacamentos imperiales se infiltran por el puente ferroviario paralelo norte: contraataca con el Dadao [3] y Molotov [X].',
+    objectives: ['Rechazar la infiltración en el puente ferroviario', 'Desviar estocadas cuerpo a cuerpo con parry Dadao']
   },
   {
-    title: 'MAPA TÁCTICO · 28 DE JULIO DE 1937 (06:10)',
-    caption: 'Ofensiva general con apoyo blindado Tipo 94 Te-Ke. Destruye sus orugas para inmovilizarla, ciega su visor naranja o detona su torreta con granadas y Molotov.'
+    opCode: 'OPERACIÓN NANYUAN · ACTO IV',
+    date: '28 DE JULIO DE 1937 · 06:10',
+    location: 'EXTREMO OESTE Y MURALLA DE WANPING',
+    unit: 'RETAGUARDIA DE BEIPING · 29.º EJÉRCITO',
+    theater: 'bridge',
+    title: 'EXPEDIENTE · 28 DE JULIO DE 1937 (RUPTURA TOTAL)',
+    caption: 'Japón trae divisiones desde Manchuria con apoyo blindado Tipo 94 Te-Ke. Sostén la última línea para cubrir el repliegue hacia el sur.',
+    objectives: ['Inutilizar orugas, visor y torreta de la tanqueta', 'Cubrir la retirada antes de la campaña del sur']
+  },
+  {
+    opCode: 'OPERACIÓN SIHANG · ACTO V',
+    date: '27–30 DE OCTUBRE DE 1937',
+    location: 'ORILLA DEL RÍO SUZHOU, SHANGHÁI',
+    unit: '88.ª DIVISIÓN · 524.º REGIMIENTO ("800 HÉROES")',
+    theater: 'shanghai',
+    title: 'EXPEDIENTE · SHANGHÁI 1937 (ALMACÉN SIHANG)',
+    caption: 'Tras la caída del norte, Japón abre el frente de Shanghái. El teniente coronel Xie Jinyuan atrinchera a "los 800 Héroes" frente al bulevar en llamas para cubrir la retirada china.',
+    objectives: ['Despejar el bulevar inicial frente al almacén', 'Destruir el nido de ametralladora nipón', 'Sabotear el cañón de asedio de 75 mm [E]', 'Rechazar el último asalto acorazado']
+  },
+  {
+    opCode: 'OPERACIÓN GRAN CANAL · ACTO VI',
+    date: 'MARZO–ABRIL DE 1938',
+    location: 'CIUDAD AMURALLADA DE TAI\'ERZHUANG',
+    unit: '5.ª ZONA DE GUERRA · GRAL. LI ZONGREN',
+    theater: 'taierzhuang',
+    title: 'EXPEDIENTE · TAI\'ERZHUANG 1938 (PRIMERA VICTORIA)',
+    caption: 'Los ejércitos chinos rodean a las divisiones de élite japonesas en las callejuelas de Tai\'erzhuang. Destruye sus depósitos y asegura el Gran Canal.',
+    objectives: ['Romper el cerco japonés en las calles', 'Sabotear ambos depósitos de munición [E]', 'Sostener la plaza del Gran Canal hasta la victoria']
+  },
+  {
+    opCode: 'OPERACIÓN TIANLU · ACTO VII',
+    date: '1941–1942',
+    location: 'TRINCHERAS DEL RÍO MILUO, CHANGSHA',
+    unit: '9.ª ZONA DE GUERRA · GRAL. XUE YUE',
+    theater: 'changsha',
+    title: 'EXPEDIENTE · CHANGSHA (TRAMPA DE FUEGO)',
+    caption: 'El general Xue Yue atrae al enemigo al "Círculo de la Muerte" bajo lluvia monzónica para aniquilar su avance hacia Chongqing.',
+    objectives: ['Eliminar la vanguardia imperial en las trincheras', 'Sabotear la batería de morteros enemigos [E]', 'Cerrar la trampa de Changsha manteniendo la línea']
+  },
+  {
+    opCode: 'OPERACIÓN VICTORIA · ACTO VIII',
+    date: 'ABRIL–AGOSTO DE 1945',
+    location: 'PASO DE HUNAN OCCIDENTAL · PLAZA FINAL',
+    unit: 'CONTRAOFENSIVA NACIONAL · LIBERACIÓN DE CHINA',
+    theater: 'victory1945',
+    title: 'EXPEDIENTE · HUNAN 1945 (EXPULSIÓN Y VICTORIA)',
+    caption: 'Tras ocho años de resistencia inquebrantable, el Ejército Chino lanza la gran contraofensiva final. Rompe la última línea japonesa e iza la bandera de la victoria.',
+    objectives: ['Asaltar la última línea fortificada japonesa', 'Demoler el búnker de mando imperial [E]', 'Destruir el último blindado Tipo 94', 'Izar la bandera de la Victoria de 1945 [E]']
+  }
+];
+
+export const CAMPAIGN_MISSIONS = [
+  {
+    id: 0, theater: 'bridge', mapNodeIdx: 0, spawnStart: [34, 0],
+    storyStart: ['CRÓNICA · 7 JUL 1937', 'Estalla el Incidente de Lugouqiao. Mientras Japón exige registrar Wanping con el pretexto del soldado Shimura, el 29.º Ejército bloquea el puente.'],
+    storyMid:   ['CRÓNICA · MEDIANOCHE', 'Shimura ya ha aparecido sano y salvo en su cuartel, pero el mando imperial utiliza el incidente para iniciar la invasión a gran escala.']
+  },
+  {
+    id: 1, theater: 'bridge', mapNodeIdx: 0, spawnStart: [36, 1.5],
+    storyStart: ['CRÓNICA · 8 JUL 1937', 'Al amanecer los obuses golpean la muralla de Wanping. El mayor Jin Zhenzhong encabeza herido la defensa desde los parapetos superiores.'],
+    storyMid:   ['CRÓNICA · ALMENAS DE WANPING', 'Pese a la superioridad artillera japonesa, los defensores conservan cada metro del puente e infligen duras bajas al alba.']
+  },
+  {
+    id: 2, theater: 'bridge', mapNodeIdx: 0, spawnStart: [34, -2.0],
+    storyStart: ['CRÓNICA · 9 JUL 1937', 'Bajo una tormenta nocturna, el legendario Escuadrón de Dadao (大刀队) lanza un contraataque relámpago sobre las vías del puente ferroviario.'],
+    storyMid:   ['CRÓNICA · PUENTE FERROVIARIO', 'Armados con fusiles, granadas de palo y pesados sables dadao, recuperan temporalmente el extremo occidental bajo el aguacero.']
+  },
+  {
+    id: 3, theater: 'bridge', mapNodeIdx: 0, spawnStart: [34, 0],
+    storyStart: ['CRÓNICA · 28 JUL 1937', 'Rotas las falsas treguas, divisiones japonesas y blindados ligeros asaltan Beiping. Cubre el repliegue antes de que la guerra se extienda por toda China.'],
+    storyMid:   ['CRÓNICA · REPLIEGUE DEL NORTE', 'Beiping y Tianjin caen a finales de julio, pero la resistencia china no se rinde: el frente se traslada al corazón industrial en Shanghái.']
+  },
+  {
+    id: 4, theater: 'shanghai', mapNodeIdx: 1, spawnStart: [46, 0],
+    storyStart: ['CRÓNICA · OCT 1937 · SHANGHÁI', 'El ejército japonés desembarca en Shanghái creyendo conquistar China en tres meses. Desde el Almacén Sihang, los 800 Héroes resisten ante los ojos del mundo.'],
+    storyMid:   ['CRÓNICA · ALMACÉN SIHANG', 'Cuatro días de defensa heroica dieron tiempo vital para evacuar fábricas, escuelas y ejércitos hacia el interior de China.'],
+    phases: [
+      { id: 'sh_p1', type: 'clear_sector', label: 'Despejar el bulevar inicial de avanzadillas', spawn: { count: 6, roles: ['rifleman','charger','rifleman','sniper','rifleman','grenadier'] }, squad: [[40, 4], [36, -4]],
+        intro: ['TENIENTE CORONEL XIE JINYUAN', '¡Aseguren el bulevar frente al Almacén Sihang! Eliminen a la vanguardia japonesa antes de su bombardeo.'] },
+      { id: 'sh_p2', type: 'destroy_nest', label: 'Destruir el nido de ametralladora nipón', spawn: { count: 4, roles: ['rifleman','charger','grenadier','officer'] },
+        target: { id: 'sh_mg', type: 'mg_nest', x: -4, y: DECK_TOP, z: -3, hp: 160, label: 'NIDO MG' }, squad: [[28, 3.5], [24, -3.5]],
+        intro: ['OBSERVADOR · SIHANG', '¡Una ametralladora pesada bloquea el cruce! Acribíllala con fusil, granadas o cócteles Molotov [X].'] },
+      { id: 'sh_p3', type: 'sabotage', label: 'Plantar explosivos [E] en el cañón de 75 mm', spawn: { count: 4, roles: ['rifleman','charger','sniper','officer'] },
+        target: { id: 'sh_cannon', type: 'sabotage', x: -24, y: DECK_TOP, z: 4.5, hp: 100, label: 'CAÑÓN 75mm' }, squad: [[10, 4], [8, -4]],
+        intro: ['ESCUADRÓN DE DEMOLICIÓN', '¡Silencien ese cañón de asedio! Acércate a la pieza marcada ◆ y pulsa [E] para plantar las cargas.'] },
+      { id: 'sh_p4', type: 'hold_boss', label: 'Repeler el asalto final y destruir la tanqueta', spawn: { count: 5, roles: ['rifleman','charger','grenadier','officer','rifleman'], tankette: true }, squad: [[22, 4], [18, -4]],
+        intro: ['MANDO DEL 524.º REGIMIENTO', '¡Cargas colocadas! La división nipona lanza su blindado contra Sihang. ¡Aguanten la línea!'] }
+    ]
+  },
+  {
+    id: 5, theater: 'taierzhuang', mapNodeIdx: 2, spawnStart: [46, 0],
+    storyStart: ['CRÓNICA · ABR 1938 · TAI\'ERZHUANG', 'En el Gran Canal, el general Li Zongren logra encerrar por primera vez a las fuerzas de élite japonesas en combates casa por casa.'],
+    storyMid:   ['CRÓNICA · PRIMERA GRAN VICTORIA', 'El mundo descubre que el ejército imperial puede ser derrotado: más de diez mil bajas niponas rompen el mito de su invencibilidad.'],
+    phases: [
+      { id: 'tz_p1', type: 'clear_sector', label: 'Romper el cerco en las callejuelas de Tai\'erzhuang', spawn: { count: 6, roles: ['rifleman','charger','officer','rifleman','charger','grenadier'] }, squad: [[38, 4.5], [34, -4.5]],
+        intro: ['GENERAL LI ZONGREN (李宗仁)', '¡No daremos un paso atrás en el Gran Canal! Abran paso a través de los muros en ruinas.'] },
+      { id: 'tz_p2', type: 'sabotage_dual', label: 'Sabotear ambos depósitos de artillería [E]', spawn: { count: 5, roles: ['rifleman','sniper','charger','mortar','officer'] },
+        targets: [
+          { id: 'tz_a', type: 'sabotage', x: -14, y: DECK_TOP, z: -7.5, label: 'DEPÓSITO NORTE' },
+          { id: 'tz_b', type: 'sabotage', x: -28, y: DECK_TOP, z:  7.5, label: 'DEPÓSITO SUR' }
+        ],
+        squad: [[14, 5], [12, -5]],
+        intro: ['CAPITÁN CHI FENGCHENG', '¡Vuelen sus dos polvorines [E] en los callejones norte y sur para cortar toda munición enemiga!'] },
+      { id: 'tz_p3', type: 'hold_timer', label: 'Asegurar la plaza del Gran Canal (18 s)', dur: 18, spawn: { count: 4, roles: ['rifleman','charger','grenadier','officer'] }, squad: [[20, 4], [20, -4]],
+        intro: ['VOZ DE LA VICTORIA · 1938', '¡Nuestros flancos cierran la pinza sobre Tai\'erzhuang! Sostengan la plaza durante la ofensiva final.'] }
+    ]
+  },
+  {
+    id: 6, theater: 'changsha', mapNodeIdx: 3, spawnStart: [44, 0],
+    storyStart: ['CRÓNICA · 1941–1942 · CHANGSHA', 'Tres veces intenta Japón tomar Changsha. La táctica Tianlu del general Xue Yue convierte el barro y la lluvia en una trampa mortal.'],
+    storyMid:   ['CRÓNICA · EL CÍRCULO DE LA MUERTE', 'Aislados sin suministros entre trincheras inundadas, los invasores sufren su mayor desastre estratégico hasta la fecha.'],
+    phases: [
+      { id: 'cs_p1', type: 'clear_sector', label: 'Abatir la vanguardia en las trincheras de Miluo', spawn: { count: 7, roles: ['rifleman','charger','sniper','rifleman','grenadier','charger','officer'] }, squad: [[36, 4.5], [32, -4.5]],
+        intro: ['GENERAL XUE YUE (薛岳)', '¡Atraigan sus columnas hacia el río Miluo y golpeen sin tregua desde las trincheras!'] },
+      { id: 'cs_p2', type: 'sabotage', label: 'Inutilizar la batería de morteros enemigos [E]', spawn: { count: 5, roles: ['mortar','rifleman','charger','sniper','officer'] },
+        target: { id: 'cs_mortar', type: 'sabotage', x: -24, y: DECK_TOP, z: -4.5, label: 'BATERÍA MORTEROS' }, squad: [[12, 4.5], [10, -4.5]],
+        intro: ['OBSERVADOR · 9.ª ZONA DE GUERRA', '¡Localizada la batería de morteros japonesa! Filtra por la trinchera norte y plántale cargas [E].'] },
+      { id: 'cs_p3', type: 'hold_timer', label: 'Cerrar la Trampa de Fuego bajo la lluvia (20 s)', dur: 20, spawn: { count: 5, roles: ['rifleman','charger','grenadier','officer','sniper'] }, squad: [[18, 4.5], [16, -4.5]],
+        intro: ['MANDO DE CHANGSHA', '¡El cerco Tianlu se ha cerrado! Sostengan las barricadas mientras las divisiones aliadas destruyen la retirada nipona.'] }
+    ]
+  },
+  {
+    id: 7, theater: 'victory1945', mapNodeIdx: 4, spawnStart: [46, 0],
+    storyStart: ['CRÓNICA · 1945 · HUNAN OCCIDENTAL', 'Tras ocho años de resistencia total, las tornas han cambiado. El Ejército Chino lanza la gran contraofensiva para expulsar definitivamente al invasor.'],
+    storyMid:   ['CRÓNICA · LA EXPULSIÓN FINAL', 'Búnker tras búnker caen las últimas posiciones japonesas; las tropas invasoras emprenden la retirada en todo el territorio chino.'],
+    phases: [
+      { id: 'vc_p1', type: 'clear_sector', label: 'Asaltar la última línea fortificada japonesa', spawn: { count: 7, roles: ['rifleman','charger','sniper','grenadier','mortar','charger','officer'] }, squad: [[34, 4.5], [32, -4.5]],
+        intro: ['ALTO MANDO · CONTRAOFENSIVA 1945', '¡Por cada caído desde el 7 de julio de 1937! ¡Avancen por el paso y rompan sus últimas defensas!'] },
+      { id: 'vc_p2', type: 'sabotage', label: 'Demoler el búnker de mando imperial [E]', spawn: { count: 5, roles: ['rifleman','officer','grenadier','sniper','charger'] },
+        target: { id: 'vic_bunk', type: 'sabotage', x: -16, y: DECK_TOP, z: 5.0, label: 'BÚNKER MANDO' }, squad: [[8, 4.5], [6, -4.5]],
+        intro: ['VANGUARDIA DEL EJÉRCITO CHINO', '¡Ese búnker dirige la última guarnición del paso! Ábrete paso y vuela el puesto de mando [E].'] },
+      { id: 'vc_p3', type: 'hold_boss', label: 'Destruir el último blindado enemigo en la plaza', spawn: { count: 5, roles: ['rifleman','charger','grenadier','officer','sniper'], tankette: true }, squad: [[2, 4.5], [-2, -4.5]],
+        intro: ['ESCUADRÓN DE LIBERACIÓN', '¡Su último blindado intenta cubrir la huida! ¡Destruye la tanqueta y limpia la plaza!'] },
+      { id: 'vc_p4', type: 'raise_flag', label: 'Izar la Bandera de la Victoria de 1945 [E]', spawn: { count: 0, roles: [] },
+        target: { id: 'vic_flag', type: 'flag', x: -38, y: DECK_TOP, z: 0, label: 'BANDERA 1945' }, squad: [[-26, 4], [-26, -4]],
+        intro: ['VICTORIA DE 1945 · 抗战胜利', '¡El invasor ha sido derrotado y expulsado de China! Acércate al mástil de la plaza y pulsa [E] para izar la bandera.'] }
+    ]
   }
 ];
 
@@ -185,19 +348,31 @@ export const WAVE_RADIOS = [
   ['CORONEL JI XINGWEN (吉星文)', 'Los japoneses alegan que falta el soldado Shimura y exigen entrar en Wanping. ¡No cedan el puente!'],
   ['MAYOR JIN ZHENZHONG (金振中)', '¡El coronel Mutaguchi bombardea Wanping! ¡Cúbranse tras los sacos [C], suban a las almenas o usen órdenes [T]!'],
   ['CAPITÁN DEL ESCUADRÓN DADAO (大刀队)', '¡Noche del 9 de julio! Enemigos avanzan por el puente ferroviario norte. ¡Alistad el dadao [3], cócteles Molotov [X] y linterna de bengalas!'],
-  ['GENERAL QIN DECHUN (秦德纯)', '¡28 de julio! Japón rompió la tregua con divisiones de Manchuria. ¡Sostengan el puente para cubrir el repliegue de Beiping!']
+  ['GENERAL QIN DECHUN (秦德纯)', '¡28 de julio! Japón rompió la tregua con divisiones de Manchuria. ¡Sostengan el puente para cubrir el repliegue de Beiping!'],
+  ['TTE. CORONEL XIE JINYUAN (谢晋元)', '¡Los 800 Héroes defienden el Almacén Sihang ante Shanghái! Destruyan el nido de ametralladora y el cañón de asedio.'],
+  ['GENERAL LI ZONGREN (李宗仁)', '¡Batalla de Tai\'erzhuang! Cierren el cerco sobre las callejuelas y vuelen sus depósitos de munición [E].'],
+  ['GENERAL XUE YUE (薛岳)', '¡Defensa de Changsha! Bajo la lluvia del río Miluo, destruyan su batería de morteros [E] y resistan el cerco Tianlu.'],
+  ['MANDO DE LA CONTRAOFENSIVA (1945)', '¡Ofensiva final en Hunan Occidental! Demuelan el último búnker enemigo y alcen la bandera de la liberación.']
 ];
 export const MID_WAVE_RADIOS = [
   ['INTELIGENCIA · 29.º EJÉRCITO', '¡Informe confirmado! El soldado Shimura ya apareció sano y salvo en su unidad, ¡pero el mando japonés ataca igualmente!'],
   ['PUESTO DE MANDO · WANPING', '¡El mayor Jin Zhenzhong ha sido herido en el parapeto norte, pero sigue dirigiendo el fuego! ¡Resistan!'],
   ['ESCUADRÓN DADAO · VANGUARDIA', '¡Combate en el puente ferroviario paralelo! Coordinad el fuego del escuadrón [T] y cuidado con granaderos Tipo 97.'],
-  ['RADIO DE CAMPAÑA · NANYUAN', '¡Los generales Tong Linge (佟麟阁) y Zhao Dengyu (赵登郁) han caído heroicamente en Nanyuan! ¡Último esfuerzo por sus compañeros!']
+  ['RADIO DE CAMPAÑA · NANYUAN', '¡Los generales Tong Linge (佟麟阁) y Zhao Dengyu (赵登郁) han caído heroicamente en Nanyuan! ¡Último esfuerzo por sus compañeros!'],
+  ['RADIO · ORILLA DEL SUZHOU', '¡La ciudad entera observa la resistencia de Sihang! Sigan combatiendo en el bulevar entre las ruinas.'],
+  ['RADIO · GRAN CANAL', '¡Las líneas japonesas flaquean! Cada calle recuperada acerca la primera gran victoria de la guerra.'],
+  ['RADIO · 9.ª ZONA DE GUERRA', '¡El enemigo queda atrapado sin suministros en Changsha! Mantengan el fuego hasta completar el cerco.'],
+  ['RADIO NACIONAL · BEIPING Y CHONGQING', '¡Las divisiones invasoras se rinden y retroceden en todos los frentes! ¡El fin de los ocho años de guerra está aquí!']
 ];
 export const WAVE_BANNERS = [
-  ['第一幕 · 借口失踪',   'CAPÍTULO 1 · 7 DE JULIO (23:40) · EL PRETEXTO'],
-  ['第二幕 · 炮击宛平',   'CAPÍTULO 2 · 8 DE JULIO (04:50) · FUEGO SOBRE WANPING'],
-  ['第三幕 · 铁桥夜袭',   'CAPÍTULO 3 · 9 DE JULIO (01:15) · PUENTE FERROVIARIO'],
-  ['第四幕 · 南苑血战',   'CAPÍTULO 4 · 28 DE JULIO (06:10) · LA ÚLTIMA LÍNEA']
+  ['第一幕 · 借口失踪', 'CAPÍTULO 1 · 7 JUL 1937 · LUGOUQIAO'],
+  ['第二幕 · 炮击宛平', 'CAPÍTULO 2 · 8 JUL 1937 · WANPING'],
+  ['第三幕 · 铁桥夜袭', 'CAPÍTULO 3 · 9 JUL 1937 · PUENTE FERROVIARIO'],
+  ['第四幕 · 南苑血战', 'CAPÍTULO 4 · 28 JUL 1937 · NANYUAN'],
+  ['第五幕 · 四行仓库', 'CAPÍTULO 5 · OCT 1937 · ALMACÉN SIHANG (SHANGHÁI)'],
+  ['第六幕 · 台儿庄大捷', 'CAPÍTULO 6 · ABR 1938 · TAI\'ERZHUANG'],
+  ['第七幕 · 长沙大捷', 'CAPÍTULO 7 · 1941 · CHANGSHA (TIANLU)'],
+  ['第八幕 · 抗战胜利', 'CAPÍTULO 8 · 1945 · LIBERACIÓN Y VICTORIA FINAL']
 ];
 
 export const CINE_SCRIPTS = {
@@ -258,20 +433,20 @@ export const CINE_SCRIPTS = {
   outro: {
     dur: 12.6,
     shots: [
-      { t0:0, t1:4.2, fromPos:[30,8.5,0], toPos:[18,12.5,-7], fromLook:[48,9.5,0], toLook:[58,10.5,0],
-        tag:'29–30 DE JULIO DE 1937 · EL REPLIEGUE DEL 29.º EJÉRCITO',
-        zh:'卢沟桥与宛平陷落 · 北平、天津沦陷',
-        sub:'Tras semanas de combate desigual, el 29.º Ejército se repliega hacia el sur. El puente de Marco Polo y Wanping caen; Beiping el 29 de julio y Tianjin el 30 de julio.',
+      { t0:0, t1:4.2, fromPos:[28,9.5,0], toPos:[14,13.5,-8], fromLook:[30,9,0], toLook:[10,8,0],
+        tag:'1937–1944 · DE LUGOUQIAO A SHANGHÁI, TAI\'ERZHUANG Y CHANGSHA',
+        zh:'卢沟晓月 · 淞沪血战 · 台儿庄 · 长沙大捷',
+        sub:'De las barricadas de Marco Polo y el Almacén Sihang al Gran Canal y Changsha, millones de defensores sostuvieron ocho años de guerra total.',
         events:[{ at:0.5, fn:(S)=>S.hooks.spawnArtilleryBlast(8, DECK_TOP, 3.0) }] },
-      { t0:4.2, t1:8.4, fromPos:[18,12.5,-7], toPos:[4,18,-12], fromLook:[58,10.5,0], toLook:[66,11,0],
-        tag:'1937 – 1945 · OCHO AÑOS DE GUERRA TOTAL',
-        zh:'全民族抗战 · 百折不挠',
-        sub:'Los disparos de Lugouqiao encendieron la Guerra de Resistencia. Durante ocho años —de Shanghái y Tai\'erzhuang a Wuhan y Chongqing— millones sostuvieron la lucha.',
-        events:[{ at:4.6, fn:(S)=>S.hooks.spawnArtilleryBlast(44, DECK_TOP+1, -2.5) }] },
-      { t0:8.4, t1:12.6, fromPos:[4,18,-12], toPos:[-14,22,-16], fromLook:[30,9,0], toLook:[20,8,0],
-        tag:'10 DE OCTUBRE DE 1945 · RENDICIÓN EN BEIPING Y MEMORIA ETERNA',
-        zh:'抗战胜利 · 卢沟石狮永存',
-        sub:'En 1945 Japón capituló y firmó su rendición en Beiping. Hoy, los leones de piedra de Lugouqiao y las cicatrices de Wanping siguen en pie como testigos.',
+      { t0:4.2, t1:8.4, fromPos:[14,13.5,-8], toPos:[-8,18,-12], fromLook:[-28,10,0], toLook:[-38,11,0],
+        tag:'1945 · GRAN CONTRAOFENSIVA Y EXPULSIÓN DEL INVASOR',
+        zh:'1945年大反攻 · 驱逐日寇',
+        sub:'En la primavera y el verano de 1945 las fuerzas chinas rompen las últimas líneas imperiales en Hunan y recuperan el territorio nacional.',
+        events:[{ at:4.6, fn:(S)=>S.hooks.spawnArtilleryBlast(-20, DECK_TOP+1, -2.5) }] },
+      { t0:8.4, t1:12.6, fromPos:[-8,18,-12], toPos:[-24,22,-16], fromLook:[-38,11,0], toLook:[-38,9,0],
+        tag:'2 DE SEPTIEMBRE – 10 DE OCTUBRE DE 1945 · RENDICIÓN INCONDICIONAL',
+        zh:'抗战胜利 · 中华光复',
+        sub:'Japón capituló en 1945 y firmó su rendición oficial en Beiping el 10 de octubre de 1945. La bandera china volvió a ondear sobre toda la nación.',
         events:[{ at:8.5, fn:(S)=>{ S.scene.background.setHex(0x2b2430); S.scene.fog.color.setHex(0x2b2430); S.moonLight.color.setHex(0xffe0b2); } }] }
     ]
   }

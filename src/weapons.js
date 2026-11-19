@@ -221,6 +221,11 @@ export function detonateBarrel(barrel) {
   if (S.tankette && !S.tankette.userData.dead && S.tankette.position.distanceTo(p) < 8.5) {
     S.hooks.damageTankette(190, true, S.tankette.position.clone().add(new THREE.Vector3(0, 1.4, 0)), 'Barril Explosivo', 'blast', 'tracks');
   }
+  for (const st of S.storyTargets) {
+    if (st.type === 'mg_nest' && !st.destroyed && Math.hypot(st.x - barrel.x, st.z - barrel.z) < 8.0 && S.hooks.damageStoryTarget) {
+      S.hooks.damageStoryTarget(st, 150, new THREE.Vector3(st.x, DECK_TOP + 1.1, st.z), 'Barril Explosivo');
+    }
+  }
 }
 
 export function switchWeapon(name) {
@@ -318,6 +323,11 @@ export function detonateGrenade(p) {
       S.hooks.damageTankette(165, true, S.tankette.position.clone().add(new THREE.Vector3(0, 1.8, 0)), 'Granada Tipo 24', 'blast', 'tracks');
     }
   }
+  for (const st of S.storyTargets) {
+    if (st.type === 'mg_nest' && !st.destroyed && Math.hypot(st.x - p.x, st.z - p.z) < 7.5 && S.hooks.damageStoryTarget) {
+      S.hooks.damageStoryTarget(st, 140, new THREE.Vector3(st.x, DECK_TOP + 1.1, st.z), 'Granada Tipo 24');
+    }
+  }
   if (S.hooks.updateHUD) S.hooks.updateHUD();
 }
 
@@ -398,7 +408,7 @@ export function toggleMountMG() {
     S.vmRes.vm.visible = !S.cinematic && !S.thirdPerson;
     S.playerAvatar.visible = !S.cinematic && S.thirdPerson && S.alive;
     if ($('mgHeatWrap')) $('mgHeatWrap').classList.add('hidden');
-    S.player.pos.set(25.8, DECK_TOP + S.eyeHeight, -1.5);
+    S.player.pos.set(S.mgPos.x + 1.3, DECK_TOP + S.eyeHeight, S.mgPos.z + 0.5);
     S.player.feetY = DECK_TOP; S.player.velY = 0; S.player.onGround = true;
     S.playerAvatar.position.set(S.player.pos.x, S.player.feetY, S.player.pos.z);
     S.playerAvatar.rotation.y = S.yaw + Math.PI;
@@ -407,14 +417,14 @@ export function toggleMountMG() {
     if (S.hooks.showMsg) S.hooks.showMsg('AMETRALLADORA SOLTADA', 1.0);
     return;
   }
-  if (Math.hypot(S.player.pos.x - 24.5, S.player.pos.z + 2.0) < 3.2 && S.player.feetY < 8.5) {
+  if (Math.hypot(S.player.pos.x - S.mgPos.x, S.player.pos.z - S.mgPos.z) < 3.2 && S.player.feetY < 8.5) {
     S.mgMounted = true; S.aiming = false; S.crouching = false; S.reloadTimer = 0;
     S.player.feetY = DECK_TOP; S.player.velY = 0; S.player.onGround = true;
     if ($('crouchTag')) $('crouchTag').textContent = '';
     S.vmRes.vm.visible = false;
     S.playerAvatar.visible = false;
     if ($('mgHeatWrap')) $('mgHeatWrap').classList.remove('hidden');
-    S.player.pos.set(25.35, DECK_TOP + 1.48, -2.0);
+    S.player.pos.set(S.mgPos.x + 0.85, DECK_TOP + 1.48, S.mgPos.z);
     S.camera.position.copy(S.player.pos);
     S.yaw = S.targetYaw = Math.max(Math.PI / 2 - 0.85, Math.min(Math.PI / 2 + 0.85, S.yaw));
     S.pitch = S.targetPitch = Math.max(-0.35, Math.min(0.35, S.pitch));
@@ -492,7 +502,11 @@ export function resolveBulletHit(baseDmg, startPos, isMelee = false, weaponName 
   } else if (hits.length && hits[0].distance < obsDist) {
     const h = hits[0]; end = h.point;
     const part = h.object.userData.tankPart;
-    if (part && S.hooks.damageTankette) {
+    const stTarget = h.object.userData.storyTarget;
+    if (stTarget && S.hooks.damageStoryTarget) {
+      S.stats.hits++;
+      S.hooks.damageStoryTarget(stTarget, baseDmg, end, wLabel);
+    } else if (part && S.hooks.damageTankette) {
       S.stats.hits++;
       const isVisor = (part === 'visor');
       const scaled = isVisor ? baseDmg : (part === 'hull' ? Math.max(6, Math.round(baseDmg * 0.25)) : Math.round(baseDmg * 0.72));
@@ -595,7 +609,8 @@ export function shoot() {
 }
 
 export function tryUseSupply() {
-  const d = Math.hypot(S.player.pos.x - 32, S.player.pos.z - 3.2);
+  if (S.hooks.tryStoryInteract && S.hooks.tryStoryInteract()) return;
+  const d = Math.hypot(S.player.pos.x - S.supplyCratePos.x, S.player.pos.z - S.supplyCratePos.z);
   if (d >= 3.4 || S.supplyCooldown > 0 || S.player.feetY > 8.5) {
     if (S.hooks.tryCollectNearbyLoot) S.hooks.tryCollectNearbyLoot();
     return;
@@ -681,6 +696,11 @@ export function updateWeapons(dt) {
       if (S.tankette && !S.tankette.userData.dead && Math.hypot(S.tankette.position.x - z.x, S.tankette.position.z - z.z) < z.radius + 1.5) {
         S.hooks.damageTankette(28, false, S.tankette.position.clone().add(new THREE.Vector3(0, 0.6, 0)), 'Molotov', 'fire', 'tracks');
       }
+      for (const st of S.storyTargets) {
+        if (st.type === 'mg_nest' && !st.destroyed && Math.hypot(st.x - z.x, st.z - z.z) < z.radius + 1.5 && S.hooks.damageStoryTarget) {
+          S.hooks.damageStoryTarget(st, 28, new THREE.Vector3(st.x, DECK_TOP + 1.1, st.z), 'Molotov');
+        }
+      }
     }
     if (z.life <= 0) {
       S.scene.remove(z.light);
@@ -710,6 +730,11 @@ export function updateWeapons(dt) {
       }
       if (S.tankette && !S.tankette.userData.dead && S.tankette.position.distanceTo(p) < 8.0) {
         S.hooks.damageTankette(150, true, S.tankette.position.clone().add(new THREE.Vector3(0, 1.5, 0)), 'Mortero Aliado', 'blast', 'turret');
+      }
+      for (const st of S.storyTargets) {
+        if (st.type === 'mg_nest' && !st.destroyed && Math.hypot(st.x - am.x, st.z - am.z) < 7.5 && S.hooks.damageStoryTarget) {
+          S.hooks.damageStoryTarget(st, 150, new THREE.Vector3(st.x, DECK_TOP + 1.1, st.z), 'Mortero Aliado');
+        }
       }
       S.alliedMortars.splice(i, 1);
     }

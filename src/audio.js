@@ -119,6 +119,14 @@ export const playMolotovShatter = (pos = null) => { tone(2200, 0.09, 0.16, 'tria
 export const playParryClang   = () => { tone(1680, 0.12, 0.22, 'triangle', 920); tone(2480, 0.09, 0.14, 'sine', 1320); };
 export const playBandageSound = () => { noiseBurst(0.14, 0.12, 950); tone(460, 0.14, 0.12, 'sine', 640); };
 export const playMortarWhistle = (pos = null) => tone(980, 0.52, 0.12, 'sine', 340, false, pos);
+export const playBombPlant = () => { tone(560, 0.08, 0.16, 'square', 420); setTimeout(() => tone(880, 0.09, 0.15, 'triangle'), 95); };
+export const playBombTick = (urgent = false) => tone(urgent ? 1320 : 960, 0.045, urgent ? 0.16 : 0.10, 'square');
+export const playShellshock = () => { tone(2800, 1.35, 0.09, 'sine', 1650); noiseBurst(0.55, 0.28, 320); };
+export const playVictoryFanfare = () => {
+  [392, 523.25, 659.25, 783.99, 1046.5].forEach((f, idx) => {
+    setTimeout(() => tone(f, idx === 4 ? 0.65 : 0.24, 0.16, 'triangle'), idx * 140);
+  });
+};
 
 export function playRadioChirp() {
   tone(1540, 0.035, 0.07, 'sine');

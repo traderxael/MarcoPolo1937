@@ -14,14 +14,17 @@
 </div>
 
 <div id="damageFlash"></div>
+<div id="shellshockOverlay" aria-hidden="true"></div>
 
 <div id="hud">
   <div id="topleft" class="panel">
-    <div class="zh">卢沟桥 · 七七事变</div>
-    <div class="sub">PUENTE DE MARCO POLO — 7 JULIO 1937</div>
-    <div class="obj">OBJETIVO: contener el asalto japonés<br><span id="modeLabel">Capítulo</span> <span id="wave">1</span><span id="waveTotal"> / 4</span> <div id="chapterTitle">7 JUL 23:40 · El pretexto del soldado perdido</div><div id="squadHud">ESCUADRÓN [T]: Fuego de cobertura</div></div>
+    <div class="zh">卢沟桥 · 七七事变 · 1937–1945</div>
+    <div class="sub">GUERRA DE RESISTENCIA · HISTORIA COMPLETA</div>
+    <div class="obj"><span id="modeLabel">Capítulo</span> <span id="wave">1</span><span id="waveTotal"> / 8</span><div id="chapterTitle">7 JUL 1937 · Lugouqiao: El pretexto del soldado perdido</div><div id="objList" class="objList"></div><progress id="objProgress" class="objProgress" max="100" value="0" aria-label="Progreso del objetivo actual"></progress><div id="squadHud">ESCUADRÓN [T]: Fuego de cobertura</div></div>
     <div id="radioBox"><b id="radioSender">MANDO DEL 29.º EJÉRCITO</b><span id="radioTxt"></span></div>
   </div>
+  <div id="objMarker" aria-hidden="true"><span id="objMarkerLabel">◆ OBJETIVO</span></div>
+  <div id="storySub" aria-live="polite"><b id="storySpeaker"></b><span id="storyText"></span></div>
   <div id="bossBarWrap" class="hidden">
     <div id="bossName">九四式轻装甲车 · TANQUETA TIPO 94 TE-KE</div>
     <div class="bar" style="width:320px;margin:0 auto"><div id="bossBar"></div></div>
@@ -159,14 +162,24 @@
   </div>
 </div>
 
-<div id="tacticalMapOverlay" class="hidden" role="dialog" aria-label="Mapa Táctico 1937">
+<div id="tacticalMapOverlay" class="hidden" role="dialog" aria-label="Mapa Táctico 1937–1945">
   <div class="tacBriefCard">
     <div class="tacHeader">
-      <h2 id="tacTitle">MAPA TÁCTICO · 7 DE JULIO DE 1937</h2>
-      <button class="pillBtn" id="tacSkipBtn">[ESPACIO / CLIC] CONTINUAR →</button>
+      <div>
+        <div id="tacOpCode" class="tacOpCode">OPERACIÓN LUGOUQIAO · ACTO I</div>
+        <h2 id="tacTitle">MAPA TÁCTICO · 7 DE JULIO DE 1937</h2>
+      </div>
+      <button class="pillBtn" id="tacSkipBtn">[ESPACIO / CLIC] DESPLEGAR →</button>
     </div>
-    <div class="mapFrame"><canvas id="tacticalMapCanvas" class="mapCanvas" width="800" height="440"></canvas></div>
-    <div id="tacCaption" class="tacCaption"></div>
+    <div class="tacSplit">
+      <div class="mapFrame"><canvas id="tacticalMapCanvas" class="mapCanvas" width="800" height="440"></canvas></div>
+      <div class="tacDossier">
+        <div id="tacMeta" class="tacMeta"></div>
+        <div class="tacObjTitle">OBJETIVOS DE MISIÓN</div>
+        <ul id="tacObjectives" class="tacObjList"></ul>
+        <div id="tacCaption" class="tacCaption"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -192,17 +205,21 @@
       <div class="menuRow">
         <span>MODO DE JUEGO:</span>
         <div class="pillGroup" id="modePills">
-          <button class="pillBtn active" data-mode="campaign">Campaña Histórica (4 Capítulos)</button>
+          <button class="pillBtn active" data-mode="campaign">Modo Historia (1937–1945 · 8 Batallas)</button>
           <button class="pillBtn" data-mode="survival">Supervivencia Infinita (无尽抗战)</button>
         </div>
       </div>
       <div class="menuRow" id="chapterPickRow">
-        <span>CAPÍTULO INICIAL:</span>
+        <span>BATALLA INICIAL:</span>
         <div class="pillGroup" id="chapterPills">
-          <button class="pillBtn active" data-ch="0">1 · 7 Jul</button>
-          <button class="pillBtn" data-ch="1">2 · 8 Jul</button>
-          <button class="pillBtn" data-ch="2">3 · 9 Jul (Puente Ferroviario/Lluvia)</button>
-          <button class="pillBtn" data-ch="3">4 · 28 Jul (Tanqueta)</button>
+          <button class="pillBtn active" data-ch="0">1 · 7 Jul Lugouqiao</button>
+          <button class="pillBtn" data-ch="1">2 · 8 Jul Wanping</button>
+          <button class="pillBtn" data-ch="2">3 · 9 Jul Puente Ferrov.</button>
+          <button class="pillBtn" data-ch="3">4 · 28 Jul Nanyuan</button>
+          <button class="pillBtn" data-ch="4">5 · Oct 37 Shanghái Sihang</button>
+          <button class="pillBtn" data-ch="5">6 · Abr 38 Tai'erzhuang</button>
+          <button class="pillBtn" data-ch="6">7 · 1941 Changsha</button>
+          <button class="pillBtn" data-ch="7">8 · 1945 Victoria Final</button>
         </div>
       </div>
       <div class="menuRow">

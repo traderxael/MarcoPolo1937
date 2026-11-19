@@ -293,20 +293,26 @@ export function drawRadar() {
   const toX = x => 6 + ((x + 62) / 140) * 154;
   const toY = z => 36 + (z / 16) * 26;
 
-  // Railway Bridge (top band z = -15..-11)
-  ctx.fillStyle = '#1e2228';
-  ctx.fillRect(toX(-58), toY(-15.5), toX(60) - toX(-58), toY(-10.5) - toY(-15.5));
-  // Causeway connector
-  ctx.fillRect(toX(44.5), toY(-11.5), toX(54.5) - toX(44.5), toY(-4.5) - toY(-11.5));
-  // Main Lugouqiao deck & Wanping battlements
-  ctx.fillStyle = '#25282e';
-  ctx.fillRect(toX(-62), toY(-5), toX(62) - toX(-62), toY(5) - toY(-5));
-  ctx.strokeStyle = '#6d6350';
-  ctx.strokeRect(toX(-62), toY(-5), toX(62) - toX(-62), toY(5) - toY(-5));
-  ctx.fillStyle = '#4e463a';
-  ctx.fillRect(toX(68), 4, 14, H - 8);
+  if (S.currentTheater === 'bridge') {
+    // Railway Bridge (top band z = -15..-11)
+    ctx.fillStyle = '#1e2228';
+    ctx.fillRect(toX(-58), toY(-15.5), toX(60) - toX(-58), toY(-10.5) - toY(-15.5));
+    ctx.fillRect(toX(44.5), toY(-11.5), toX(54.5) - toX(44.5), toY(-4.5) - toY(-11.5));
+    // Main Lugouqiao deck & Wanping battlements
+    ctx.fillStyle = '#25282e';
+    ctx.fillRect(toX(-62), toY(-5), toX(62) - toX(-62), toY(5) - toY(-5));
+    ctx.strokeStyle = '#6d6350';
+    ctx.strokeRect(toX(-62), toY(-5), toX(62) - toX(-62), toY(5) - toY(-5));
+    ctx.fillStyle = '#4e463a';
+    ctx.fillRect(toX(68), 4, 14, H - 8);
+  } else {
+    ctx.fillStyle = '#24272d';
+    ctx.fillRect(toX(-60), toY(-14), toX(60) - toX(-60), toY(14) - toY(-14));
+    ctx.strokeStyle = '#6d6350';
+    ctx.strokeRect(toX(-60), toY(-14), toX(60) - toX(-60), toY(14) - toY(-14));
+  }
 
-  // Sandbags, barrels, crate, MG
+  // Sandbags, barrels, crate, MG, loot
   for (const sc of S.sandbagClusters) {
     if (sc.broken) continue;
     ctx.fillStyle = '#8c7f61';
@@ -318,12 +324,17 @@ export function drawRadar() {
     ctx.fillRect(toX(b.x) - 1.5, toY(b.z) - 1.5, 3, 3);
   }
   ctx.fillStyle = '#e8c87a';
-  ctx.fillRect(toX(32) - 2, toY(3.2) - 2, 4, 4);
+  ctx.fillRect(toX(S.supplyCratePos.x) - 2, toY(S.supplyCratePos.z) - 2, 4, 4);
   ctx.fillStyle = S.mgMounted ? '#55e0ff' : '#d5a23c';
-  ctx.fillRect(toX(24.5) - 2.5, toY(-2.0) - 2.5, 5, 5);
+  ctx.fillRect(toX(S.mgPos.x) - 2.5, toY(S.mgPos.z) - 2.5, 5, 5);
   for (const d of S.lootDrops) {
     ctx.fillStyle = '#7dffb3';
     ctx.fillRect(toX(d.x) - 1.5, toY(d.z) - 1.5, 3, 3);
+  }
+  for (const st of S.storyTargets) {
+    if (st.destroyed) continue;
+    ctx.fillStyle = st.planted ? '#ff3b24' : '#ffd447';
+    ctx.fillRect(toX(st.x) - 3, toY(st.z) - 3, 6, 6);
   }
 
   // Enemy mortar warning rings
@@ -414,9 +425,95 @@ export function renderStats(containerId) {
   el.replaceChildren(...nodes);
 }
 
+export function renderChinaCampaignMap(canvas, chapterIdx = 4, animT = 0) {
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  ctx.fillStyle = '#181510';
+  ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = 'rgba(232,200,122,0.14)';
+  ctx.lineWidth = 1;
+  for (let gx = 40; gx < W; gx += 64) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
+  for (let gy = 40; gy < H; gy += 64) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
+
+  // China landmass silhouette (stylized eastern & central theaters)
+  ctx.fillStyle = '#2b2419';
+  ctx.strokeStyle = '#78684b';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(W * 0.14, H * 0.14);
+  ctx.lineTo(W * 0.72, H * 0.10);
+  ctx.lineTo(W * 0.79, H * 0.25);
+  ctx.lineTo(W * 0.68, H * 0.34);
+  ctx.lineTo(W * 0.80, H * 0.48);
+  ctx.lineTo(W * 0.78, H * 0.64);
+  ctx.lineTo(W * 0.68, H * 0.84);
+  ctx.lineTo(W * 0.42, H * 0.88);
+  ctx.lineTo(W * 0.16, H * 0.72);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Yellow & Yangtze Rivers
+  ctx.strokeStyle = 'rgba(72,130,172,0.55)';
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(W * 0.22, H * 0.34); ctx.quadraticCurveTo(W * 0.48, H * 0.26, W * 0.69, H * 0.38); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W * 0.20, H * 0.60); ctx.quadraticCurveTo(W * 0.52, H * 0.64, W * 0.78, H * 0.54); ctx.stroke();
+
+  const nodes = [
+    { x: W * 0.62, y: H * 0.22, label: 'BEIPING · LUGOUQIAO (1937)', ch: 0 },
+    { x: W * 0.77, y: H * 0.54, label: 'SHANGHÁI · SIHANG (OCT 1937)', ch: 4 },
+    { x: W * 0.64, y: H * 0.42, label: 'TAI\'ERZHUANG (ABR 1938)', ch: 5 },
+    { x: W * 0.54, y: H * 0.67, label: 'CHANGSHA (1941–1942)', ch: 6 },
+    { x: W * 0.41, y: H * 0.70, label: 'HUNAN · VICTORIA (1945)', ch: 7 }
+  ];
+
+  // Frontline campaign arc
+  const activeNodeIdx = chapterIdx <= 3 ? 0 : (chapterIdx - 3);
+  ctx.strokeStyle = chapterIdx === 7 ? '#ffd447' : 'rgba(232,120,68,0.65)';
+  ctx.lineWidth = 2.5;
+  ctx.setLineDash([7, 5]);
+  ctx.beginPath();
+  nodes.forEach((n, idx) => { if (idx === 0) ctx.moveTo(n.x, n.y); else ctx.lineTo(n.x, n.y); });
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Animated liberation / advance arrow
+  const osc = Math.sin(animT * 2.5) * 0.5 + 0.5;
+  if (activeNodeIdx > 0 && nodes[activeNodeIdx]) {
+    const prev = nodes[activeNodeIdx - 1], cur = nodes[activeNodeIdx];
+    const ax = prev.x + (cur.x - prev.x) * osc, ay = prev.y + (cur.y - prev.y) * osc;
+    ctx.fillStyle = chapterIdx === 7 ? '#ffd447' : '#ff5638';
+    ctx.beginPath(); ctx.arc(ax, ay, 5, 0, Math.PI * 2); ctx.fill();
+  }
+
+  nodes.forEach((n, idx) => {
+    const done = idx < activeNodeIdx;
+    const active = idx === activeNodeIdx;
+    ctx.fillStyle = done ? '#7dffb3' : (active ? '#ffd447' : '#8d8779');
+    ctx.beginPath(); ctx.arc(n.x, n.y, active ? 7 : 5, 0, Math.PI * 2); ctx.fill();
+    if (active) {
+      ctx.strokeStyle = '#ffd447'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(n.x, n.y, 12 + Math.sin(animT * 5) * 3, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.fillStyle = active ? '#ffd447' : (done ? '#b8f2cd' : '#cfc9bb');
+    ctx.font = active ? 'bold 12px sans-serif' : '11px sans-serif';
+    ctx.fillText((done ? '✓ ' : '') + n.label, n.x - 56, n.y - 12);
+  });
+
+  ctx.fillStyle = '#e8c87a'; ctx.font = 'bold 13px sans-serif';
+  ctx.fillText('FRENTE DE RESISTENCIA CHINA · 1937–1945', 18, 24);
+}
+
 // Animated 1937 tactical battlefield map
 export function renderTacticalMap(canvas, chapterIdx = 0, animT = 0) {
   if (!canvas) return;
+  if (chapterIdx >= 4) {
+    renderChinaCampaignMap(canvas, chapterIdx, animT);
+    return;
+  }
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
   ctx.clearRect(0, 0, W, H);
@@ -489,12 +586,40 @@ export function renderTacticalMap(canvas, chapterIdx = 0, animT = 0) {
   }
 }
 
+let briefTypeTimer = null;
+
 export function showTacticalBriefing(chapterIdx, onDone) {
   const ov = $('tacticalMapOverlay');
   if (!ov) { if (onDone) onDone(); return; }
-  const info = TACTICAL_BRIEFINGS[Math.min(3, Math.max(0, chapterIdx))];
-  $('tacTitle').textContent = info.title;
-  $('tacCaption').textContent = info.caption;
+  const info = TACTICAL_BRIEFINGS[Math.min(TACTICAL_BRIEFINGS.length - 1, Math.max(0, chapterIdx))];
+  if ($('tacOpCode')) $('tacOpCode').textContent = info.opCode || 'OPERACIÓN LUGOUQIAO';
+  if ($('tacTitle')) $('tacTitle').textContent = info.title;
+  if ($('tacMeta')) $('tacMeta').textContent = `${info.date || ''} · ${info.location || ''} · ${info.unit || ''}`;
+  if ($('tacObjectives')) {
+    const items = (info.objectives || []).map(txt => {
+      const li = document.createElement('li');
+      li.textContent = txt;
+      return li;
+    });
+    $('tacObjectives').replaceChildren(...items);
+  }
+
+  clearInterval(briefTypeTimer);
+  const capEl = $('tacCaption');
+  if (capEl) {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) {
+      capEl.textContent = info.caption;
+    } else {
+      capEl.textContent = '';
+      let i = 0;
+      briefTypeTimer = setInterval(() => {
+        i += 3;
+        capEl.textContent = info.caption.slice(0, i);
+        if (i >= info.caption.length) { clearInterval(briefTypeTimer); briefTypeTimer = null; }
+      }, 18);
+    }
+  }
   ov.classList.remove('hidden');
   S.tacticalBrief = { ch: chapterIdx, start: performance.now(), onDone };
   if (document.pointerLockElement) document.exitPointerLock();
@@ -503,6 +628,8 @@ export function showTacticalBriefing(chapterIdx, onDone) {
 
 export function closeTacticalBriefing() {
   if (!S.tacticalBrief) return;
+  clearInterval(briefTypeTimer);
+  briefTypeTimer = null;
   const done = S.tacticalBrief.onDone;
   S.tacticalBrief = null;
   if ($('tacticalMapOverlay')) $('tacticalMapOverlay').classList.add('hidden');
@@ -667,7 +794,8 @@ export function initTouchControls() {
   tap('tSquadBtn',  () => { toggleSquadWheel(); });
   tap('tInvBtn',    () => { if (S.hooks.toggleInventory) S.hooks.toggleInventory(); });
   tap('tUseBtn',    () => {
-    if (S.mgMounted || Math.hypot(S.player.pos.x - 24.5, S.player.pos.z + 2.0) < 3.2) {
+    if (S.hooks.tryStoryInteract && S.hooks.tryStoryInteract()) return;
+    if (S.mgMounted || Math.hypot(S.player.pos.x - S.mgPos.x, S.player.pos.z - S.mgPos.z) < 3.2) {
       if (S.hooks.toggleMountMG) S.hooks.toggleMountMG();
     } else if (S.hooks.tryUseSupply) {
       S.hooks.tryUseSupply();

@@ -21,6 +21,8 @@ export const S = {
 
   // Assets & world geometry collections
   ASSETS: {},
+  currentTheater: 'bridge',
+  theaterData: {},
   lionGroups: [],
   defenders: [],
   worldColliders: [],
@@ -31,9 +33,11 @@ export const S = {
   sandbagClusters: [],
   explosiveBarrels: [],
   supplyCrate: null,
+  supplyCratePos: { x: 32, z: 3.2 },
   mgEmplacement: null,
   mgHead: null,
   mgFlash: null,
+  mgPos: { x: 24.5, z: -2.0 },
   rainPoints: null,
   flareObj: null,
   flareLight: null,
@@ -117,6 +121,21 @@ export const S = {
   parryTimer: 0,
   bandageTimer: 0,
   boostTimer: 0,
+
+  // Story mode (1937-1945) state
+  storyMission: null,
+  storyPhase: 0,
+  storyPhaseDone: false,
+  storyObjectiveText: '',
+  storyProgress: 0,
+  storyHoldTimer: 0,
+  storyHoldMax: 0,
+  storyTargets: [],
+  plantedBombs: [],
+  storyWaypoint: null,
+  shellshockT: 0,
+  storyFlagMesh: null,
+  storyFlagRaised: false,
 
   // Tactical inventory & weapons
   current: 'rifle',

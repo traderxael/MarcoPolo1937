@@ -130,12 +130,14 @@ export function spawnEnemy(forceRole = null, forceLane = null) {
   }
 
   let lane = forceLane || 'main';
-  if (!forceLane && (w === 2 || (S.gameMode === 'survival' && w % 4 === 2)) && Math.random() < 0.35 && role !== 'officer') {
+  if (!forceLane && S.currentTheater === 'bridge' && (w === 2 || (S.gameMode === 'survival' && w % 4 === 2)) && Math.random() < 0.35 && role !== 'officer') {
     lane = 'rail';
   }
   const e = makeEnemy(role, lane);
-  if (lane === 'rail') {
+  if (lane === 'rail' && S.currentTheater === 'bridge') {
     e.position.set(-40 - Math.random() * 8, DECK_TOP, -13.1 + (Math.random() - 0.5) * 2.4);
+  } else if (S.currentTheater !== 'bridge') {
+    e.position.set(-42 - Math.random() * 10, DECK_TOP, (Math.random() - 0.5) * 19.0);
   } else {
     e.position.set(-40 - Math.random() * 8, DECK_TOP, (Math.random() - 0.5) * 6.2);
   }
@@ -428,8 +430,10 @@ export function updateEnemies(dt, t) {
     }
     e.position.y = DECK_TOP;
     e.position.x = Math.max(-60, Math.min(62, e.position.x));
-    if (u.lane === 'rail' && e.position.x < 46) {
+    if (u.lane === 'rail' && S.currentTheater === 'bridge' && e.position.x < 46) {
       e.position.z = Math.max(-15.0, Math.min(-11.0, e.position.z));
+    } else if (S.currentTheater !== 'bridge') {
+      e.position.z = Math.max(-12.2, Math.min(12.2, e.position.z));
     } else {
       e.position.z = Math.max(-3.5, Math.min(3.5, e.position.z));
     }

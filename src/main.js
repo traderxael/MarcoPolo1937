@@ -8,14 +8,14 @@ import {
 import { $, S, addScore, loadRecords, saveRecords, unlockMedal } from './state.js';
 import { clearPools, updatePools } from './pools.js';
 import {
-  applyWorldModels, damageSandbagCluster, getFloorY, initWorld, resetWorldProps,
-  resolvePlayerCollision, setChapterAtmosphere, updateWorld
+  activateTheater, applyWorldModels, damageSandbagCluster, getFloorY, initWorld,
+  resetWorldProps, resolvePlayerCollision, setChapterAtmosphere, updateWorld
 } from './world.js';
 import {
   initAudio, noiseBurst, playWaveHorn, syncAmbientVolume,
   toggleMute, tone, updateAudioListener, updateMusic
 } from './audio.js';
-import { applySquadModels, resetSquadPositions, setDefenderPos, setSquadOrder, updateSquad } from './squad.js';
+import { applySquadModels, resetSquadPositions, setDefenderPos, setSquadAnchors, setSquadOrder, updateSquad } from './squad.js';
 import {
   applyPlayerDamage, applyWeaponModels, buildPlayerAvatar, buildViewModels, callAlliedMortar, detonateBarrel,
   fireMG, shoot, spawnArtilleryBlast, startReload, switchWeapon, throwGrenade,
@@ -38,6 +38,10 @@ import {
   openInventory, resetInventory, spawnLootDrop, syncInventoryBadge, toggleInventory,
   tryCollectNearbyLoot, updateLootDrops, useInventoryItem
 } from './inventory.js';
+import {
+  clearStorySetPieces, damageStoryTarget, getStoryInteractPrompt, renderObjectiveHud,
+  showStorySubtitle, startStoryMission, tryStoryInteract, updateObjectiveMarker, updateStory
+} from './story.js';
 
 // ---------- boot world & systems ----------
 initWorld();
@@ -52,6 +56,15 @@ Object.assign(S.hooks, {
   setChapterAtmosphere,
   killEnemy,
   damageTankette,
+  spawnEnemy,
+  spawnTankette,
+  activateTheater,
+  setSquadAnchors,
+  startWave,
+  victory,
+  showTacticalBriefing,
+  damageStoryTarget,
+  tryStoryInteract,
   showMsg,
   showRadio,
   showWaveBanner,
@@ -379,7 +392,7 @@ function pollGamepad(dt) {
     gpPrev.r2 = r2; gpPrev.l2 = l2;
   }
   if (edge(2)) {
-    if (Math.hypot(S.player.pos.x - 32, S.player.pos.z - 3.2) < 3.4) tryUseSupply();
+    if (tryStoryInteract() || Math.hypot(S.player.pos.x - S.supplyCratePos.x, S.player.pos.z - S.supplyCratePos.z) < 3.4) tryUseSupply();
     else if (!S.mgMounted) startReload();
   }
   if (edge(1) && !S.mgMounted) { S.crouching = !S.crouching; if ($('crouchTag')) $('crouchTag').textContent = S.crouching ? '[AGACHADO]' : ''; }
@@ -390,7 +403,7 @@ function pollGamepad(dt) {
   if (edge(5)) throwGrenade();
   if (edge(4)) toggleCameraMode();
   if (edge(0)) {
-    if (S.mgMounted || Math.hypot(S.player.pos.x - 24.5, S.player.pos.z + 2.0) < 3.2) toggleMountMG();
+    if (S.mgMounted || Math.hypot(S.player.pos.x - S.mgPos.x, S.player.pos.z - S.mgPos.z) < 3.2) toggleMountMG();
     else triggerJump();
   }
   if (edge(12)) setSquadOrder('advance');
@@ -464,28 +477,58 @@ function updateCinematic(dt) {
   if (cin.t >= cin.dur) endCinematic();
 }
 
+function clearActiveEntities() {
+  if (S.tankette) {
+    const tu = S.tankette.userData;
+    [tu.hull, tu.visor, tu.trkL, tu.trkR, tu.turret].forEach(hb => {
+      const i = S.enemyHitboxes.indexOf(hb); if (i >= 0) S.enemyHitboxes.splice(i, 1);
+    });
+    S.scene.remove(S.tankette);
+    S.tankette = null;
+  }
+  if ($('bossBarWrap')) $('bossBarWrap').classList.add('hidden');
+  S.grenadesList.forEach(g => S.scene.remove(g.mesh)); S.grenadesList.length = 0;
+  S.molotovsList.forEach(m => S.scene.remove(m.mesh)); S.molotovsList.length = 0;
+  S.molotovZones.forEach(z => S.scene.remove(z.light)); S.molotovZones.length = 0;
+  S.alliedMortars.forEach(a => { S.scene.remove(a.ring); a.ring.geometry.dispose(); a.ring.material.dispose(); }); S.alliedMortars.length = 0;
+  S.enemyGrenades.forEach(g => S.scene.remove(g.mesh)); S.enemyGrenades.length = 0;
+  S.enemyMortars.forEach(m => { S.scene.remove(m.ring); m.ring.geometry.dispose(); m.ring.material.dispose(); }); S.enemyMortars.length = 0;
+  S.flyingHelmets.forEach(h => S.scene.remove(h.mesh)); S.flyingHelmets.length = 0;
+  if ($('grenadeWarn')) $('grenadeWarn').classList.remove('show');
+
+  S.enemies.forEach(e => { if (e.userData.living) e.userData.living.dispose(); S.scene.remove(e); });
+  S.enemies.length = 0; S.enemyHitboxes.length = 0;
+  S.effects.forEach(f => { S.scene.remove(f.obj); if (!f.sharedGeo && f.obj.geometry) f.obj.geometry.dispose(); if (f.obj.material) f.obj.material.dispose(); });
+  S.effects.length = 0;
+  clearStorySetPieces();
+  clearPools();
+  clearLootDrops();
+}
+
 function startWave(n) {
+  clearActiveEntities();
   const diff = DIFFS[S.diffKey] || DIFFS.normal;
-  const ch = S.gameMode === 'survival' ? (n % 4) : Math.min(3, n);
+  const ch = S.gameMode === 'survival' ? (n % 4) : Math.min(7, n);
   S.wave = n;
-  S.waveInitialCount = (S.gameMode === 'survival') ? (5 + n * 2) : (WAVES[n] || 10);
+  S.waveInitialCount = (S.gameMode === 'survival') ? (5 + n * 2) : (ch < 4 ? (WAVES[ch] || 10) : 6);
   S.toSpawn = S.waveInitialCount;
   S.spawnTimer = 0.6;
   S.midWaveRadioSent = false;
-  S.rainActive = (ch === 2);
+  S.rainActive = (ch === 2 || ch === 6);
   if (S.rainPoints) S.rainPoints.visible = (S.rainActive && S.gfxLevel !== 'low');
   setChapterAtmosphere(ch);
 
   if ($('modeLabel')) $('modeLabel').textContent = (S.gameMode === 'survival') ? 'Oleada' : 'Capítulo';
   if ($('wave')) $('wave').textContent = (n + 1);
-  if ($('waveTotal')) $('waveTotal').textContent = (S.gameMode === 'survival') ? '' : ' / 4';
-  if (ch === 2) {
-    setDefenderPos(S.defenders[1], 14, -1.2);
-    S.player.hp = Math.min(100, S.player.hp + 20);
-  }
-  playWaveHorn();
+  if ($('waveTotal')) $('waveTotal').textContent = (S.gameMode === 'survival') ? '' : ' / 8';
 
   if (S.gameMode === 'survival') {
+    if (S.currentTheater !== 'bridge') activateTheater('bridge');
+    S.storyMission = null;
+    if (ch === 2) {
+      setDefenderPos(S.defenders[1], 14, -1.2);
+      S.player.hp = Math.min(100, S.player.hp + 20);
+    }
     if ($('chapterTitle')) $('chapterTitle').textContent = `SUPERVIVENCIA · Oleada ${n + 1} · ${diff.label}`;
     if (n > 0) {
       S.grenades = Math.min(4, S.grenades + 1);
@@ -495,12 +538,19 @@ function startWave(n) {
     showWaveBanner(`无尽抗战 · OLEADA ${n + 1}`, `RESISTENCIA SIN FIN · ${S.toSpawn} ATACANTES`);
     if (n === 0 || ch === 2) showRadio(WAVE_RADIOS[ch][0], WAVE_RADIOS[ch][1], 5.5);
     if ((n + 1) % 4 === 0) spawnTankette();
+    renderObjectiveHud();
   } else {
-    if ($('chapterTitle')) $('chapterTitle').textContent = CHAPTER_TITLES[ch];
+    startStoryMission(ch);
+    if (ch === 2) {
+      setDefenderPos(S.defenders[1], 14, -1.2);
+      S.player.hp = Math.min(100, S.player.hp + 20);
+    }
+    if ($('chapterTitle')) $('chapterTitle').textContent = CHAPTER_TITLES[ch] || CHAPTER_TITLES[0];
     showWaveBanner(WAVE_BANNERS[ch][0], WAVE_BANNERS[ch][1]);
     showRadio(WAVE_RADIOS[ch][0], WAVE_RADIOS[ch][1], 6.0);
     if (n === 3) spawnTankette();
   }
+  playWaveHorn();
   updateHUD();
 }
 
@@ -534,30 +584,7 @@ function recordProgress(isVictory, bannerId) {
 }
 
 function cleanupTransientCombat() {
-  if (S.tankette) {
-    const tu = S.tankette.userData;
-    [tu.hull, tu.visor, tu.trkL, tu.trkR, tu.turret].forEach(hb => {
-      const i = S.enemyHitboxes.indexOf(hb); if (i >= 0) S.enemyHitboxes.splice(i, 1);
-    });
-    S.scene.remove(S.tankette);
-    S.tankette = null;
-  }
-  if ($('bossBarWrap')) $('bossBarWrap').classList.add('hidden');
-  S.grenadesList.forEach(g => S.scene.remove(g.mesh)); S.grenadesList.length = 0;
-  S.molotovsList.forEach(m => S.scene.remove(m.mesh)); S.molotovsList.length = 0;
-  S.molotovZones.forEach(z => S.scene.remove(z.light)); S.molotovZones.length = 0;
-  S.alliedMortars.forEach(a => { S.scene.remove(a.ring); a.ring.geometry.dispose(); a.ring.material.dispose(); }); S.alliedMortars.length = 0;
-  S.enemyGrenades.forEach(g => S.scene.remove(g.mesh)); S.enemyGrenades.length = 0;
-  S.enemyMortars.forEach(m => { S.scene.remove(m.ring); m.ring.geometry.dispose(); m.ring.material.dispose(); }); S.enemyMortars.length = 0;
-  S.flyingHelmets.forEach(h => S.scene.remove(h.mesh)); S.flyingHelmets.length = 0;
-  if ($('grenadeWarn')) $('grenadeWarn').classList.remove('show');
-
-  S.enemies.forEach(e => { if (e.userData.living) e.userData.living.dispose(); S.scene.remove(e); });
-  S.enemies.length = 0; S.enemyHitboxes.length = 0;
-  S.effects.forEach(f => { S.scene.remove(f.obj); if (!f.sharedGeo && f.obj.geometry) f.obj.geometry.dispose(); if (f.obj.material) f.obj.material.dispose(); });
-  S.effects.length = 0;
-  clearPools();
-  clearLootDrops();
+  clearActiveEntities();
   closeInventory(false);
   clearKillfeed();
   clearDamageNumbers();
@@ -667,6 +694,7 @@ export function resumeGame() {
 export function die() {
   if (!S.alive) return;
   closeInventory(false);
+  clearStorySetPieces();
   S.alive = false; S.aiming = false; S.mouseDownLeft = false; S.gpFiring = false; S.touchFiring = false; S.mgMounted = false; S.squadWheelOpen = false;
   S.vmRes.vm.visible = true; S.playerAvatar.visible = false; S.avatarFlash.visible = false;
   if ($('mgHeatWrap')) $('mgHeatWrap').classList.add('hidden');
@@ -696,6 +724,7 @@ function showOutroCard() {
 
 function victory() {
   closeInventory(false);
+  clearStorySetPieces();
   S.alive = false; S.aiming = false; S.mouseDownLeft = false; S.gpFiring = false; S.touchFiring = false; S.mgMounted = false; S.squadWheelOpen = false;
   S.vmRes.vm.visible = true; S.playerAvatar.visible = false; S.avatarFlash.visible = false;
   if ($('mgHeatWrap')) $('mgHeatWrap').classList.add('hidden');
@@ -789,7 +818,7 @@ function animate() {
 
       const firingHeld = S.mouseDownLeft || S.gpFiring || S.touchFiring;
       if (S.mgMounted) {
-        S.player.pos.set(25.35, DECK_TOP + 1.48, -2.0);
+        S.player.pos.set(S.mgPos.x + 0.85, DECK_TOP + 1.48, S.mgPos.z);
         S.camera.position.copy(S.player.pos);
         S.playerAvatar.visible = false;
         S.vmRes.vm.visible = false;
@@ -908,13 +937,17 @@ function animate() {
 
       const promptEl = $('interactPrompt');
       if (promptEl) {
-        if (S.mgMounted) {
+        const storyPrompt = getStoryInteractPrompt();
+        if (storyPrompt) {
+          promptEl.textContent = storyPrompt;
+          promptEl.style.opacity = '1';
+        } else if (S.mgMounted) {
           promptEl.textContent = '[F] Soltar ametralladora Tipo 24';
           promptEl.style.opacity = '1';
-        } else if (Math.hypot(S.player.pos.x - 24.5, S.player.pos.z + 2.0) < 3.2 && S.player.feetY < 8.5) {
+        } else if (Math.hypot(S.player.pos.x - S.mgPos.x, S.player.pos.z - S.mgPos.z) < 3.2 && S.player.feetY < 8.5) {
           promptEl.textContent = '[F] Montar ametralladora Tipo 24 (cobertura frontal)';
           promptEl.style.opacity = '1';
-        } else if (Math.hypot(S.player.pos.x - 32, S.player.pos.z - 3.2) < 3.4 && S.player.feetY < 8.5) {
+        } else if (Math.hypot(S.player.pos.x - S.supplyCratePos.x, S.player.pos.z - S.supplyCratePos.z) < 3.4 && S.player.feetY < 8.5) {
           promptEl.textContent = S.supplyCooldown > 0
             ? `Suministros disponibles en ${Math.ceil(S.supplyCooldown)}s`
             : '[E] Tomar munición, blindaje (+25), vendaje, ración y Molotov';
@@ -1033,12 +1066,16 @@ function animate() {
     }
 
     updateEnemies(dt, t);
+    updateStory(dt, t);
 
     const rem = S.toSpawn + S.enemies.filter(e => !e.userData.dead).length + (S.tankette && !S.tankette.userData.dead ? 1 : 0);
-    const chIdx = S.gameMode === 'survival' ? (S.wave % 4) : Math.min(3, S.wave);
+    const chIdx = S.gameMode === 'survival' ? (S.wave % 4) : Math.min(7, S.wave);
     if (!S.midWaveRadioSent && rem > 0 && rem <= Math.ceil(S.waveInitialCount / 2)) {
       S.midWaveRadioSent = true;
       showRadio(MID_WAVE_RADIOS[chIdx][0], MID_WAVE_RADIOS[chIdx][1], 6.0);
+      if (S.storyMission && !S.storyMission.phases && S.storyMission.storyMid) {
+        showStorySubtitle(S.storyMission.storyMid[0], S.storyMission.storyMid[1], 6.5);
+      }
     }
     if (S.toSpawn > 0) {
       S.spawnTimer -= dt;
@@ -1050,11 +1087,11 @@ function animate() {
     } else if (S.enemies.length === 0 && (!S.tankette || S.tankette.userData.dead) && !S.cinematic) {
       if (S.gameMode === 'survival') {
         openShop(() => startWave(S.wave + 1));
-      } else {
+      } else if (S.wave < 4) {
         if (S.wave === 0) startCinematic('wave2', () => showTacticalBriefing(1, () => startWave(1)));
         else if (S.wave === 1) startCinematic('wave3', () => showTacticalBriefing(2, () => startWave(2)));
         else if (S.wave === 2) startCinematic('wave4', () => showTacticalBriefing(3, () => startWave(3)));
-        else victory();
+        else { unlockMedal('wanping_hero'); showTacticalBriefing(4, () => startWave(4)); }
       }
     }
   }
@@ -1076,6 +1113,7 @@ function animate() {
 
   S.camera.updateMatrixWorld();
   updateDamageNumbers(S.paused || S.inventoryOpen ? 0 : dt);
+  updateObjectiveMarker();
   if (S.postFX) S.postFX.render(t);
   else S.renderer.render(S.scene, S.camera);
 }
@@ -1123,6 +1161,9 @@ window.__state = () => {
     squadOrder: S.squadOrder, squadWheelOpen: S.squadWheelOpen, shopOpen: S.shopOpen,
     inventoryOpen: S.inventoryOpen, inventory: { ...S.inventory }, inventoryUsedSlots: getInventoryUsedSlots(),
     lootDrops: S.lootDrops.length, boostTimer: +S.boostTimer.toFixed(2),
+    theater: S.currentTheater, storyPhase: S.storyPhase, storyProgress: S.storyProgress,
+    plantedBombs: S.plantedBombs.length, storyTargetsLeft: S.storyTargets.filter(t => !t.destroyed).length,
+    storyWaypoint: S.storyWaypoint, storyFlagRaised: S.storyFlagRaised, shellshock: +(S.shellshockT || 0).toFixed(2),
     tacticalBrief: !!S.tacticalBrief,
     medals: [...(S.records.medals || [])],
     sandbagsIntact: S.sandbagClusters.filter(c => !c.broken).length,
@@ -1170,6 +1211,19 @@ window.__demo = {
   closeInventory: () => closeInventory(true),
   spawnLoot: (id = 'intel_doc', dx = 0, dz = 0) => spawnLootDrop(id, S.player.pos.x + dx, S.player.pos.z + dz, 0.05, S.player.feetY),
   useInvItem: (id) => useInventoryItem(id),
+  startChapter: (ch = 4) => { S.gameMode = 'campaign'; S.startChapter = ch; beginGame(true); },
+  clearEnemies: () => {
+    S.toSpawn = 0;
+    for (const e of S.enemies) {
+      if (!e.userData.dead) killEnemy(e, true, { weapon: 'E2E' });
+      if (e.userData.living) e.userData.living.dispose();
+      S.scene.remove(e);
+    }
+    S.enemies.length = 0;
+    if (S.tankette && !S.tankette.userData.dead) damageTankette(9999, true, null, 'E2E', 'blast', 'visor');
+  },
+  storyInteract: () => tryStoryInteract(),
+  fastForwardHold: (sec = 22) => { if (S.storyHoldTimer > 0) S.storyHoldTimer = Math.max(0.05, S.storyHoldTimer - sec); },
   showBriefing: (ch = 0) => showTacticalBriefing(ch, null),
   setOrder: (ord) => setSquadOrder(ord),
   touch: (mode) => { S.touchMode = mode; syncTouchControlsVisibility(); },
@@ -1226,7 +1280,7 @@ bindPillGroup('modePills', 'mode', val => {
   if ($('chapterPickRow')) $('chapterPickRow').classList.toggle('hidden', S.gameMode !== 'campaign');
   updateRecordBanner();
 });
-bindPillGroup('chapterPills', 'ch', val => { S.startChapter = Math.max(0, Math.min(3, parseInt(val, 10) || 0)); });
+bindPillGroup('chapterPills', 'ch', val => { S.startChapter = Math.max(0, Math.min(7, parseInt(val, 10) || 0)); });
 bindPillGroup('diffPills', 'diff', val => { if (DIFFS[val]) S.diffKey = val; });
 bindPillGroup('gfxPills', 'gfx', val => { applyGraphics(val); });
 

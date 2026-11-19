@@ -159,7 +159,32 @@ function makeStoneLion() {
   return g;
 }
 
-function addSandbagCluster(x, z, rotY = 0) {
+function makeTheaterCtx(id) {
+  const root = new THREE.Group();
+  root.visible = false;
+  S.scene.add(root);
+  return {
+    id,
+    root,
+    worldColliders: [],
+    playerBoxes: [],
+    floorZones: [],
+    sandbagClusters: [],
+    explosiveBarrels: [],
+    lanterns: [],
+    shootableLanterns: [],
+    fireLights: [],
+    supplyCrate: null,
+    supplyPos: { x: 32, z: 3.2 },
+    mgEmplacement: null,
+    mgHead: null,
+    mgFlash: null,
+    mgPos: { x: 24.5, z: -2.0 },
+    flagMesh: null
+  };
+}
+
+function addSandbagClusterTo(ctx, x, z, rotY = 0) {
   const cluster = { x, z, hp: 120, maxHp: 120, stage: 0, broken: false, meshes: [], colBox: null };
   const sMat = S.pbr.sandMat;
   const g = new THREE.Group();
@@ -181,14 +206,14 @@ function addSandbagCluster(x, z, rotY = 0) {
     m.userData.sandbagCluster = cluster;
     g.add(m);
     cluster.meshes.push(m);
-    S.worldColliders.push(m);
+    ctx.worldColliders.push(m);
   }
-  S.scene.add(g);
+  ctx.root.add(g);
 
   const colBox = { minX: x - 0.82, maxX: x + 0.82, minZ: z - 0.78, maxZ: z + 0.78, topY: DECK_TOP + 0.92, cluster };
   cluster.colBox = colBox;
-  S.playerBoxes.push(colBox);
-  S.sandbagClusters.push(cluster);
+  ctx.playerBoxes.push(colBox);
+  ctx.sandbagClusters.push(cluster);
 }
 
 export function damageSandbagCluster(cluster, dmg, hitPos) {
@@ -209,7 +234,7 @@ export function damageSandbagCluster(cluster, dmg, hitPos) {
   }
 }
 
-function addExplosiveBarrel(x, z) {
+function addExplosiveBarrelTo(ctx, x, z) {
   const b = { x, z, exploded: false, hp: 38, mesh: null, colBox: null };
   const grp = new THREE.Group();
   grp.position.set(x, DECK_TOP, z);
@@ -229,14 +254,51 @@ function addExplosiveBarrel(x, z) {
   body.userData.explosiveBarrel = b;
   band.userData.explosiveBarrel = b;
   grp.add(body, band);
-  S.scene.add(grp);
+  ctx.root.add(grp);
 
-  S.worldColliders.push(body);
+  ctx.worldColliders.push(body);
   const colBox = { minX: x - 0.5, maxX: x + 0.5, minZ: z - 0.5, maxZ: z + 0.5, topY: DECK_TOP + 1.18, barrel: b };
   b.mesh = grp;
   b.colBox = colBox;
-  S.playerBoxes.push(colBox);
-  S.explosiveBarrels.push(b);
+  ctx.playerBoxes.push(colBox);
+  ctx.explosiveBarrels.push(b);
+}
+
+function addSupplyAndMG(ctx, supX, supZ, mgX, mgZ) {
+  ctx.supplyPos = { x: supX, z: supZ };
+  ctx.supplyCrate = box(1.3, 0.85, 0.85, 0x4b4130, supX, DECK_TOP + 0.42, supZ, ctx.root, { cast: true, receive: true });
+  ctx.worldColliders.push(ctx.supplyCrate);
+  ctx.playerBoxes.push({ minX: supX - 0.9, maxX: supX + 0.9, minZ: supZ - 0.7, maxZ: supZ + 0.7, topY: DECK_TOP + 0.88 });
+
+  ctx.mgPos = { x: mgX, z: mgZ };
+  const mgEmplacement = new THREE.Group();
+  mgEmplacement.position.set(mgX, DECK_TOP, mgZ);
+  const legMat = mat(0x2d3033, 0.7, 0.45);
+  for (const [lx, lz, rz] of [[-0.4, 0, -0.32], [0.35, -0.35, 0.35], [0.35, 0.35, 0.35]]) {
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.035, 1.05, 6), legMat);
+    leg.position.set(lx, 0.5, lz); leg.rotation.z = rz; mgEmplacement.add(leg);
+  }
+  const mgHead = new THREE.Group();
+  mgHead.position.set(0, 1.05, 0);
+  mgHead.rotation.y = Math.PI / 2;
+  box(0.16, 0.18, 0.56, 0x26292c, 0, 0, 0.08, mgHead, { rough: 0.5, metal: 0.7 });
+  const jacket = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.72, 8), mat(0x3a3e40, 0.45, 0.75));
+  jacket.rotation.x = Math.PI / 2; jacket.position.set(0, 0.02, -0.52); mgHead.add(jacket);
+  const shield = box(0.66, 0.48, 0.04, 0x3b4034, 0, 0.06, -0.22, mgHead, { rough: 0.8, metal: 0.4 });
+  shield.userData.isMgShield = true;
+  ctx.worldColliders.push(shield);
+  const mgFlash = new THREE.Mesh(
+    new THREE.ConeGeometry(0.11, 0.36, 6),
+    new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 1.25, 0.55), transparent: true, opacity: 0.9, depthWrite: false })
+  );
+  mgFlash.rotation.x = -Math.PI / 2; mgFlash.position.set(0, 0.02, -0.98); mgFlash.visible = false;
+  mgHead.add(mgFlash);
+  mgEmplacement.add(mgHead);
+  ctx.root.add(mgEmplacement);
+  ctx.mgEmplacement = mgEmplacement;
+  ctx.mgHead = mgHead;
+  ctx.mgFlash = mgFlash;
+  ctx.playerBoxes.push({ minX: mgX - 0.8, maxX: mgX + 0.6, minZ: mgZ - 0.6, maxZ: mgZ + 0.6, topY: DECK_TOP + 1.25 });
 }
 
 export function resetWorldProps() {
@@ -253,6 +315,11 @@ export function resetWorldProps() {
     b.hp = 38;
     b.mesh.visible = true;
     b.colBox.broken = false;
+  }
+  for (const l of S.lanterns) {
+    l.intact = true;
+    if (l.mesh) l.mesh.visible = true;
+    if (l.light) l.light.intensity = l.baseInt;
   }
 }
 
@@ -292,7 +359,7 @@ function buildSkyDome() {
 }
 
 export function setChapterAtmosphere(ch) {
-  const pal = CHAPTER_ATMOSPHERE[Math.min(3, Math.max(0, ch))] || CHAPTER_ATMOSPHERE[0];
+  const pal = CHAPTER_ATMOSPHERE[Math.min(CHAPTER_ATMOSPHERE.length - 1, Math.max(0, ch))] || CHAPTER_ATMOSPHERE[0];
   S.scene.background.setHex(pal.fog);
   S.scene.fog.color.setHex(pal.fog);
   S.scene.fog.density = pal.fogDens;
@@ -302,211 +369,15 @@ export function setChapterAtmosphere(ch) {
     S.skyDome.material.uniforms.uHorizon.value.setHex(pal.skyHor);
     S.skyDome.material.uniforms.uGlow.value.setHex(pal.glow);
   }
-  if (S.pbr) S.pbr.setRainWetness(ch === 2);
+  if (S.pbr) S.pbr.setRainWetness(Boolean(pal.wet || ch === 2 || ch === 6));
 }
 
-function buildBridge() {
+function buildBridgeTheater() {
+  const ctx = makeTheaterCtx('bridge');
   const cobble = S.pbr.cobbleMat;
   const wallMat = S.pbr.wallMat;
 
-  // Main Lugouqiao stone deck
-  box(124, 1.2, 10, cobble, 0, 6, 0, S.scene, { cast: true, receive: true });
-  S.floorZones.push({ minX: -62, maxX: 62, minZ: -5.0, maxZ: 5.0, y: DECK_TOP });
-
-  // Stone parapets: split north parapet at x = 44..54 to allow walking onto the Railway Bridge causeway
-  S.worldColliders.push(
-    box(106, 1.1, 0.75, wallMat, -9, 7.15, -4.72, S.scene, { cast: true, receive: true }),
-    box(8,   1.1, 0.75, wallMat, 58, 7.15, -4.72, S.scene, { cast: true, receive: true }),
-    box(124, 1.1, 0.75, wallMat,  0, 7.15,  4.72, S.scene, { cast: true, receive: true })
-  );
-
-  // Piers + cutwaters
-  for (let x = -55; x <= 55; x += 11) {
-    box(2.7, 8, 9.4, 0x605a51, x, 2, 0, S.scene, { cast: true, receive: true });
-    for (const z of [-5.3, 5.3]) {
-      const c = new THREE.Mesh(new THREE.ConeGeometry(1.6, 4.2, 4), mat(0x605a51, 1));
-      c.rotation.x = z < 0 ? Math.PI / 2 : -Math.PI / 2;
-      c.position.set(x, 1.2, z);
-      S.scene.add(c);
-    }
-  }
-  // Arches under spans
-  for (let x = -49.5; x <= 49.5; x += 11) {
-    const a = new THREE.Mesh(new THREE.TorusGeometry(4.95, 0.6, 6, 20, Math.PI), mat(0x6b655a, 1));
-    a.rotation.z = Math.PI; a.position.set(x, 5.5, 0); a.scale.z = 0.92;
-    S.scene.add(a);
-  }
-
-  // Famous stone lions
-  for (let x = -56; x <= 56; x += 8) {
-    for (const z of [-4.72, 4.72]) {
-      if (z < 0 && x > 43 && x < 55) continue;
-      const l = makeStoneLion();
-      l.position.set(x, 7.7, z); l.rotation.y = z < 0 ? 0 : Math.PI; l.scale.setScalar(1.02);
-      S.scene.add(l);
-      S.lionGroups.push(l);
-    }
-  }
-
-  // Parallel Railway Bridge (Pilar B) north of Lugouqiao (z = -15.5..-10.6)
-  box(118, 0.85, 5.0, 0x3b3835, 1, DECK_TOP - 0.425, -13.1, S.scene, { cast: true, receive: true });
-  for (let x = -54; x <= 58; x += 2.4) {
-    box(0.45, 0.14, 4.2, 0x4b3828, x, DECK_TOP + 0.06, -13.1, S.scene); // sleepers
-  }
-  box(118, 0.14, 0.14, 0x5c6268, 1, DECK_TOP + 0.16, -14.0, S.scene, { metal: 0.7, rough: 0.45 });
-  box(118, 0.14, 0.14, 0x5c6268, 1, DECK_TOP + 0.16, -12.2, S.scene, { metal: 0.7, rough: 0.45 });
-  for (let x = -50; x <= 50; x += 12) {
-    const tColL = box(0.42, 4.6, 0.42, 0x2c3035, x, DECK_TOP + 2.3, -15.3, S.scene, { metal: 0.6, rough: 0.5 });
-    const tColR = box(0.42, 4.6, 0.42, 0x2c3035, x, DECK_TOP + 2.3, -10.9, S.scene, { metal: 0.6, rough: 0.5 });
-    box(0.36, 0.36, 4.8, 0x2c3035, x, DECK_TOP + 4.5, -13.1, S.scene, { metal: 0.6, rough: 0.5 });
-    S.worldColliders.push(tColL, tColR);
-    box(1.8, 6.8, 4.4, 0x575148, x, 3.0, -13.1, S.scene, { cast: true, receive: true });
-  }
-  S.floorZones.push({ minX: -58, maxX: 60, minZ: -15.6, maxZ: -10.6, y: DECK_TOP });
-
-  // Eastern causeway linking Lugouqiao (z = -4.2) and Railway Bridge (z = -11.5) at x = 44.5..54.5
-  box(10.5, 1.2, 7.6, wallMat, 49.5, 6.0, -7.8, S.scene, { cast: true, receive: true });
-  S.floorZones.push({ minX: 44.2, maxX: 54.8, minZ: -11.6, maxZ: -4.2, y: DECK_TOP });
-
-  // Destructible hanging lanterns (high HDR emissive for selective bloom)
-  let lightCount = 0;
-  for (let x = -48; x <= 48; x += 12) {
-    for (const z of [-4.72, 4.72]) {
-      const lamp = new THREE.Mesh(
-        new THREE.SphereGeometry(0.26, 10, 8),
-        new THREE.MeshBasicMaterial({ color: new THREE.Color(1.4, 0.9, 0.4) })
-      );
-      lamp.position.set(x, 8.4, z);
-      S.scene.add(lamp);
-      let pl = null;
-      if (lightCount < 6 && (x === -48 || x === 0 || x === 48)) {
-        pl = new THREE.PointLight(0xffa95c, 18, 24, 2);
-        pl.position.set(x, 8.2, z);
-        S.scene.add(pl);
-        lightCount++;
-      }
-      const item = { mesh: lamp, light: pl, baseInt: pl ? 18 : 0, intact: true };
-      lamp.userData.lantern = item;
-      S.lanterns.push(item);
-      S.shootableLanterns.push(lamp);
-    }
-  }
-
-  // Warm light from Chinese defensive line
-  const fill = new THREE.PointLight(0xffc98a, 42, 60, 2);
-  fill.position.set(32, 13, 0);
-  S.scene.add(fill);
-
-  // Destructible sandbag clusters (replace static row with interactive cover + fixed flanking bags)
-  addSandbagCluster(19.5, -2.7, 0.08);
-  addSandbagCluster(27.0,  2.1, -0.06);
-  addSandbagCluster(34.5, -2.5, 0.04);
-  addSandbagCluster(12.5,  1.8, -0.10);
-  addSandbagCluster(28.0, -13.1, 0.05);
-  addSandbagCluster(18.0, -13.1, -0.05);
-
-  // Explosive ammunition barrels
-  addExplosiveBarrel(-24,  2.1);
-  addExplosiveBarrel( -8, -2.1);
-  addExplosiveBarrel(  6,  1.9);
-  addExplosiveBarrel(-16, -12.8);
-
-  // Supply crate
-  S.supplyCrate = box(1.3, 0.85, 0.85, 0x4b4130, 32, DECK_TOP + 0.42, 3.2, S.scene, { cast: true, receive: true });
-  S.worldColliders.push(S.supplyCrate);
-  S.playerBoxes.push({ minX: 31.1, maxX: 32.9, minZ: 2.5, maxZ: 3.9, topY: DECK_TOP + 0.88 });
-
-  // Fixed Type 24 Maxim trench machine gun emplacement at (24.5, DECK_TOP, -2.0)
-  const mgEmplacement = new THREE.Group();
-  mgEmplacement.position.set(24.5, DECK_TOP, -2.0);
-  const legMat = mat(0x2d3033, 0.7, 0.45);
-  for (const [lx, lz, rz] of [[-0.4, 0, -0.32], [0.35, -0.35, 0.35], [0.35, 0.35, 0.35]]) {
-    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.035, 1.05, 6), legMat);
-    leg.position.set(lx, 0.5, lz); leg.rotation.z = rz; mgEmplacement.add(leg);
-  }
-  const mgHead = new THREE.Group();
-  mgHead.position.set(0, 1.05, 0);
-  mgHead.rotation.y = Math.PI / 2;
-  box(0.16, 0.18, 0.56, 0x26292c, 0, 0, 0.08, mgHead, { rough: 0.5, metal: 0.7 });
-  const jacket = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.72, 8), mat(0x3a3e40, 0.45, 0.75));
-  jacket.rotation.x = Math.PI / 2; jacket.position.set(0, 0.02, -0.52); mgHead.add(jacket);
-  const shield = box(0.66, 0.48, 0.04, 0x3b4034, 0, 0.06, -0.22, mgHead, { rough: 0.8, metal: 0.4 });
-  shield.userData.isMgShield = true;
-  S.worldColliders.push(shield);
-  const mgFlash = new THREE.Mesh(
-    new THREE.ConeGeometry(0.11, 0.36, 6),
-    new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 1.25, 0.55), transparent: true, opacity: 0.9, depthWrite: false })
-  );
-  mgFlash.rotation.x = -Math.PI / 2; mgFlash.position.set(0, 0.02, -0.98); mgFlash.visible = false;
-  mgHead.add(mgFlash);
-  mgEmplacement.add(mgHead);
-  S.scene.add(mgEmplacement);
-  S.mgEmplacement = mgEmplacement;
-  S.mgHead = mgHead;
-  S.mgFlash = mgFlash;
-  S.playerBoxes.push({ minX: 23.7, maxX: 25.1, minZ: -2.6, maxZ: -1.4, topY: DECK_TOP + 1.25 });
-}
-
-function buildWanping() {
-  const W = 74;
-  const wallMat = S.pbr.wallMat;
-
-  // Stone plaza approach between bridge/railway and Wanping Gate
-  box(19, 1.2, 32, wallMat, 66.5, 6.0, 0, S.scene, { cast: true, receive: true });
-  S.floorZones.push({ minX: 57, maxX: 76, minZ: -16.0, maxZ: 16.0, y: DECK_TOP });
-
-  // Main fortress walls & gatehouse colliders
-  S.worldColliders.push(
-    box(5.5, 11, 26, wallMat, W, 5.5, -18, S.scene, { cast: true, receive: true }),
-    box(5.5, 11, 26, wallMat, W, 5.5,  18, S.scene, { cast: true, receive: true }),
-    box(5.5, 7,  3,  wallMat, W, 3.5, -6.4, S.scene, { cast: true }),
-    box(5.5, 7,  3,  wallMat, W, 3.5,  6.4, S.scene, { cast: true }),
-    box(5.5, 4,  12, wallMat, W, 9.0,  0,   S.scene, { cast: true })
-  );
-
-  // Battlement upper walkway (y = WANPING_TOP = 11.4) + crenellation cover
-  box(7.2, 0.6, 32, wallMat, 72.5, WANPING_TOP - 0.3, 0, S.scene, { cast: true, receive: true });
-  S.floorZones.push({ minX: 68.8, maxX: 76.2, minZ: -15.5, maxZ: 15.5, y: WANPING_TOP });
-  for (let z = -15; z <= 15; z += 2.6) {
-    if (z > 1.8 && z < 4.7) continue; // Keep ramp entrance clear
-    const merlon = box(0.9, 1.25, 1.35, wallMat, 69.2, WANPING_TOP + 0.62, z, S.scene, { cast: true, receive: true });
-    S.worldColliders.push(merlon);
-  }
-
-  // Walkable sloped stone stairs/ramp leading up from courtyard (x=57, y=6.6, z=3.2) to battlements (x=69, y=11.4, z=3.2)
-  const steps = 12;
-  for (let i = 0; i < steps; i++) {
-    const sx = 57 + i * 1.0;
-    const sy = DECK_TOP + ((i + 1) / steps) * (WANPING_TOP - DECK_TOP);
-    box(1.1, sy, 2.6, wallMat, sx + 0.5, sy * 0.5, 3.3, S.scene, { cast: true, receive: true });
-    S.floorZones.push({ minX: sx - 0.05, maxX: sx + 1.05, minZ: 2.0, maxZ: 4.6, y: sy });
-  }
-
-  // Gate towers & silhouette buildings
-  for (const z of [-30, 30]) {
-    box(6.5, 9, 6.5, wallMat, W, 4.5, z, S.scene, { cast: true });
-    const r = new THREE.Mesh(new THREE.ConeGeometry(5.2, 3.2, 4), mat(0x2d3940, 0.9));
-    r.rotation.y = Math.PI / 4; r.position.set(W, 10, z); S.scene.add(r);
-  }
-  for (let i = 0; i < 12; i++) {
-    const w = 5 + Math.random() * 5, h = 4 + Math.random() * 5;
-    box(w, h, w, 0x474135, 88 + Math.random() * 34, h / 2, -28 + Math.random() * 56, S.scene);
-  }
-  // Red lanterns + fire beacons on Wanping walls
-  for (const z of [-4.5, 4.5]) {
-    const l = new THREE.Mesh(new THREE.SphereGeometry(0.5, 10, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.5, 0.28, 0.16) }));
-    l.position.set(W - 3.2, 8.2, z);
-    S.scene.add(l);
-  }
-  for (const [fx, fy, fz] of [[73, 12.2, -11], [73, 12.2, 11]]) {
-    const fl = new THREE.PointLight(0xff6b28, 12, 26, 2);
-    fl.position.set(fx, fy, fz);
-    S.scene.add(fl);
-    S.wanpingFireLights.push({ light: fl, x: fx, y: fy, z: fz });
-  }
-}
-
-function buildTerrain() {
+  // River water & banks
   const geo = new THREE.PlaneGeometry(122, 250, 26, 40);
   const waterMat = new THREE.MeshStandardMaterial({ color: 0x17262e, roughness: 0.28, metalness: 0.62 });
   waterMat.onBeforeCompile = (sh) => {
@@ -518,55 +389,372 @@ function buildTerrain() {
   waterMat.customProgramCacheKey = () => 'water-v1';
   const water = new THREE.Mesh(geo, waterMat);
   water.rotation.x = -Math.PI / 2; water.position.y = 0; water.receiveShadow = true;
-  S.scene.add(water);
+  ctx.root.add(water);
 
-  // GPU nocturnal rain (1 single draw call)
-  const rc = 900, rpos = new Float32Array(rc * 3);
-  for (let i = 0; i < rc; i++) {
-    rpos[i * 3]     = (Math.random() - 0.5) * 140;
-    rpos[i * 3 + 1] = Math.random() * 26;
-    rpos[i * 3 + 2] = (Math.random() - 0.5) * 42;
-  }
-  const rgeo = new THREE.BufferGeometry();
-  rgeo.setAttribute('position', new THREE.BufferAttribute(rpos, 3));
-  const rmat = new THREE.PointsMaterial({ color: 0x9eb8dc, size: 0.14, transparent: true, opacity: 0.55, depthWrite: false });
-  rmat.onBeforeCompile = (sh) => {
-    sh.uniforms.uTime = S.rainTime;
-    sh.vertexShader = 'uniform float uTime;\n' + sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
-      transformed.y = 6.0 + mod(position.y - uTime * 22.0, 26.0);
-    `);
-  };
-  rmat.customProgramCacheKey = () => 'rain-v1';
-  S.rainPoints = new THREE.Points(rgeo, rmat);
-  S.rainPoints.frustumCulled = false;
-  S.rainPoints.visible = false;
-  S.scene.add(S.rainPoints);
-
-  // Single reusable illumination flare + HDR light
-  S.flareObj = new THREE.Mesh(
-    new THREE.SphereGeometry(0.32, 8, 6),
-    new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 1.45, 1.05) })
-  );
-  S.flareObj.visible = false;
-  S.scene.add(S.flareObj);
-  S.flareLight = new THREE.PointLight(0xffe7b3, 0, 62, 1.8);
-  S.scene.add(S.flareLight);
-
-  // Banks & trees
-  box(150, 4, 250, 0x3b4230, -126, 0, 0, S.scene, { receive: true });
-  box(150, 4, 250, 0x3b4230, 150, 0, 0, S.scene, { receive: true });
+  box(150, 4, 250, 0x3b4230, -126, 0, 0, ctx.root, { receive: true });
+  box(150, 4, 250, 0x3b4230, 150, 0, 0, ctx.root, { receive: true });
   const trunk = mat(0x3b2f22, 1), leaf = mat(0x273a26, 1);
   for (let i = 0; i < 26; i++) {
     const side = Math.random() < 0.5 ? -1 : 1;
     const x = side * (72 + Math.random() * 60), z = (Math.random() - 0.5) * 220;
     const h = 5 + Math.random() * 5;
-    const t = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.4, h, 6), trunk); t.position.set(x, h / 2, z); S.scene.add(t);
-    const c = new THREE.Mesh(new THREE.ConeGeometry(2.4, h * 0.8, 7), leaf); c.position.set(x, h * 0.95, z); S.scene.add(c);
+    const t = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.4, h, 6), trunk); t.position.set(x, h / 2, z); ctx.root.add(t);
+    const c = new THREE.Mesh(new THREE.ConeGeometry(2.4, h * 0.8, 7), leaf); c.position.set(x, h * 0.95, z); ctx.root.add(c);
   }
   for (let i = 0; i < 8; i++) {
     const w = 6 + Math.random() * 6, h = 5 + Math.random() * 6;
-    box(w, h, w, 0x383b35, -85 - Math.random() * 40, h / 2, (Math.random() - 0.5) * 110, S.scene);
+    box(w, h, w, 0x383b35, -85 - Math.random() * 40, h / 2, (Math.random() - 0.5) * 110, ctx.root);
   }
+
+  // Main Lugouqiao stone deck
+  box(124, 1.2, 10, cobble, 0, 6, 0, ctx.root, { cast: true, receive: true });
+  ctx.floorZones.push({ minX: -62, maxX: 62, minZ: -5.0, maxZ: 5.0, y: DECK_TOP });
+
+  ctx.worldColliders.push(
+    box(106, 1.1, 0.75, wallMat, -9, 7.15, -4.72, ctx.root, { cast: true, receive: true }),
+    box(8,   1.1, 0.75, wallMat, 58, 7.15, -4.72, ctx.root, { cast: true, receive: true }),
+    box(124, 1.1, 0.75, wallMat,  0, 7.15,  4.72, ctx.root, { cast: true, receive: true })
+  );
+
+  for (let x = -55; x <= 55; x += 11) {
+    box(2.7, 8, 9.4, 0x605a51, x, 2, 0, ctx.root, { cast: true, receive: true });
+    for (const z of [-5.3, 5.3]) {
+      const c = new THREE.Mesh(new THREE.ConeGeometry(1.6, 4.2, 4), mat(0x605a51, 1));
+      c.rotation.x = z < 0 ? Math.PI / 2 : -Math.PI / 2;
+      c.position.set(x, 1.2, z);
+      ctx.root.add(c);
+    }
+  }
+  for (let x = -49.5; x <= 49.5; x += 11) {
+    const a = new THREE.Mesh(new THREE.TorusGeometry(4.95, 0.6, 6, 20, Math.PI), mat(0x6b655a, 1));
+    a.rotation.z = Math.PI; a.position.set(x, 5.5, 0); a.scale.z = 0.92;
+    ctx.root.add(a);
+  }
+
+  for (let x = -56; x <= 56; x += 8) {
+    for (const z of [-4.72, 4.72]) {
+      if (z < 0 && x > 43 && x < 55) continue;
+      const l = makeStoneLion();
+      l.position.set(x, 7.7, z); l.rotation.y = z < 0 ? 0 : Math.PI; l.scale.setScalar(1.02);
+      ctx.root.add(l);
+      S.lionGroups.push(l);
+    }
+  }
+
+  // Parallel Railway Bridge
+  box(118, 0.85, 5.0, 0x3b3835, 1, DECK_TOP - 0.425, -13.1, ctx.root, { cast: true, receive: true });
+  for (let x = -54; x <= 58; x += 2.4) {
+    box(0.45, 0.14, 4.2, 0x4b3828, x, DECK_TOP + 0.06, -13.1, ctx.root);
+  }
+  box(118, 0.14, 0.14, 0x5c6268, 1, DECK_TOP + 0.16, -14.0, ctx.root, { metal: 0.7, rough: 0.45 });
+  box(118, 0.14, 0.14, 0x5c6268, 1, DECK_TOP + 0.16, -12.2, ctx.root, { metal: 0.7, rough: 0.45 });
+  for (let x = -50; x <= 50; x += 12) {
+    const tColL = box(0.42, 4.6, 0.42, 0x2c3035, x, DECK_TOP + 2.3, -15.3, ctx.root, { metal: 0.6, rough: 0.5 });
+    const tColR = box(0.42, 4.6, 0.42, 0x2c3035, x, DECK_TOP + 2.3, -10.9, ctx.root, { metal: 0.6, rough: 0.5 });
+    box(0.36, 0.36, 4.8, 0x2c3035, x, DECK_TOP + 4.5, -13.1, ctx.root, { metal: 0.6, rough: 0.5 });
+    ctx.worldColliders.push(tColL, tColR);
+    box(1.8, 6.8, 4.4, 0x575148, x, 3.0, -13.1, ctx.root, { cast: true, receive: true });
+  }
+  ctx.floorZones.push({ minX: -58, maxX: 60, minZ: -15.6, maxZ: -10.6, y: DECK_TOP });
+
+  box(10.5, 1.2, 7.6, wallMat, 49.5, 6.0, -7.8, ctx.root, { cast: true, receive: true });
+  ctx.floorZones.push({ minX: 44.2, maxX: 54.8, minZ: -11.6, maxZ: -4.2, y: DECK_TOP });
+
+  let lightCount = 0;
+  for (let x = -48; x <= 48; x += 12) {
+    for (const z of [-4.72, 4.72]) {
+      const lamp = new THREE.Mesh(
+        new THREE.SphereGeometry(0.26, 10, 8),
+        new THREE.MeshBasicMaterial({ color: new THREE.Color(1.4, 0.9, 0.4) })
+      );
+      lamp.position.set(x, 8.4, z);
+      ctx.root.add(lamp);
+      let pl = null;
+      if (lightCount < 6 && (x === -48 || x === 0 || x === 48)) {
+        pl = new THREE.PointLight(0xffa95c, 18, 24, 2);
+        pl.position.set(x, 8.2, z);
+        ctx.root.add(pl);
+        lightCount++;
+      }
+      const item = { mesh: lamp, light: pl, baseInt: pl ? 18 : 0, intact: true };
+      lamp.userData.lantern = item;
+      ctx.lanterns.push(item);
+      ctx.shootableLanterns.push(lamp);
+    }
+  }
+
+  const fill = new THREE.PointLight(0xffc98a, 42, 60, 2);
+  fill.position.set(32, 13, 0);
+  ctx.root.add(fill);
+
+  addSandbagClusterTo(ctx, 19.5, -2.7, 0.08);
+  addSandbagClusterTo(ctx, 27.0,  2.1, -0.06);
+  addSandbagClusterTo(ctx, 34.5, -2.5, 0.04);
+  addSandbagClusterTo(ctx, 12.5,  1.8, -0.10);
+  addSandbagClusterTo(ctx, 28.0, -13.1, 0.05);
+  addSandbagClusterTo(ctx, 18.0, -13.1, -0.05);
+
+  addExplosiveBarrelTo(ctx, -24,  2.1);
+  addExplosiveBarrelTo(ctx,  -8, -2.1);
+  addExplosiveBarrelTo(ctx,   6,  1.9);
+  addExplosiveBarrelTo(ctx, -16, -12.8);
+
+  addSupplyAndMG(ctx, 32, 3.2, 24.5, -2.0);
+
+  // Wanping Gatehouse & Ramp
+  const W = 74;
+  box(19, 1.2, 32, wallMat, 66.5, 6.0, 0, ctx.root, { cast: true, receive: true });
+  ctx.floorZones.push({ minX: 57, maxX: 76, minZ: -16.0, maxZ: 16.0, y: DECK_TOP });
+
+  ctx.worldColliders.push(
+    box(5.5, 11, 26, wallMat, W, 5.5, -18, ctx.root, { cast: true, receive: true }),
+    box(5.5, 11, 26, wallMat, W, 5.5,  18, ctx.root, { cast: true, receive: true }),
+    box(5.5, 7,  3,  wallMat, W, 3.5, -6.4, ctx.root, { cast: true }),
+    box(5.5, 7,  3,  wallMat, W, 3.5,  6.4, ctx.root, { cast: true }),
+    box(5.5, 4,  12, wallMat, W, 9.0,  0,   ctx.root, { cast: true })
+  );
+
+  box(7.2, 0.6, 32, wallMat, 72.5, WANPING_TOP - 0.3, 0, ctx.root, { cast: true, receive: true });
+  ctx.floorZones.push({ minX: 68.8, maxX: 76.2, minZ: -15.5, maxZ: 15.5, y: WANPING_TOP });
+  for (let z = -15; z <= 15; z += 2.6) {
+    if (z > 1.8 && z < 4.7) continue;
+    const merlon = box(0.9, 1.25, 1.35, wallMat, 69.2, WANPING_TOP + 0.62, z, ctx.root, { cast: true, receive: true });
+    ctx.worldColliders.push(merlon);
+  }
+
+  const steps = 12;
+  for (let i = 0; i < steps; i++) {
+    const sx = 57 + i * 1.0;
+    const sy = DECK_TOP + ((i + 1) / steps) * (WANPING_TOP - DECK_TOP);
+    box(1.1, sy, 2.6, wallMat, sx + 0.5, sy * 0.5, 3.3, ctx.root, { cast: true, receive: true });
+    ctx.floorZones.push({ minX: sx - 0.05, maxX: sx + 1.05, minZ: 2.0, maxZ: 4.6, y: sy });
+  }
+
+  for (const z of [-30, 30]) {
+    box(6.5, 9, 6.5, wallMat, W, 4.5, z, ctx.root, { cast: true });
+    const r = new THREE.Mesh(new THREE.ConeGeometry(5.2, 3.2, 4), mat(0x2d3940, 0.9));
+    r.rotation.y = Math.PI / 4; r.position.set(W, 10, z); ctx.root.add(r);
+  }
+  for (let i = 0; i < 12; i++) {
+    const w = 5 + Math.random() * 5, h = 4 + Math.random() * 5;
+    box(w, h, w, 0x474135, 88 + Math.random() * 34, h / 2, -28 + Math.random() * 56, ctx.root);
+  }
+  for (const z of [-4.5, 4.5]) {
+    const l = new THREE.Mesh(new THREE.SphereGeometry(0.5, 10, 8), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.5, 0.28, 0.16) }));
+    l.position.set(W - 3.2, 8.2, z);
+    ctx.root.add(l);
+  }
+  for (const [fx, fy, fz] of [[73, 12.2, -11], [73, 12.2, 11]]) {
+    const fl = new THREE.PointLight(0xff6b28, 12, 26, 2);
+    fl.position.set(fx, fy, fz);
+    ctx.root.add(fl);
+    ctx.fireLights.push({ light: fl, x: fx, y: fy, z: fz });
+  }
+
+  S.theaterData.bridge = ctx;
+  return ctx;
+}
+
+function addCoverWall(ctx, x, z, w, h, d, color) {
+  const m = box(w, h, d, color, x, DECK_TOP + h * 0.5, z, ctx.root, { cast: true, receive: true });
+  ctx.worldColliders.push(m);
+  ctx.playerBoxes.push({
+    minX: x - w * 0.5, maxX: x + w * 0.5,
+    minZ: z - d * 0.5, maxZ: z + d * 0.5,
+    topY: DECK_TOP + h + 0.04
+  });
+  return m;
+}
+
+function buildStoryArenaBase(id, floorColorOrMat, borderColor, supPos, mgPos) {
+  const ctx = makeTheaterCtx(id);
+  // Surrounding ground plane
+  box(260, 4, 200, borderColor, 0, 2.0, 0, ctx.root, { receive: true });
+  // Main playable boulevard / arena (x: -60..60, z: -14..14)
+  box(126, 1.2, 29, floorColorOrMat, 0, 6.0, 0, ctx.root, { cast: true, receive: true });
+  ctx.floorZones.push({ minX: -62, maxX: 62, minZ: -14.5, maxZ: 14.5, y: DECK_TOP });
+
+  // Boundary low retaining parapets
+  ctx.worldColliders.push(
+    box(126, 1.3, 1.0, borderColor, 0, DECK_TOP + 0.65, -14.1, ctx.root, { cast: true, receive: true }),
+    box(126, 1.3, 1.0, borderColor, 0, DECK_TOP + 0.65,  14.1, ctx.root, { cast: true, receive: true })
+  );
+
+  // Warm key fill near Chinese line
+  const fill = new THREE.PointLight(0xffcf94, 34, 65, 2);
+  fill.position.set(38, 15, 0);
+  ctx.root.add(fill);
+
+  // Standard 6 cover sandbags + 4 barrels + supply + MG
+  for (const [sx, sz, rot] of [[22, -4.5, 0.06], [28, 4.5, -0.05], [6, -5.5, 0.04], [4, 5.5, -0.04], [-10, -4.5, 0.08], [-12, 4.2, -0.07]]) {
+    addSandbagClusterTo(ctx, sx, sz, rot);
+  }
+  for (const [bx, bz] of [[-20, 0], [-6, -2.5], [10, 2.2], [-30, -3.8]]) {
+    addExplosiveBarrelTo(ctx, bx, bz);
+  }
+  addSupplyAndMG(ctx, supPos[0], supPos[1], mgPos[0], mgPos[1]);
+  S.theaterData[id] = ctx;
+  return ctx;
+}
+
+function buildShanghaiTheater() {
+  const ctx = buildStoryArenaBase('shanghai', S.pbr.cobbleMat, 0x3b3230, [46, 6.5], [36, -4.5]);
+  // Suzhou Creek north water strip
+  const water = new THREE.Mesh(new THREE.PlaneGeometry(160, 32), new THREE.MeshStandardMaterial({ color: 0x162228, roughness: 0.3, metalness: 0.6 }));
+  water.rotation.x = -Math.PI / 2; water.position.set(0, 4.2, -32); ctx.root.add(water);
+
+  // Ruined brick facades lining boulevard + HDR burning windows
+  const glowMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.5, 0.62, 0.20) });
+  for (let x = -48; x <= 44; x += 18) {
+    for (const z of [-18.5, 18.5]) {
+      const h = 8 + (Math.abs(x) % 5);
+      box(14, h, 7, 0x4b352d, x, DECK_TOP + h * 0.5 - 0.5, z, ctx.root, { cast: true, receive: true });
+      const win = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.8, 0.2), glowMat);
+      win.position.set(x + 2, DECK_TOP + 4.2, z + (z < 0 ? 3.55 : -3.55));
+      ctx.root.add(win);
+    }
+  }
+
+  // Towering Sihang Warehouse fortress at east end (x = 64)
+  box(12, 18, 32, 0x454341, 64, DECK_TOP + 8.5, 0, ctx.root, { cast: true, receive: true });
+  for (const wy of [DECK_TOP + 5, DECK_TOP + 10, DECK_TOP + 14]) {
+    for (const wz of [-8, -2.5, 2.5, 8]) {
+      const w = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1.6, 2.6), glowMat);
+      w.position.set(57.8, wy, wz);
+      ctx.root.add(w);
+    }
+  }
+
+  // Street masonry cover blocks
+  addCoverWall(ctx, 18, 0, 2.2, 1.4, 4.2, 0x4f4640);
+  addCoverWall(ctx, -2, 6.2, 3.2, 1.6, 1.8, 0x4f4640);
+  addCoverWall(ctx, -18, -6.0, 3.2, 1.6, 1.8, 0x4f4640);
+
+  for (const [fx, fz] of [[-12, -9], [16, 9], [52, -7]]) {
+    const fl = new THREE.PointLight(0xff6b28, 16, 28, 2);
+    fl.position.set(fx, DECK_TOP + 2.5, fz);
+    ctx.root.add(fl);
+    ctx.fireLights.push({ light: fl, x: fx, y: DECK_TOP + 2.5, z: fz });
+  }
+  return ctx;
+}
+
+function buildTaierzhuangTheater() {
+  const ctx = buildStoryArenaBase('taierzhuang', 0x7b6c55, 0x5c4f3d, [46, 6.0], [36, -4.5]);
+  // Grand Canal water strip on south edge
+  const canal = new THREE.Mesh(new THREE.PlaneGeometry(160, 28), new THREE.MeshStandardMaterial({ color: 0x223842, roughness: 0.3, metalness: 0.55 }));
+  canal.rotation.x = -Math.PI / 2; canal.position.set(0, 4.2, 30); ctx.root.add(canal);
+
+  // Courtyard stone houses & broken walls forming urban alleys
+  for (let x = -46; x <= 46; x += 22) {
+    for (const z of [-18, 18]) {
+      box(15, 7.5, 6, 0x6e604b, x, DECK_TOP + 3.5, z, ctx.root, { cast: true, receive: true });
+      const roof = box(16, 0.7, 7, 0x2e3236, x, DECK_TOP + 7.4, z, ctx.root);
+      roof.rotation.z = z < 0 ? 0.06 : -0.06;
+    }
+  }
+  addCoverWall(ctx, 14, -5.5, 1.6, 2.2, 4.5, 0x736652);
+  addCoverWall(ctx, 14,  5.5, 1.6, 2.2, 4.5, 0x736652);
+  addCoverWall(ctx, -4,  0,   2.0, 1.8, 5.2, 0x736652);
+  addCoverWall(ctx, -22, -6.5, 2.2, 2.0, 3.8, 0x736652);
+  addCoverWall(ctx, -22,  6.5, 2.2, 2.0, 3.8, 0x736652);
+  return ctx;
+}
+
+function buildChangshaTheater() {
+  const ctx = buildStoryArenaBase('changsha', 0x3b3528, 0x33291e, [42, 6.5], [32, -4.0]);
+  // Zig-zag earth & timber trench walls
+  addCoverWall(ctx, 20, -4.5, 1.4, 1.4, 5.6, 0x4f402e);
+  addCoverWall(ctx, 16,  5.2, 1.4, 1.4, 5.2, 0x4f402e);
+  addCoverWall(ctx,  0, -5.8, 1.5, 1.4, 5.2, 0x4f402e);
+  addCoverWall(ctx, -2,  5.5, 1.5, 1.4, 5.2, 0x4f402e);
+  addCoverWall(ctx, -18, 0.2, 1.6, 1.4, 6.0, 0x4f402e);
+
+  // Wooden watchtowers & pine silhouettes
+  for (const [wx, wz] of [[-26, -17], [10, 17], [46, -17]]) {
+    box(3.5, 10, 3.5, 0x4a3926, wx, DECK_TOP + 4.5, wz, ctx.root, { cast: true });
+    box(5.0, 0.6, 5.0, 0x362a1d, wx, DECK_TOP + 9.6, wz, ctx.root);
+  }
+  const lanternGlow = new THREE.MeshBasicMaterial({ color: new THREE.Color(1.5, 0.85, 0.35) });
+  for (const [lx, lz] of [[30, -8], [4, 8], [-20, -8]]) {
+    const l = new THREE.Mesh(new THREE.SphereGeometry(0.28, 8, 6), lanternGlow);
+    l.position.set(lx, DECK_TOP + 2.6, lz);
+    ctx.root.add(l);
+    const pl = new THREE.PointLight(0xffaa55, 16, 26, 2);
+    pl.position.set(lx, DECK_TOP + 2.5, lz);
+    ctx.root.add(pl);
+    ctx.fireLights.push({ light: pl, x: lx, y: DECK_TOP + 2.5, z: lz });
+  }
+  return ctx;
+}
+
+function buildVictory1945Theater() {
+  const ctx = buildStoryArenaBase('victory1945', 0x675e50, 0x4b443b, [48, 6.0], [38, -4.5]);
+  // Mountain cliffs flanking the Hunan pass
+  for (let x = -54; x <= 54; x += 18) {
+    for (const z of [-22, 22]) {
+      const h = 11 + (Math.abs(x) % 7);
+      box(20, h, 14, 0x4b4438, x, DECK_TOP + h * 0.5 - 1, z, ctx.root, { cast: true, receive: true });
+    }
+  }
+  // Concrete Japanese forward bunker & pass cover walls
+  addCoverWall(ctx, 18, -5.5, 2.4, 1.9, 4.5, 0x56544e);
+  addCoverWall(ctx, 18,  5.5, 2.4, 1.9, 4.5, 0x56544e);
+  addCoverWall(ctx, -4,  0,   2.8, 2.0, 5.5, 0x56544e);
+
+  // Victory Flagpole Plaza at (-38, 0)
+  box(2.4, 0.7, 2.4, 0x7b7264, -38, DECK_TOP + 0.35, 0, ctx.root, { cast: true, receive: true });
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.11, 10.5, 8), mat(0xd8d0c0, 0.4, 0.6));
+  pole.position.set(-38, DECK_TOP + 5.6, 0);
+  ctx.root.add(pole);
+  const flag = box(0.08, 1.35, 2.2, new THREE.MeshStandardMaterial({ color: 0xcc2b22, emissive: 0x441008, roughness: 0.7 }), -38, DECK_TOP + 2.0, 1.15, ctx.root);
+  ctx.flagMesh = flag;
+
+  const goldFill = new THREE.PointLight(0xffb45c, 26, 48, 2);
+  goldFill.position.set(-38, DECK_TOP + 10, 0);
+  ctx.root.add(goldFill);
+  return ctx;
+}
+
+const THEATER_BUILDERS = {
+  bridge: buildBridgeTheater,
+  shanghai: buildShanghaiTheater,
+  taierzhuang: buildTaierzhuangTheater,
+  changsha: buildChangshaTheater,
+  victory1945: buildVictory1945Theater
+};
+
+export function activateTheater(theaterId) {
+  const id = THEATER_BUILDERS[theaterId] ? theaterId : 'bridge';
+  if (!S.theaterData[id]) S.theaterData[id] = THEATER_BUILDERS[id]();
+
+  for (const [k, td] of Object.entries(S.theaterData)) {
+    if (td && td.root) td.root.visible = (k === id);
+  }
+  const active = S.theaterData[id];
+  S.currentTheater = id;
+  S.worldColliders = active.worldColliders;
+  S.floorZones = active.floorZones;
+  S.sandbagClusters = active.sandbagClusters;
+  S.explosiveBarrels = active.explosiveBarrels;
+  S.lanterns = active.lanterns;
+  S.shootableLanterns = active.shootableLanterns;
+  S.wanpingFireLights = active.fireLights;
+  S.supplyCrate = active.supplyCrate;
+  S.supplyCratePos = { ...active.supplyPos };
+  S.mgEmplacement = active.mgEmplacement;
+  S.mgHead = active.mgHead;
+  S.mgFlash = active.mgFlash;
+  S.mgPos = { ...active.mgPos };
+  S.storyFlagMesh = active.flagMesh || null;
+  S.storyFlagRaised = false;
+  if (S.storyFlagMesh) S.storyFlagMesh.position.y = DECK_TOP + 2.0;
+
+  S.playerBoxes = active.playerBoxes.slice();
+  for (const d of S.defenders) {
+    if (d.col && d.s.visible !== false) S.playerBoxes.push(d.col);
+  }
+  resetWorldProps();
 }
 
 export function initWorld() {
@@ -615,7 +803,6 @@ export function initWorld() {
   moon.position.set(-150, 130, -260);
   scene.add(moon);
 
-  // Stars
   const n = 700, pos = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) {
     pos[i * 3] = (Math.random() - 0.5) * 700;
@@ -626,10 +813,40 @@ export function initWorld() {
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xaebbd8, size: 1.1, sizeAttenuation: false, transparent: true, opacity: 0.75 })));
 
+  // Shared GPU rain
+  const rc = 900, rpos = new Float32Array(rc * 3);
+  for (let i = 0; i < rc; i++) {
+    rpos[i * 3]     = (Math.random() - 0.5) * 140;
+    rpos[i * 3 + 1] = Math.random() * 26;
+    rpos[i * 3 + 2] = (Math.random() - 0.5) * 42;
+  }
+  const rgeo = new THREE.BufferGeometry();
+  rgeo.setAttribute('position', new THREE.BufferAttribute(rpos, 3));
+  const rmat = new THREE.PointsMaterial({ color: 0x9eb8dc, size: 0.14, transparent: true, opacity: 0.55, depthWrite: false });
+  rmat.onBeforeCompile = (sh) => {
+    sh.uniforms.uTime = S.rainTime;
+    sh.vertexShader = 'uniform float uTime;\n' + sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
+      transformed.y = 6.0 + mod(position.y - uTime * 22.0, 26.0);
+    `);
+  };
+  rmat.customProgramCacheKey = () => 'rain-v1';
+  S.rainPoints = new THREE.Points(rgeo, rmat);
+  S.rainPoints.frustumCulled = false;
+  S.rainPoints.visible = false;
+  scene.add(S.rainPoints);
+
+  // Shared flare
+  S.flareObj = new THREE.Mesh(
+    new THREE.SphereGeometry(0.32, 8, 6),
+    new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 1.45, 1.05) })
+  );
+  S.flareObj.visible = false;
+  scene.add(S.flareObj);
+  S.flareLight = new THREE.PointLight(0xffe7b3, 0, 62, 1.8);
+  scene.add(S.flareLight);
+
   buildSkyDome();
-  buildTerrain();
-  buildBridge();
-  buildWanping();
+  activateTheater('bridge');
   initPools();
 
   S.player.pos.set(34, DECK_TOP + 1.7, 0);
@@ -655,19 +872,21 @@ export function getFloorY(px, pz) {
 }
 
 function insideWalkableDeck(px, pz) {
-  if (px >= -58 && px <= 74.6 && pz >= -4.15 && pz <= 4.15) return true; // Main bridge + plaza
-  if (px >= 44.8 && px <= 54.2 && pz >= -11.6 && pz <= -4.0) return true; // Connector
-  if (px >= -56 && px <= 59 && pz >= -15.0 && pz <= -11.1) return true; // Railway bridge
-  if (px >= 57.5 && px <= 75.4 && pz >= -15.0 && pz <= 15.0) return true; // Wanping courtyard + battlements
-  return false;
+  if (S.currentTheater === 'bridge') {
+    if (px >= -58 && px <= 74.6 && pz >= -4.15 && pz <= 4.15) return true;
+    if (px >= 44.8 && px <= 54.2 && pz >= -11.6 && pz <= -4.0) return true;
+    if (px >= -56 && px <= 59 && pz >= -15.0 && pz <= -11.1) return true;
+    if (px >= 57.5 && px <= 75.4 && pz >= -15.0 && pz <= 15.0) return true;
+    return false;
+  }
+  return px >= -56 && px <= 54.5 && pz >= -13.0 && pz <= 13.0;
 }
 
 export function resolvePlayerCollision(nx, nz) {
   const r = 0.38;
   const blocked = (px, pz) => {
     if (!insideWalkableDeck(px, pz)) return true;
-    // Wanping gate central wall solid masonry around z = [-8..-5] & [5..8] at ground level (passable above on battlements)
-    if (S.player.feetY < 10.6 && px > 70.8 && px < 77 && Math.abs(pz) > 4.6) return true;
+    if (S.currentTheater === 'bridge' && S.player.feetY < 10.6 && px > 70.8 && px < 77 && Math.abs(pz) > 4.6) return true;
     for (const b of S.playerBoxes) {
       if (b.broken) continue;
       const top = b.topY !== undefined ? b.topY : Infinity;
@@ -708,6 +927,7 @@ export function applyWorldModels() {
   if (ASSETS.gate) {
     const t = fitModel(ASSETS.gate, 23, { bottom: true, rotY: -Math.PI / 2, noCastShadow: true });
     t.position.set(77, DECK_TOP, 0);
-    S.scene.add(t);
+    const parent = S.theaterData.bridge ? S.theaterData.bridge.root : S.scene;
+    parent.add(t);
   }
 }

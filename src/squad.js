@@ -77,6 +77,26 @@ export function resetSquadPositions() {
   if (S.defenders[1]) setDefenderPos(S.defenders[1], 29, -2.1);
 }
 
+export function setSquadAnchors(a0, a1, showFallen = true) {
+  if (S.defenders[0] && a0) {
+    S.defenders[0].s.visible = true;
+    S.defenders[0].homeX = a0[0]; S.defenders[0].homeZ = a0[1];
+    S.defenders[0].advX = Math.max(-36, a0[0] - 18); S.defenders[0].advZ = a0[1];
+    if (S.currentTheater !== 'bridge' && Math.hypot(S.defenders[0].s.position.x - a0[0], S.defenders[0].s.position.z - a0[1]) > 24) {
+      setDefenderPos(S.defenders[0], a0[0], a0[1]);
+    }
+  }
+  if (S.defenders[1] && a1) {
+    S.defenders[1].s.visible = true;
+    S.defenders[1].homeX = a1[0]; S.defenders[1].homeZ = a1[1];
+    S.defenders[1].advX = Math.max(-36, a1[0] - 18); S.defenders[1].advZ = a1[1];
+    if (S.currentTheater !== 'bridge' && Math.hypot(S.defenders[1].s.position.x - a1[0], S.defenders[1].s.position.z - a1[1]) > 24) {
+      setDefenderPos(S.defenders[1], a1[0], a1[1]);
+    }
+  }
+  if (S.defenders[2]) S.defenders[2].s.visible = showFallen;
+}
+
 export function setSquadOrder(order) {
   if (!SQUAD_ORDERS[order]) return;
   S.squadOrder = order;

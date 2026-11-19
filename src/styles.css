@@ -12,9 +12,50 @@ canvas { display:block; }
 #topleft { top:22px; left:26px; }
 #topleft .zh { font-size:30px; letter-spacing:5px; color:#e8c87a; font-weight:700; }
 #topleft .sub { font-size:12px; letter-spacing:3px; color:#b9b4a6; margin-top:2px; }
-#topleft .obj { font-size:14px; color:#d8d2c4; margin-top:12px; border-left:3px solid #b4442e; padding-left:10px; }
+#topleft .obj { font-size:14px; color:#d8d2c4; margin-top:10px; border-left:3px solid #b4442e; padding-left:10px; max-width:min(360px, 42vw); }
 #chapterTitle { font-size:12px; color:#e8c87a; letter-spacing:1px; margin-top:3px; }
-#squadHud { font-size:11px; color:#9bd18b; letter-spacing:1.5px; margin-top:4px; }
+.objList { margin-top:4px; display:flex; flex-direction:column; gap:2px; font-size:12px; }
+.objRow { color:#9e988a; line-height:1.3; }
+.objRow.done { color:#7dffb3; text-decoration:line-through; opacity:.82; }
+.objRow.active { color:#ffd447; font-weight:700; }
+.objProgress {
+  appearance:none; border:0 solid; overflow:clip;
+  display:block; width:100%; max-width:260px; height:6px; margin-top:5px;
+  --progress-bar-radius:999px; border-radius:var(--progress-bar-radius);
+  background:rgba(14,16,22,.85); box-shadow:inset 0 1px 2px rgb(0 0 0 / 0.35);
+}
+.objProgress::-webkit-progress-bar { background:transparent; }
+.objProgress::-webkit-progress-value {
+  background:linear-gradient(90deg, #b4442e, #ffd447);
+  border-radius:var(--progress-bar-radius); transition:inline-size .3s;
+}
+.objProgress::-moz-progress-bar {
+  background:linear-gradient(90deg, #b4442e, #ffd447);
+  border-radius:var(--progress-bar-radius); transition:inline-size .3s;
+}
+#squadHud { font-size:11px; color:#9bd18b; letter-spacing:1.5px; margin-top:5px; }
+
+#objMarker {
+  position:fixed; left:0; top:0; pointer-events:none; opacity:0; z-index:12;
+  padding:3px 9px; border:1px solid #ffd447; background:rgba(14,16,22,.86);
+  color:#ffd447; font-size:11px; font-weight:700; letter-spacing:1.2px;
+  white-space:nowrap; box-shadow:0 4px 12px rgba(0,0,0,.75); transition:opacity .15s;
+}
+#storySub {
+  position:fixed; left:50%; bottom:108px; transform:translate3d(-50%, 8px, 0);
+  width:min(620px, 84vw); padding:9px 14px; border-left:3px solid #ffd447;
+  background:rgba(8,10,15,.88); color:#f2ead6; text-align:left; pointer-events:none;
+  opacity:0; z-index:12; font-size:13px; line-height:1.45;
+  box-shadow:0 6px 24px rgba(0,0,0,.7);
+  transition:opacity .22s ease-out, transform .22s ease-out;
+}
+#storySub.show { opacity:1; transform:translate3d(-50%, 0, 0); }
+#storySub b { display:block; color:#ffd447; font-size:11px; letter-spacing:1.6px; margin-bottom:2px; }
+#shellshockOverlay {
+  position:fixed; inset:0; pointer-events:none; z-index:8; opacity:0;
+  background:radial-gradient(circle, rgba(255,220,160,.26), rgba(20,12,8,.78));
+  transition:opacity .15s;
+}
 
 #topright { top:24px; right:28px; text-align:right; font-size:13px; letter-spacing:2px; color:#c9c2b2; }
 #topright span { color:#e8c87a; font-size:20px; font-weight:700; }
@@ -214,13 +255,20 @@ canvas { display:block; }
   font-size:11px; color:#7c7668; letter-spacing:.6px; }
 .medalBadge.unlocked { border-color:#e8c87a; color:#ffd447; background:rgba(68,48,20,.45); }
 
-/* Animated tactical map briefing overlay */
+/* Animated tactical map & CoD War-Room briefing overlay */
 #tacticalMapOverlay { position:fixed; inset:0; z-index:34; display:flex; align-items:center; justify-content:center;
   background:rgba(6,8,12,.94); }
-.tacBriefCard { width:min(860px, 94vw); padding:24px 28px; border:1px solid #6d6350; background:rgba(18,16,12,.97); }
+.tacBriefCard { width:min(960px, 94vw); max-height:90dvh; overflow-y:auto; padding:22px 26px; border:1px solid #6d6350; background:rgba(18,16,12,.97); }
 .tacHeader { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:12px; }
-.tacHeader h2 { font-size:20px; color:#e8c87a; letter-spacing:2px; }
-.tacCaption { margin-top:10px; font-size:13px; color:#d8cfb8; line-height:1.55; }
+.tacOpCode { font-size:11px; letter-spacing:3px; color:#b4442e; font-weight:700; margin-bottom:2px; }
+.tacHeader h2 { font-size:19px; color:#e8c87a; letter-spacing:2px; }
+.tacSplit { display:grid; grid-template-columns:1.25fr 1fr; gap:16px; align-items:start; }
+.tacDossier { display:flex; flex-direction:column; gap:10px; padding:12px 14px; border:1px solid #4c4536; background:rgba(10,12,16,.72); }
+.tacMeta { font-size:11px; color:#e8c87a; letter-spacing:1px; font-family:monospace; line-height:1.4; }
+.tacObjTitle { font-size:11px; letter-spacing:2px; color:#b4442e; font-weight:700; margin-top:2px; }
+.tacObjList { list-style:none; display:flex; flex-direction:column; gap:5px; font-size:12px; color:#f2ead6; }
+.tacObjList li::before { content:"◆ "; color:#ffd447; }
+.tacCaption { margin-top:4px; font-size:13px; color:#d8cfb8; line-height:1.55; border-top:1px solid #3c372b; padding-top:8px; min-height:54px; }
 
 /* Cinematics & Loading */
 #loading { position:fixed; inset:0; z-index:40; display:flex; flex-direction:column; gap:14px; align-items:center; justify-content:center;
@@ -267,18 +315,24 @@ canvas { display:block; }
   #streakBanner { top:72%; }
   #streakBanner .sbMain { font-size:17px; letter-spacing:2px; }
   #streakBanner .sbSub { font-size:10px; }
+  #storySub { bottom:116px; width:min(460px, 72vw); font-size:12px; padding:7px 11px; }
 }
 @media (max-width: 640px) {
-  #topleft { top:10px; left:10px; max-width:54vw; }
-  #topleft .zh { font-size:16px; letter-spacing:2px; }
+  #topleft { top:10px; left:10px; max-width:56vw; }
+  #topleft .zh { font-size:11px; letter-spacing:.8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   #topleft .sub, #chapterTitle, #radioBox { display:none; }
-  #topleft .obj { font-size:11px; margin-top:4px; padding-left:7px; }
-  #squadHud { font-size:10px; }
+  #topleft .obj { font-size:10px; margin-top:3px; padding-left:6px; max-width:54vw; }
+  .objList { font-size:10px; }
+  .objList .objRow:not(.active) { display:none; }
+  .objProgress { height:4px; margin-top:3px; }
+  #squadHud { font-size:9px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:3px; }
+  #storySub { top:auto; bottom:295px; width:calc(100vw - 24px); max-width:366px; font-size:11px; padding:6px 10px; }
+  #objMarker { font-size:10px; padding:2px 6px; }
   #topright { top:10px; right:10px; font-size:11px; letter-spacing:1px; }
   #topright span { font-size:15px; }
   #radar { width:112px; height:40px; }
-  #killfeed { top:104px; right:10px; max-width:60vw; }
-  .kf-item { font-size:10px; padding:3px 7px; }
+  #killfeed { top:128px; right:10px; max-width:56vw; }
+  .kf-item { font-size:9.5px; padding:2px 6px; }
   #streakBanner { top:44%; max-width:86vw; }
   #streakBanner .sbMain { font-size:18px; letter-spacing:2px; }
   #fpsBox { top:auto; bottom:62px; left:10px; font-size:10px; }
@@ -362,7 +416,7 @@ dialog::backdrop {
 .invStatus { min-height:18px; font-size:12px; color:#7dffb3; letter-spacing:.5px; }
 
 @media (max-width: 760px) {
-  .invBody { grid-template-columns:1fr; }
+  .invBody, .tacSplit { grid-template-columns:1fr; }
   #inventoryDialog[open] { padding:16px 14px; }
   .invHead h1 { font-size:21px; }
   .invBoostNote { margin-left:0; }
@@ -372,9 +426,13 @@ dialog::backdrop {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .kf-item, #streakBanner, #medalToast { transition:opacity .12s linear; transform:none; }
+  .kf-item, #streakBanner, #medalToast, #storySub { transition:opacity .12s linear; transform:none; }
   #streakBanner { transform:translate3d(-50%,-50%,0); }
   #streakBanner.show { transform:translate3d(-50%,-50%,0); }
+  #storySub { transform:translate3d(-50%,0,0); }
+  #storySub.show { transform:translate3d(-50%,0,0); }
+  .objProgress::-webkit-progress-value { transition:none; }
+  .objProgress::-moz-progress-bar { transition:none; }
 }
 
 .hidden { display:none !important; }
