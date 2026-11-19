@@ -39,7 +39,7 @@
   .dmgNum.crit { font-size:24px; color:#ffd447; text-shadow:0 2px 4px #000, 0 0 10px rgba(255,176,40,.65); }
   .dmgNum.armor { font-size:15px; color:#b8c2cc; }
   .dmgNum.blast { font-size:23px; color:#ff8b3d; text-shadow:0 2px 4px #000, 0 0 8px rgba(255,90,20,.65); }
-  #killfeed { position:absolute; top:162px; right:28px; display:flex; flex-direction:column; align-items:flex-end;
+  #killfeed { position:absolute; top:170px; right:28px; display:flex; flex-direction:column; align-items:flex-end;
     gap:5px; pointer-events:none; max-width:min(360px, 42vw); }
   .kf-item { padding:5px 10px; font-size:12px; letter-spacing:.5px; color:#f2ead6;
     background:rgba(10,12,17,.80); border-right:3px solid #e8c87a; border-top:1px solid rgba(90,81,64,.55);
@@ -893,6 +893,8 @@ function lockPointer(){
 function toggleCameraMode(){
   if(!alive || paused || cinematic || mgMounted) return;
   thirdPerson = !thirdPerson;
+  playerAvatar.position.set(player.pos.x, player.feetY, player.pos.z);
+  playerAvatar.rotation.y = yaw + Math.PI;
   const tag = $('camTag');
   if(tag) tag.textContent = thirdPerson ? '[3.ª PERSONA · V]' : '[1.ª PERSONA · V]';
   showMsg(thirdPerson ? 'CÁMARA 3.ª PERSONA (HOMBRO)' : 'CÁMARA 1.ª PERSONA', 1.1);
@@ -987,6 +989,10 @@ addEventListener('keydown', e => {
     if(e.code==='Space' || e.code==='Enter'){ e.preventDefault(); endCinematic(); }
     return;
   }
+  if(e.code==='Escape' && alive && !paused && !cinematic && document.pointerLockElement !== renderer.domElement && !e.repeat){
+    pauseGame();
+    return;
+  }
   if(e.code==='Space' && alive && !paused){
     e.preventDefault();
     if(!e.repeat) triggerJump();
@@ -1020,10 +1026,10 @@ addEventListener('mousemove', e => {
   const rawX = e.movementX || 0;
   const rawY = e.movementY || 0;
   // Discard Chromium/Windows pointer-lock acquisition warp spikes & anomalous single-event jumps
-  if((performance.now() - plLockTime) < 120 && Math.hypot(rawX, rawY) > 45) return;
-  if(Math.abs(rawX) > 260 || Math.abs(rawY) > 260) return;
-  const dx = Math.max(-140, Math.min(140, rawX));
-  const dy = Math.max(-140, Math.min(140, rawY));
+  if((performance.now() - plLockTime) < 180 && Math.hypot(rawX, rawY) > 45) return;
+  if(Math.abs(rawX) > 520 || Math.abs(rawY) > 520) return;
+  const dx = Math.max(-180, Math.min(180, rawX));
+  const dy = Math.max(-180, Math.min(180, rawY));
   const sensMult = aiming ? 0.62 : 1.0;
   const step = 0.0019 * mouseSens * sensMult;
   targetYaw   -= dx * step;
@@ -1283,11 +1289,13 @@ avatarFlash.position.set(0.24, 1.38, 0.92);
 avatarFlash.visible = false;
 playerAvatar.add(avatarFlash);
 const avatarSword = new THREE.Group();
-const avBlade = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.85, 0.024), mat(0x3a4044, 0.4, 0.7));
-avBlade.position.set(0, 0.45, 0);
-avatarSword.add(avBlade);
-avatarSword.position.set(0.38, 1.25, 0.38);
-avatarSword.rotation.set(0.55, 0, -0.2);
+const avGuard = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.04, 0.08), mat(0x2c3033, 0.5, 0.6));
+avGuard.position.set(0, 0.04, 0);
+const avBlade = new THREE.Mesh(new THREE.BoxGeometry(0.065, 0.92, 0.024), mat(0x9aa4ab, 0.35, 0.75));
+avBlade.position.set(0, 0.50, 0);
+avatarSword.add(avGuard, avBlade);
+avatarSword.position.set(-0.44, 1.30, 0.34);
+avatarSword.rotation.set(0.32, 0.12, 0.32);
 avatarSword.visible = false;
 playerAvatar.add(avatarSword);
 playerAvatar.visible = false;
@@ -1409,6 +1417,8 @@ function toggleMountMG(){
     $('mgHeatWrap').classList.add('hidden');
     player.pos.set(25.8, DECK_TOP + eyeHeight, -1.5);
     player.feetY = DECK_TOP; player.velY = 0; player.onGround = true;
+    playerAvatar.position.set(player.pos.x, player.feetY, player.pos.z);
+    playerAvatar.rotation.y = yaw + Math.PI;
     camera.position.copy(player.pos);
     updateHUD();
     showMsg('AMETRALLADORA SOLTADA', 1.0);
@@ -1578,7 +1588,7 @@ function damageTankette(dmg, critical, hitWorldPos=null, weaponName='Fusil', dmg
     $('bossBarWrap').classList.add('hidden');
     addScore(500);
     stats.kills++;
-    addKillfeedEntry({ killer:'Tú', victim:'Tanqueta Tipo 94 Te-Ke', weapon:weaponName, headshot:critical, pts:500 });
+    addKillfeedEntry({ killer:'Tú', victim:'Tanqueta Tipo 94 Te-Ke', weapon:weaponName, headshot:Boolean(critical && dmgKind !== 'blast'), pts:500 });
     registerPlayerKill(500);
     showMsg('九四式装甲车击毁 · ¡TANQUETA DESTRUIDA! (+500)', 2.2);
   }
@@ -1601,6 +1611,7 @@ function spawnDamageNumber(worldPos, amount, kind='normal'){
   }
   const el = document.createElement('div');
   el.className = 'dmgNum' + (kind !== 'normal' ? ' ' + kind : '');
+  el.style.opacity = '0';
   el.textContent = String(Math.max(1, Math.round(amount)));
   layer.appendChild(el);
   const jitter = new THREE.Vector3((Math.random()-0.5)*0.42, 0.12 + Math.random()*0.26, (Math.random()-0.5)*0.42);
@@ -1657,12 +1668,13 @@ function updateCrosshair(dt, isMoving){
   ch.style.opacity = (aiming && !isMelee && !thirdPerson) ? '0.68' : '0.92';
   if(bloomHoldTimer > 0) bloomHoldTimer = Math.max(0, bloomHoldTimer - dt);
   else crosshairBloom = Math.max(0, crosshairBloom - dt * 2.1);
+  const adsMult = (aiming && !isMelee && !mgMounted) ? 0.42 : 1.0;
   let targetGap = mgMounted ? 11 : (current === 'pistol' ? 10 : 12);
   if(aiming && !isMelee) targetGap *= 0.36;
   if(crouching && !mgMounted) targetGap *= 0.72;
-  if(isMoving && !mgMounted) targetGap += (running && !aiming) ? 9 : 4.5;
-  if(!player.onGround && !mgMounted) targetGap += 12;
-  targetGap += crosshairBloom * 17;
+  if(isMoving && !mgMounted) targetGap += ((running && !aiming) ? 9 : 4.5) * adsMult;
+  if(!player.onGround && !mgMounted) targetGap += 12 * adsMult;
+  targetGap += crosshairBloom * 17 * adsMult;
   targetGap = Math.max(3, Math.min(38, targetGap));
   currentCrosshairGap += (targetGap - currentCrosshairGap) * Math.min(1, dt * 22);
   const gapStr = currentCrosshairGap.toFixed(1) + 'px';
@@ -1842,13 +1854,14 @@ function showDirDamage(fromPos){
 
 const raycaster = new THREE.Raycaster();
 function muzzlePos(){
-  if(thirdPerson && !mgMounted && avatarFlash){
+  if(thirdPerson && !mgMounted && avatarFlash && playerAvatar.visible){
     avatarFlash.updateWorldMatrix(true, false);
     return avatarFlash.getWorldPosition(new THREE.Vector3());
   }
   const f = vmRes.flashes[current];
-  if(f) { f.updateWorldMatrix(true,false); return f.getWorldPosition(new THREE.Vector3()); }
-  return player.pos.clone().add(new THREE.Vector3(0.3,-0.25,-0.6).applyQuaternion(camera.quaternion));
+  if(f && vmRes.vm.visible) { f.updateWorldMatrix(true,false); return f.getWorldPosition(new THREE.Vector3()); }
+  const camRight = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
+  return player.pos.clone().addScaledVector(camRight, 0.22).add(new THREE.Vector3(0, -0.1, 0));
 }
 
 function setupPlayerShotRay(spread, isMelee){
@@ -1941,8 +1954,13 @@ function shoot(){
   const w = WEAPONS[current];
   if(reloadTimer>0 || fireTimer>0 || mgMounted) return;
   if(!w.melee && w.ammo<=0){
-    if(dryFireCd <= 0){ playDryFire(); dryFireCd = 0.35; }
-    startReload();
+    if(dryFireCd <= 0){
+      playDryFire();
+      dryFireCd = 0.35;
+      if(w.reserve <= 0) showMsg('SIN MUNICIÓN · RECOGE SUMINISTROS [E]', 1.1);
+    }
+    if(w.reserve > 0) startReload();
+    else fireTimer = 0.25;
     return;
   }
   fireTimer = w.rate;
@@ -1959,7 +1977,7 @@ function shoot(){
     noiseBurst(0.11, current==='rifle' ? 0.33 : 0.38, current==='rifle' ? 2050 : 1750);
     if(current==='rifle') tone(145, 0.055, 0.12, 'sawtooth', 58);
   }
-  if(thirdPerson && !w.melee){
+  if(thirdPerson && playerAvatar.visible && !w.melee){
     avatarFlash.visible = true; flashTimer = 0.048;
   } else {
     const f = vmRes.flashes[current];
@@ -2376,7 +2394,10 @@ function beginGame(skipCine=false){
     alive=true; paused=false;
     stats.startTime=performance.now();
     $('hud').style.display='block';
+    playerAvatar.position.set(player.pos.x, player.feetY, player.pos.z);
+    playerAvatar.rotation.y = yaw + Math.PI;
     playerAvatar.visible = thirdPerson;
+    vmRes.vm.visible = !thirdPerson;
     lockPointer();
     updateLockHint();
     startWave(firstWave);
@@ -2586,12 +2607,12 @@ function animate(){
   if(cinematic){
     updateCinematic(dt);
   } else {
-    const lookAlpha = 1 - Math.exp(-44 * dt);
+    const lookAlpha = 1 - Math.exp(-65 * dt);
     if(Math.abs(targetYaw - yaw) < 1e-5) yaw = targetYaw;
     else yaw += (targetYaw - yaw) * lookAlpha;
     if(Math.abs(targetPitch - pitch) < 1e-5) pitch = targetPitch;
     else pitch += (targetPitch - pitch) * lookAlpha;
-    recoilPitch = Math.max(0, recoilPitch - dt * 0.16);
+    if(!paused) recoilPitch = Math.max(0, recoilPitch - dt * 0.16);
     const viewPitch = mgMounted
       ? Math.max(-0.35, Math.min(0.35, pitch + recoilPitch * 0.35))
       : Math.max(-1.35, Math.min(1.35, pitch + recoilPitch));
@@ -2708,11 +2729,13 @@ function animate(){
 
         const showAvatar = tpBlend > 0.15 && camera.position.distanceTo(player.pos) > 0.52;
         playerAvatar.visible = showAvatar;
-        vmRes.vm.visible = tpBlend < 0.35;
-        if(showAvatar){
+        vmRes.vm.visible = !showAvatar;
+        if(thirdPerson || tpBlend > 0.001){
           playerAvatar.position.set(player.pos.x, player.feetY, player.pos.z);
           playerAvatar.rotation.y = yaw + Math.PI;
           playerAvatar.scale.set(1, crouching ? 0.76 : 1.0, 1);
+        }
+        if(showAvatar){
           if(playerLiving){
             playerLiving.time(t);
             const movingNow = !!(keys['KeyW']||keys['KeyS']||keys['KeyA']||keys['KeyD']);
@@ -2723,7 +2746,7 @@ function animate(){
           avatarSword.visible = (current === 'sword');
           if(avatarSword.visible){
             const sw = Math.sin(meleeSwing * Math.PI);
-            avatarSword.rotation.set(0.55 + sw * 1.35, -sw * 0.65, -0.2);
+            avatarSword.rotation.set(0.32 + sw * 1.25, 0.12 + sw * 0.65, 0.32 - sw * 0.55);
           }
         }
       }
@@ -2746,12 +2769,14 @@ function animate(){
       drawRadar();
     } else {
       $('interactPrompt').style.opacity = 0;
-      vmRes.vm.visible = !mgMounted && !thirdPerson;
-      playerAvatar.visible = false;
+      if(!alive){
+        vmRes.vm.visible = !mgMounted && !thirdPerson;
+        playerAvatar.visible = false;
+      }
     }
   }
 
-  if(cameraShake > 0){
+  if(!paused && cameraShake > 0){
     cameraShake = Math.max(0, cameraShake - dt*1.4);
     camera.position.x += (Math.random()-0.5)*cameraShake*0.35;
     camera.position.y += (Math.random()-0.5)*cameraShake*0.35;
@@ -2766,21 +2791,23 @@ function animate(){
     camera.updateProjectionMatrix();
   }
 
-  if(fireTimer>0) fireTimer-=dt;
-  if(flashTimer>0){ flashTimer-=dt; if(flashTimer<=0){ for(const f of Object.values(vmRes.flashes)) f.visible=false; if(mgFlash) mgFlash.visible=false; avatarFlash.visible=false; } }
-  if(reloadTimer>0){
-    reloadTimer-=dt;
-    if(reloadTimer<=0){
-      const w=WEAPONS[current];
-      const need=w.clip-w.ammo, give=Math.min(need,w.reserve);
-      w.ammo+=give; w.reserve-=give; updateHUD();
-    }
-  }
   const isMoving = !cinematic && alive && !paused && !mgMounted && (keys['KeyW']||keys['KeyS']||keys['KeyA']||keys['KeyD']);
-  updateCrosshair(dt, isMoving);
+  if(!paused){
+    if(fireTimer>0) fireTimer-=dt;
+    if(flashTimer>0){ flashTimer-=dt; if(flashTimer<=0){ for(const f of Object.values(vmRes.flashes)) f.visible=false; if(mgFlash) mgFlash.visible=false; avatarFlash.visible=false; } }
+    if(reloadTimer>0){
+      reloadTimer-=dt;
+      if(reloadTimer<=0){
+        const w=WEAPONS[current];
+        const need=w.clip-w.ammo, give=Math.min(need,w.reserve);
+        w.ammo+=give; w.reserve-=give; updateHUD();
+      }
+    }
+    updateCrosshair(dt, isMoving);
+    recoil *= Math.pow(0.001, dt);
+    if(meleeSwing>0) meleeSwing = Math.max(0, meleeSwing - dt*3.2);
+  }
   updateLockHint();
-  recoil *= Math.pow(0.001, dt);
-  if(meleeSwing>0) meleeSwing = Math.max(0, meleeSwing - dt*3.2);
   const swingAng = Math.sin(meleeSwing * Math.PI);
   vmRes.groups.sword.rotation.set(0.35 + swingAng*1.15, -0.12 - swingAng*0.8, -0.25 + swingAng*0.5);
   const targetVmX = (aiming && !WEAPONS[current].melee && reloadTimer<=0) ? -0.22 : 0;
@@ -3044,21 +3071,23 @@ function animate(){
   }
 
   // effects
-  for(let i=effects.length-1;i>=0;i--){
-    const fx=effects[i]; fx.life-=dt;
-    if(fx.light) fx.obj.intensity = Math.max(0, fx.life/fx.max) * fx.baseInt;
-    else if(fx.line) fx.obj.material.opacity = Math.max(0, fx.life/fx.max)*0.95;
-    else { fx.obj.material.opacity = Math.max(0,fx.life/fx.max); fx.obj.scale.multiplyScalar(1 + dt*(fx.grow||2)); }
-    if(fx.life<=0){
-      scene.remove(fx.obj);
-      if(!fx.sharedGeo && fx.obj.geometry) fx.obj.geometry.dispose();
-      if(fx.obj.material) fx.obj.material.dispose();
-      effects.splice(i,1);
+  if(!paused){
+    for(let i=effects.length-1;i>=0;i--){
+      const fx=effects[i]; fx.life-=dt;
+      if(fx.light) fx.obj.intensity = Math.max(0, fx.life/fx.max) * fx.baseInt;
+      else if(fx.line) fx.obj.material.opacity = Math.max(0, fx.life/fx.max)*0.95;
+      else { fx.obj.material.opacity = Math.max(0,fx.life/fx.max); fx.obj.scale.multiplyScalar(1 + dt*(fx.grow||2)); }
+      if(fx.life<=0){
+        scene.remove(fx.obj);
+        if(!fx.sharedGeo && fx.obj.geometry) fx.obj.geometry.dispose();
+        if(fx.obj.material) fx.obj.material.dispose();
+        effects.splice(i,1);
+      }
     }
   }
 
   camera.updateMatrixWorld();
-  updateDamageNumbers(dt);
+  updateDamageNumbers(paused ? 0 : dt);
   renderer.render(scene, camera);
 }
 animate();
